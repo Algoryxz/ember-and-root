@@ -1,0 +1,24 @@
+
+Running 15 tests using 2 workers
+
+(node:28376) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:24516) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  2 [chromium] › tests\e2e\app-shell.spec.ts:5:3 › Unauthenticated Route Protection › redirects unauthenticated user from /hearth to /login (593ms)
+  ok  3 [chromium] › tests\e2e\app-shell.spec.ts:15:3 › Unauthenticated Route Protection › redirects unauthenticated user from /satchel to /login?next=%2Fsatchel (472ms)
+  ok  1 [chromium] › tests\e2e\app-shell.spec.ts:10:3 › Unauthenticated Route Protection › redirects unauthenticated user from /root to /login?next=%2Froot (1.2s)
+  ok  4 [chromium] › tests\e2e\app-shell.spec.ts:20:3 › Unauthenticated Route Protection › redirects unauthenticated user from /chronicle to /login?next=%2Fchronicle (525ms)
+  ok  5 [chromium] › tests\e2e\app-shell.spec.ts:25:3 › Unauthenticated Route Protection › redirects unauthenticated user from /settings to /login?next=%2Fsettings (511ms)
+  ok  6 [chromium] › tests\e2e\app-shell.spec.ts:32:3 › Public Auth Pages Accessibility › login page has no critical axe accessibility violations (1.2s)
+  ok  7 [chromium] › tests\e2e\app-shell.spec.ts:40:3 › Public Auth Pages Accessibility › signup page has no critical axe accessibility violations (1.1s)
+  ok  9 [chromium] › tests\e2e\app-shell.spec.ts:56:3 › Public Auth Pages Accessibility › login page allows full keyboard navigation through all interactive controls (542ms)
+  ok  8 [chromium] › tests\e2e\app-shell.spec.ts:48:3 › Public Auth Pages Accessibility › landing page has valid heading and skip links (864ms)
+  ok 10 [chromium] › tests\e2e\public-entry.spec.ts:4:3 › playable prologue and real entry at 1440px (6.3s)
+  ok 11 [chromium] › tests\e2e\public-entry.spec.ts:4:3 › playable prologue and real entry at 768px (6.2s)
+  ok 12 [chromium] › tests\e2e\public-entry.spec.ts:4:3 › playable prologue and real entry at 390px (6.3s)
+  ok 13 [chromium] › tests\e2e\public-entry.spec.ts:4:3 › playable prologue and real entry at 375px (6.3s)
+  ok 15 [chromium] › tests\e2e\public-entry.spec.ts:26:1 › skip preserves the returning player keyboard path (896ms)
+  ok 14 [chromium] › tests\e2e\public-entry.spec.ts:4:3 › playable prologue and real entry at 320px (6.2s)
+
+  15 passed (24.3s)

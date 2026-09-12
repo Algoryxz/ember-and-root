@@ -58,3 +58,9 @@
     transform: none;
   }
 }
+
+/* The save ritual inherits the prologue world without altering onboarding state. */
+.onboarding-container{background:linear-gradient(90deg,#060c0be8,#080d0ceb),url('/opening/root-chamber.webp') center/cover fixed!important}
+.onboarding-container .onboarding-grid>aside{background:transparent;border-color:#b78b4e33}
+.onboarding-container button{border-radius:2px}
+.onboarding-container input,.onboarding-container select{border-radius:0}

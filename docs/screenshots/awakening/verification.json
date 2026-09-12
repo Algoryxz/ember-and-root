@@ -1,0 +1,61 @@
+[
+  {
+    "width": 1440,
+    "height": 900,
+    "keyboard": "pass",
+    "replayAndSkipCancellation": "pass",
+    "axe": "pass",
+    "overflow": "none",
+    "browserErrors": [],
+    "mutationRequests": []
+  },
+  {
+    "width": 768,
+    "height": 1024,
+    "keyboard": "pass",
+    "replayAndSkipCancellation": "pass",
+    "axe": "pass",
+    "overflow": "none",
+    "browserErrors": [],
+    "mutationRequests": []
+  },
+  {
+    "width": 390,
+    "height": 844,
+    "keyboard": "pass",
+    "replayAndSkipCancellation": "pass",
+    "axe": "pass",
+    "overflow": "none",
+    "browserErrors": [],
+    "mutationRequests": []
+  },
+  {
+    "width": 375,
+    "height": 812,
+    "keyboard": "pass",
+    "replayAndSkipCancellation": "pass",
+    "axe": "pass",
+    "overflow": "none",
+    "browserErrors": [],
+    "mutationRequests": []
+  },
+  {
+    "width": 320,
+    "height": 700,
+    "keyboard": "pass",
+    "replayAndSkipCancellation": "pass",
+    "axe": "pass",
+    "overflow": "none",
+    "browserErrors": [],
+    "mutationRequests": []
+  },
+  {
+    "reducedMotionTouch": "pass"
+  },
+  {
+    "cssZoom200Percent": "pass"
+  },
+  {
+    "assetFailureRecovery": "pass"
+  }
+]

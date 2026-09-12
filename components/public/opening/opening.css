@@ -1,0 +1,126 @@
+.prologue {
+  --center-shift: calc(max(7vw,17.962svh) * -1);
+  position: relative; isolation: isolate; width: 100%; height: 100svh; min-height: 320px;
+  overflow: hidden; background: #020404; color: #ecdcc4; font-family: var(--font-body), sans-serif;
+}
+.prologue-layer { position: absolute; inset: 0; overflow: hidden; transition: opacity 2.8s ease; }
+.prologue-camera { position: absolute; inset: 0; transform: scale(1.015); transition: transform 2.8s cubic-bezier(.25,.65,.25,1); }
+.prologue-plane {
+  position: absolute; left: 50%; top: 50%; width: max(100vw, 190svh); height: max(100svh, 52.632vw);
+  transform: translate(-50%, -50%); background-size: 0 0; background-repeat: no-repeat;
+  transition: transform 2.1s cubic-bezier(.2,.65,.25,1);
+}
+.prologue-roots .prologue-plane { width: max(100vw, 256.6svh); height: max(100svh, 38.97vw); }
+.prologue-roots { opacity: 0; pointer-events: none; }
+.prologue[data-scene='chamber'] .prologue-roots,
+.prologue[data-scene='discovery'] .prologue-roots,
+.prologue[data-scene='surge'] .prologue-roots { opacity: 1; pointer-events: auto; }
+.prologue[data-scene='chamber'] .prologue-forest,
+.prologue[data-scene='discovery'] .prologue-forest,
+.prologue[data-scene='surge'] .prologue-forest { opacity: 0; pointer-events: none; transition-delay: .55s; }
+.prologue-backdrop, .prologue-emissive, .prologue-foreground {
+  position: absolute; inset: 0; background-image: inherit; background-size: 100% 100%; background-repeat: no-repeat;
+}
+.prologue-backdrop { filter: brightness(.54) saturate(.67); }
+.prologue-roots .prologue-backdrop { filter: brightness(.48) saturate(.72); }
+.prologue-foreground {
+  z-index: 2; pointer-events: none; filter: brightness(.36) saturate(.65);
+  mask-image: linear-gradient(90deg, #000 4%, transparent 26%, transparent 76%, #000 97%);
+  transform: scale(1.03); transition: transform 2.8s cubic-bezier(.2,.65,.25,1), opacity 2s;
+}
+.prologue-roots .prologue-foreground { mask-image: radial-gradient(ellipse 48% 85% at 57% 65%, transparent 52%, #000 90%); }
+.prologue[data-scene='guided'] .prologue-forest .prologue-camera { transform: scale(1.1) translateY(-1%); }
+.prologue[data-scene='guided'] .prologue-forest .prologue-foreground { transform: scale(1.18) translateX(-1%); }
+.prologue[data-scene='chamber'] .prologue-forest .prologue-camera { transform: scale(1.32) translateY(-2%); }
+.prologue[data-scene='chamber'] .prologue-roots .prologue-camera { animation: prologue-arch 3.1s cubic-bezier(.2,.65,.25,1) both; }
+.prologue[data-scene='chamber'] .prologue-roots .prologue-foreground { animation: prologue-arch-near 3.1s ease-out both; }
+.prologue[data-scene='discovery'] .prologue-roots .prologue-camera { transform: translateX(var(--center-shift)) scale(1.55); transform-origin: 61% 51%; transition-duration: 2.2s; }
+.prologue[data-scene='discovery'] .prologue-roots .prologue-foreground { transform: scale(1.32); }
+.prologue[data-phase='idle']:not([data-scene='black']) .prologue-backdrop { animation: prologue-breath 12s ease-in-out infinite alternate; }
+.prologue-emissive {
+  filter: brightness(1.28) saturate(.95); opacity: .2;
+  mask-image: radial-gradient(ellipse 13% 26% at var(--target-x) var(--target-y), #000, transparent);
+  transition: opacity .7s; pointer-events: none;
+}
+.prologue[data-near='true'] .prologue-emissive { opacity: .85; }
+.prologue[data-near='true'] .prologue-fog { animation-play-state: paused; opacity: .1; }
+.prologue[data-near='true'] .prologue-backdrop { animation-play-state: paused; }
+.prologue-fog { position: absolute; pointer-events: none; left: -5%; right: -5%; opacity: .22; transition: opacity 1s;
+  background: radial-gradient(ellipse at 22% 60%, #91abb338, transparent 50%), radial-gradient(ellipse at 77% 45%, #a2b9ba30, transparent 48%);
+  animation: prologue-fog 18s ease-in-out infinite alternate;
+}
+.prologue-fog-far { bottom: 15%; height: 28%; animation-direction: alternate-reverse; }
+.prologue-fog-near { z-index: 3; bottom: -7%; height: 39%; animation-delay: -8s; }
+.prologue-roots .prologue-fog { opacity: .13; }
+.prologue-destination, .prologue-hotspot { position: absolute; left: var(--target-x); top: var(--target-y); transform: translate(-50%, -50%); }
+.prologue-destination { display: grid; place-items: center; width: 70px; height: 100px; pointer-events: none; z-index: 4; }
+.prologue-mark { color: #ffe1a0; text-shadow: 0 0 10px #ffc35f; font: 23px/.7 Georgia, serif; text-align: center; }
+.prologue-old-guidance { position: absolute; left: 70%; top: 55%; color: #ffb355; opacity: 0; transition: opacity 1.9s; text-shadow: 0 0 18px #ff941f; }
+.prologue[data-scene='guided'] .prologue-old-guidance { animation: prologue-guidance-leave 1.9s both; }
+.prologue-aura { position: absolute; inset: -24px; background: radial-gradient(ellipse, #e7963740, transparent 66%); opacity: .6; transition: transform .8s, opacity .8s; }
+.prologue[data-near='true'] .prologue-aura { opacity: 1; transform: scale(1.5); }
+.prologue-ember { position: relative; width: 11px; height: 23px; border-radius: 65% 35% 55% 45%;
+  background: linear-gradient(0deg, #fff4ca, #ffc66f 65%, #da752650); box-shadow: 0 0 11px #fabb68, 0 0 32px #ec842baa;
+  animation: prologue-flame 2.8s ease-in-out infinite alternate;
+}
+.prologue-ember i { position: absolute; width: 4px; height: 12px; bottom: 2px; left: 4px; background: #fffce4; border-radius: 70% 40% 60% 50%; }
+.prologue-ember b { position: absolute; inset: -16px; background: radial-gradient(ellipse, #ffb15e55, transparent 70%); }
+.prologue-mote { position: absolute; left: 50%; top: 50%; width: 2px; height: 2px; border-radius: 50%; background: #ffd28c;
+  opacity: 0; box-shadow: 0 0 4px #eaa052; animation: prologue-mote 5s ease-in-out infinite; animation-delay: calc(var(--i)*-.51s);
+}
+.prologue[data-near='true'] .prologue-mote { animation-name: prologue-inward; animation-duration: 2.6s; }
+.prologue-hotspot { z-index: 5; width: 76px; height: 90px; background: transparent; border: 0; border-radius: 50%; cursor: pointer; color: #f7e3c3; -webkit-tap-highlight-color: transparent; }
+.prologue-hotspot:focus-visible { outline: 2px solid #ffd591; outline-offset: 2px; box-shadow: 0 0 20px #d88d3933; }
+.prologue-hotspot[aria-disabled='true'] { cursor: default; }
+.prologue-hotspot span { position: absolute; top: 100%; left: 50%; transform: translateX(-50%); font-size: 11px; letter-spacing: .09em; white-space: nowrap; opacity: 0; transition: opacity .5s; text-shadow: 0 2px 6px #000, 0 0 12px #000; }
+.prologue[data-near='true'] .prologue-hotspot span, .prologue-hotspot:focus-visible span { opacity: 1; }
+.prologue[data-phase='enter'] .prologue-hotspot span { opacity: 0; }
+.prologue-vignette { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(ellipse at 50% 48%, transparent 30%, #01040444 70%, #000a 100%), linear-gradient(0deg,#0009,transparent 25%,transparent 85%,#0006); z-index: 6; }
+.prologue-black { position: absolute; inset: 0; background: #000; pointer-events: none; z-index: 7; }
+.prologue-whisper { position: absolute; bottom: 10%; width: 100%; text-align: center; font-size: 10px; letter-spacing: .22em; color: #e0ded0; text-shadow: 0 2px 8px #000; pointer-events: none; z-index: 8; }
+.prologue-tools { position: absolute; bottom: max(12px,env(safe-area-inset-bottom)); right: 24px; display: flex; gap: 20px; z-index: 10; }
+.prologue-tools button { min-height: 44px; background: transparent; border: 0; padding: 8px 0; color: #b9b9ad; font-size: 10px; letter-spacing: .04em; text-shadow: 0 1px 5px #000; cursor: pointer; }
+.prologue-tools button:focus-visible, .prologue-loading button:focus-visible { outline: 2px solid #ffd38a; outline-offset: 2px; }
+.prologue-tools button:disabled { cursor: default; }
+.prologue-end { position: absolute; left: 0; right: 0; top: 48%; text-align: center; font-size: 12px; letter-spacing: .12em; z-index: 8; }
+.prologue-loading { position: absolute; inset: 0; background: #020404; display: flex; align-items: center; justify-content: center; gap: 16px; flex-wrap: wrap; font-size: 13px; z-index: 9; }
+.prologue-loading-inline { inset: auto 0 10%; padding: 12px; background: #020404b0; }
+.prologue-loading button { background: none; border: 0; color: #ffe0a0; min-height: 44px; padding: 8px; text-decoration: underline; cursor: pointer; }
+.prologue-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; }
+.prologue[data-scene='surge'] .prologue-roots .prologue-camera { animation: prologue-rush 1.45s cubic-bezier(.55,0,.65,.6) both; transform-origin: 61% 51%; }
+.prologue[data-scene='surge'] .prologue-ember { animation: prologue-claim 1.45s cubic-bezier(.65,0,.8,.6) both; }
+.prologue[data-scene='surge'] .prologue-emissive { animation: prologue-surge 1.45s both; }
+.prologue[data-scene='surge'] .prologue-hotspot { visibility: hidden; }
+.prologue[data-scene='black'] .prologue-layer { visibility: hidden; }
+@keyframes prologue-arch { from { transform: scale(1.015) translateY(1%); } to { transform: scale(1.1); } }
+@keyframes prologue-arch-near { from { transform: scale(1.02); } to { transform: scale(1.24); } }
+@keyframes prologue-breath { to { transform: scale(1.006) translateY(.12%); } }
+@keyframes prologue-guidance-leave { from { opacity: .9; } to { opacity: .03; } }
+@keyframes prologue-fog { to { transform: translate(4%,10%); } }
+@keyframes prologue-flame { to { transform: rotate(6deg) scale(.94,1.09); } }
+@keyframes prologue-mote { 0% { opacity: 0; transform: translate(var(--dx),var(--dy)); } 45% { opacity: .5; } 100% { opacity: 0; transform: translate(var(--dx),-40px); } }
+@keyframes prologue-inward { 0% { opacity: 0; transform: translate(var(--dx),var(--dy)); } 45% { opacity: .7; } 100% { opacity: 0; transform: translate(0,0); } }
+@keyframes prologue-rush { from { transform: translateX(var(--center-shift)) scale(1.55); } to { transform: translateX(var(--center-shift)) scale(1.9); } }
+@keyframes prologue-claim { 0% { transform: scale(1); } 20% { transform: scale(1.45); } 40% { transform: scale(1.05); } 100% { transform: scale(12); opacity:0; } }
+.prologue[data-scene='surge']:after { content:''; position:absolute; inset:0; z-index:7; pointer-events:none; background:radial-gradient(ellipse,#ffe3ac,#9e5323); animation:prologue-bloom 1.45s both; }
+@keyframes prologue-bloom { 0%,55% { opacity:0; } 85% { opacity:1; } 100% { opacity:0; } }
+@keyframes prologue-surge { 0% { opacity: .3; } 25% { opacity: 1; } 60% { opacity: .45; } 100% { opacity: .15; } }
+.prologue[data-paused='true'] * { animation-play-state: paused!important; }
+.prologue-layer[aria-hidden='true'] * { animation-play-state: paused!important; }
+.prologue[data-reduced='true'] * { animation: none!important; transition: opacity .12s!important; }
+.prologue[data-reduced='true'] .prologue-camera, .prologue[data-reduced='true'] .prologue-foreground { transform: none!important; }
+@media(prefers-reduced-motion:reduce) { .prologue * { animation: none!important; transition: opacity .12s!important; } .prologue .prologue-camera,.prologue .prologue-foreground { transform: none!important; } }
+@media(max-aspect-ratio:1/1) {
+  .prologue { --center-shift: 0px; }
+  .prologue[data-scene='forest'] .prologue-forest .prologue-plane { transform: translate(-70%,-50%); }
+  .prologue-roots .prologue-plane { transform: translate(-57%,-50%); }
+  .prologue[data-scene='discovery'] .prologue-roots .prologue-camera,
+  .prologue[data-scene='surge'] .prologue-roots .prologue-camera { transform-origin: 50% 51%; }
+  .prologue-hotspot span { opacity: .8; font-size: 11px; }
+  .prologue-whisper { bottom: 13%; }
+  .prologue-tools { right: 18px; gap: 16px; }
+  .prologue-foreground { opacity: .7; }
+}
+
+.prologue[data-scene='surge'] .prologue-mote,.prologue[data-scene='surge'] .prologue-fog{animation:none;opacity:0}
+.prologue[data-scene='surge'] .prologue-foreground{transform:scale(1.32)}

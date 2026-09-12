@@ -1,0 +1,50 @@
+[
+  {
+    "width": 1440,
+    "height": 900,
+    "flow": "pass",
+    "touch": false,
+    "axe": "pass",
+    "errors": [],
+    "writes": []
+  },
+  {
+    "width": 390,
+    "height": 844,
+    "flow": "pass",
+    "touch": true,
+    "axe": "pass",
+    "errors": [],
+    "writes": []
+  },
+  {
+    "width": 320,
+    "height": 700,
+    "flow": "pass",
+    "touch": true,
+    "axe": "pass",
+    "errors": [],
+    "writes": []
+  },
+  {
+    "width": 375,
+    "height": 812,
+    "flow": "pass",
+    "touch": true,
+    "axe": "pass",
+    "errors": [],
+    "writes": []
+  },
+  {
+    "width": 768,
+    "height": 1024,
+    "flow": "pass",
+    "touch": false,
+    "axe": "pass",
+    "errors": [],
+    "writes": []
+  },
+  {
+    "keyboardReducedMotionReplaySkip": "pass"
+  }
+]

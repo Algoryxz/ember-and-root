@@ -94,6 +94,7 @@ if (!SUPABASE_SERVICE_ROLE_KEY) {
 }
 
 const results = [];
+const reviewUserIds = [];
 
 async function adminApi(path, options = {}) {
   return api(path, options, SUPABASE_SERVICE_ROLE_KEY);
@@ -143,6 +144,7 @@ async function signUp(email, password) {
   if (!res.ok) {
     throw new Error(`SignUp failed for ${email}: ${JSON.stringify(res.data)}`);
   }
+  reviewUserIds.push(res.data.user.id);
   return {
     userId: res.data.user.id,
     token: res.data.access_token
@@ -380,7 +382,7 @@ async function main() {
       body: JSON.stringify({
         p_request_id: requestId1,
         p_quest_id: questA1Id,
-        p_expected_occurrence: '2026-09-13' // DIFFERENT payload!
+        p_expected_occurrence: occurrenceToday === '2000-01-01' ? '2000-01-02' : '2000-01-01' // Always a different payload.
       })
     }, userA.token);
     assert(!resConflict.ok, 'Reusing requestId with different payload rejected with error');
@@ -1611,5 +1613,11 @@ async function main() {
 
 main().catch(err => {
   console.error('\nHARNESS ABORTED WITH ERROR:', err);
-  process.exit(1);
+  process.exitCode = 1;
+}).finally(async () => {
+  for (const id of reviewUserIds) {
+    // Preserve immutable progression audit history while retiring the test identity.
+    const cleanup = await adminApi(`/auth/v1/admin/users/${id}`, { method: 'DELETE', body: JSON.stringify({ should_soft_delete: true }) });
+    if (!cleanup.ok) { console.error('Temporary validation user cleanup failed:', id); process.exitCode = 1; }
+  }
 });

@@ -1,0 +1,23 @@
+[
+  {
+    "width": 1440,
+    "height": 900,
+    "flow": "pass",
+    "touch": false,
+    "axe": "pass",
+    "errors": [],
+    "writes": []
+  },
+  {
+    "width": 390,
+    "height": 844,
+    "flow": "pass",
+    "touch": true,
+    "axe": "pass",
+    "errors": [],
+    "writes": []
+  },
+  {
+    "keyboardReducedMotionReplaySkip": "pass"
+  }
+]

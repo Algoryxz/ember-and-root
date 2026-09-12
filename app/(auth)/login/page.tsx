@@ -2,6 +2,7 @@
 
 import React, { useTransition, useState, Suspense } from 'react';
 import Link from 'next/link';
+import '@/components/public/opening/entry.css';
 import { useSearchParams } from 'next/navigation';
 import { loginAction, type AuthActionResult } from '@/app/actions/auth';
 
@@ -28,17 +29,17 @@ function LoginForm() {
   }
 
   return (
-    <div className="w-full max-w-md p-6 sm:p-10 bg-[#1D231D]/80 rounded-[10px] border border-[#B9BEAC]/20 backdrop-blur-sm">
+    <div className="path-inscription">
       {/* Editorial Folio Header */}
       <div className="text-center mb-8">
         <span className="inline-block text-[11px] uppercase tracking-[0.16em] text-[#E98A4B] font-semibold mb-2">
-          Folio Access · Field Journal
+          THE PATH CONTINUES.
         </span>
         <h1 className="text-3xl sm:text-4xl font-normal font-['Fraunces'] text-[#F0E7D3] tracking-tight mb-2">
-          Enter the Hearth
+          SIGN IN
         </h1>
         <p className="text-sm text-[#B9BEAC] leading-relaxed">
-          Open today’s folio page and tend your living roots.
+          Your Ember is waiting.
         </p>
         <div className="w-12 h-px bg-[#E98A4B]/40 mx-auto mt-4" aria-hidden="true" />
       </div>
@@ -109,7 +110,7 @@ function LoginForm() {
           disabled={isPending}
           className="w-full h-12 min-h-[48px] mt-3 px-4 rounded-[6px] bg-[#E98A4B] hover:brightness-105 text-[#141713] font-semibold text-sm tracking-wide uppercase transition-all duration-100 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C4A96A] focus-visible:ring-offset-2 focus-visible:ring-offset-[#1D231D] disabled:opacity-60 disabled:cursor-not-allowed active:scale-[0.98]"
         >
-          {isPending ? 'Entering the Hearth…' : 'Open Field Journal'}
+          {isPending ? 'Entering the Hearth…' : 'Return to the Hearth'}
         </button>
       </form>
 
@@ -128,10 +129,10 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-[#141713] text-[#F0E7D3]">
+    <main className="path-entry">
       <Suspense fallback={<div className="text-sm text-[#B9BEAC]">Loading Hearth gateway…</div>}>
         <LoginForm />
       </Suspense>
-    </div>
+    </main>
   );
 }

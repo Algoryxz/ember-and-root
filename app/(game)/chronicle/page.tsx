@@ -52,14 +52,14 @@ export default async function ChroniclePage({ searchParams }: ChroniclePageProps
   const hasMore = completions.length >= limit;
 
   return (
-    <div className="space-y-8">
+    <div className="world-chronicle space-y-8">
       {/* Title */}
       <div>
         <h1 className="font-['Fraunces'] text-3xl font-normal text-[#F0E7D3] mb-1">
           Chronicle
         </h1>
         <p className="text-sm text-[#B9BEAC]">
-          A permanent record of your journey, streaks, and achievements.
+          Your Root remembers. Every step belongs here.
         </p>
       </div>
 

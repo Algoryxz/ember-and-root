@@ -112,7 +112,7 @@ const navItems: NavItem[] = [
   { name: 'Root', href: '/root', icon: RootIcon },
   { name: 'Satchel', href: '/satchel', icon: SatchelIcon },
   { name: 'Chronicle', href: '/chronicle', icon: ChronicleIcon },
-  { name: 'Settings', href: '/settings', icon: SettingsIcon },
+  { name: 'You', href: '/settings', icon: SettingsIcon },
 ];
 
 export function GameNav() {

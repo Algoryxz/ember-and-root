@@ -1,0 +1,53 @@
+[
+  {
+    "width": 1440,
+    "height": 900,
+    "hotspots": "pass",
+    "overflow": "none",
+    "axe": "pass",
+    "errors": [],
+    "writes": []
+  },
+  {
+    "width": 768,
+    "height": 1024,
+    "hotspots": "pass",
+    "overflow": "none",
+    "axe": "pass",
+    "errors": [],
+    "writes": []
+  },
+  {
+    "width": 390,
+    "height": 844,
+    "hotspots": "pass",
+    "overflow": "none",
+    "axe": "pass",
+    "errors": [],
+    "writes": []
+  },
+  {
+    "width": 375,
+    "height": 812,
+    "hotspots": "pass",
+    "overflow": "none",
+    "axe": "pass",
+    "errors": [],
+    "writes": []
+  },
+  {
+    "width": 320,
+    "height": 700,
+    "hotspots": "pass",
+    "overflow": "none",
+    "axe": "pass",
+    "errors": [],
+    "writes": []
+  },
+  {
+    "reducedMotion": "pass"
+  },
+  {
+    "assetRecovery": "pass"
+  }
+]

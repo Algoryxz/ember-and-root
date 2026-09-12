@@ -1,0 +1,68 @@
+[
+  {
+    "width": 1440,
+    "route": "hearth",
+    "authenticated": true,
+    "overflow": false
+  },
+  {
+    "width": 1440,
+    "route": "root",
+    "authenticated": true,
+    "overflow": false
+  },
+  {
+    "width": 1440,
+    "route": "satchel",
+    "authenticated": true,
+    "overflow": false
+  },
+  {
+    "width": 1440,
+    "route": "chronicle",
+    "authenticated": true,
+    "overflow": false
+  },
+  {
+    "width": 1440,
+    "route": "settings",
+    "authenticated": true,
+    "overflow": false
+  },
+  {
+    "width": 390,
+    "route": "hearth",
+    "authenticated": true,
+    "overflow": false
+  },
+  {
+    "width": 390,
+    "route": "root",
+    "authenticated": true,
+    "overflow": false
+  },
+  {
+    "width": 390,
+    "route": "satchel",
+    "authenticated": true,
+    "overflow": false
+  },
+  {
+    "width": 390,
+    "route": "chronicle",
+    "authenticated": true,
+    "overflow": false
+  },
+  {
+    "width": 390,
+    "route": "settings",
+    "authenticated": true,
+    "overflow": false
+  },
+  {
+    "runtimeErrors": []
+  },
+  {
+    "temporaryUserRemoved": true
+  }
+]

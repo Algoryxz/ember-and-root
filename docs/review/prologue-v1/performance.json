@@ -1,0 +1,108 @@
+[
+  {
+    "name": "desktop",
+    "width": 1440,
+    "height": 900,
+    "dpr": 1,
+    "cpu": 1,
+    "measurement": "requestAnimationFrame cadence, no recording, local production Chrome; not GPU-presented FPS or physical phone certification",
+    "stages": {
+      "forest": {
+        "sampledFrames": 110,
+        "rafFps": 60,
+        "p95FrameMs": 16.8,
+        "framesOver33ms": 0
+      },
+      "guided": {
+        "sampledFrames": 255,
+        "rafFps": 59.8,
+        "p95FrameMs": 16.9,
+        "framesOver33ms": 0
+      },
+      "chamber": {
+        "sampledFrames": 311,
+        "rafFps": 57.8,
+        "p95FrameMs": 16.9,
+        "framesOver33ms": 3
+      },
+      "discovery": {
+        "sampledFrames": 256,
+        "rafFps": 60,
+        "p95FrameMs": 16.9,
+        "framesOver33ms": 0
+      },
+      "surge": {
+        "sampledFrames": 78,
+        "rafFps": 52.6,
+        "p95FrameMs": 16.9,
+        "framesOver33ms": 2
+      }
+    },
+    "errors": [],
+    "textures": [
+      {
+        "url": "/opening/forest.webp",
+        "transferBytes": 160706,
+        "encodedBytes": 160406
+      },
+      {
+        "url": "/opening/root-chamber.webp",
+        "transferBytes": 204188,
+        "encodedBytes": 203888
+      }
+    ]
+  },
+  {
+    "name": "mobile-emulation",
+    "width": 390,
+    "height": 844,
+    "dpr": 2,
+    "cpu": 4,
+    "measurement": "requestAnimationFrame cadence, no recording, local production Chrome; not GPU-presented FPS or physical phone certification",
+    "stages": {
+      "forest": {
+        "sampledFrames": 113,
+        "rafFps": 60,
+        "p95FrameMs": 16.8,
+        "framesOver33ms": 0
+      },
+      "guided": {
+        "sampledFrames": 233,
+        "rafFps": 55,
+        "p95FrameMs": 17,
+        "framesOver33ms": 6
+      },
+      "chamber": {
+        "sampledFrames": 297,
+        "rafFps": 57.7,
+        "p95FrameMs": 16.9,
+        "framesOver33ms": 2
+      },
+      "discovery": {
+        "sampledFrames": 265,
+        "rafFps": 58.5,
+        "p95FrameMs": 16.8,
+        "framesOver33ms": 1
+      },
+      "surge": {
+        "sampledFrames": 84,
+        "rafFps": 54.2,
+        "p95FrameMs": 16.9,
+        "framesOver33ms": 2
+      }
+    },
+    "errors": [],
+    "textures": [
+      {
+        "url": "/opening/forest.webp",
+        "transferBytes": 160706,
+        "encodedBytes": 160406
+      },
+      {
+        "url": "/opening/root-chamber.webp",
+        "transferBytes": 204188,
+        "encodedBytes": 203888
+      }
+    ]
+  }
+]
