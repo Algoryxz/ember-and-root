@@ -6,7 +6,7 @@ import './QuestJournal.css';
 
 export interface QuestJournalProps {
   quests: Quest[];
-  completedQuestIds: Set<string>;
+  completedQuestIds?: Set<string>;
   pendingQuestId: string | null;
   errorQuestMap: Record<string, string>;
   onCompleteQuest: (questId: string) => void;
@@ -69,7 +69,11 @@ export const QuestJournal: React.FC<QuestJournalProps> = ({
             <QuestRow
               key={quest.id}
               quest={quest}
-              isCompleted={completedQuestIds.has(quest.id)}
+              isCompleted={
+                ('completedForCurrentOccurrence' in quest
+                  ? Boolean((quest as any).completedForCurrentOccurrence)
+                  : false) || Boolean(completedQuestIds?.has(quest.id))
+              }
               isPending={pendingQuestId === quest.id}
               errorMessage={errorQuestMap[quest.id] || null}
               onComplete={onCompleteQuest}

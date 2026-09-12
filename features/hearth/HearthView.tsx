@@ -1,12 +1,18 @@
-import React, { useState } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import {
   INITIAL_FIXTURE_SNAPSHOT,
-  simulateServerCompletion,
   type AttributeId,
+  type Effort,
+  type Cadence,
   type GameSnapshot,
   type MutationEvent,
   type Quest,
+  type HearthQuest,
 } from './contracts';
+import {
+  completeQuestAction,
+  createQuestAction,
+} from './hearthAdapter';
 import { EmberDisplay } from './EmberDisplay';
 import { HearthRootPreview } from './HearthRootPreview';
 import { QuestJournal } from './QuestJournal';
@@ -16,7 +22,11 @@ import './HearthView.css';
 
 export interface HearthViewProps {
   initialSnapshot?: GameSnapshot;
+  supabaseClient?: any;
+  showNav?: boolean;
+  showDevPresets?: boolean;
   className?: string;
+  onSnapshotChange?: (snapshot: GameSnapshot) => void;
 }
 
 /**
@@ -29,14 +39,25 @@ export interface HearthViewProps {
  */
 export const HearthView: React.FC<HearthViewProps> = ({
   initialSnapshot = INITIAL_FIXTURE_SNAPSHOT,
+  supabaseClient,
+  showNav = false,
+  showDevPresets = false,
   className = '',
+  onSnapshotChange,
 }) => {
-  // Authoritative snapshot state (replaces local copy after confirmed server response)
+  // Authoritative snapshot state (updated from confirmed server response)
   const [snapshot, setSnapshot] = useState<GameSnapshot>(initialSnapshot);
-  const [quests, setQuests] = useState<Quest[]>(initialSnapshot.quests || []);
+
+  useEffect(() => {
+    if (initialSnapshot) {
+      setSnapshot(initialSnapshot);
+    }
+  }, [initialSnapshot]);
+
+  // Derive quests authoritatively from snapshot
+  const quests: Quest[] = snapshot.quests || [];
 
   // In-flight mutation & error tracking
-  const [completedQuestIds, setCompletedQuestIds] = useState<Set<string>>(new Set());
   const [pendingQuestId, setPendingQuestId] = useState<string | null>(null);
   const [errorQuestMap, setErrorQuestMap] = useState<Record<string, string>>({});
 
@@ -50,19 +71,22 @@ export const HearthView: React.FC<HearthViewProps> = ({
   // Dialog state
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState<boolean>(false);
 
-  // Test toggle to simulate failure and verify the retry flow
-  const [simulateFailure, setSimulateFailure] = useState<boolean>(false);
-
   // --------------------------------------------------------------------------
   // Core Quest Completion Flow (Strictly follows docs/APP_FLOW.md § 8 & 9)
+  // Authoritative server-driven mutation via complete_quest RPC
   // --------------------------------------------------------------------------
   const handleCompleteQuest = async (questId: string) => {
-    if (pendingQuestId || completedQuestIds.has(questId)) return;
+    if (pendingQuestId) return;
 
     const quest = quests.find((q) => q.id === questId);
     if (!quest) return;
 
-    // 1. Immediately enter pending state & clear error
+    // Check if already completed for this occurrence
+    if ('completedForCurrentOccurrence' in quest && (quest as HearthQuest).completedForCurrentOccurrence) {
+      return;
+    }
+
+    // 1. Immediately enter pending state & clear previous error
     setPendingQuestId(questId);
     setErrorQuestMap((prev) => {
       const next = { ...prev };
@@ -71,12 +95,19 @@ export const HearthView: React.FC<HearthViewProps> = ({
     });
 
     try {
-      // 2. Call authoritative server simulation
-      const result = await simulateServerCompletion(snapshot, questId, simulateFailure);
+      // 2. Call authoritative complete_quest RPC
+      const expectedOccurrence =
+        'currentOccurrenceKey' in quest ? (quest as HearthQuest).currentOccurrenceKey : null;
 
-      // 3. Apply confirmed authoritative server result
-      setCompletedQuestIds((prev) => new Set([...prev, questId]));
+      const result = await completeQuestAction(
+        questId,
+        supabaseClient,
+        expectedOccurrence
+      );
+
+      // 3. Apply confirmed authoritative server result (updates snapshot & quests)
       setSnapshot(result.snapshot);
+      onSnapshotChange?.(result.snapshot);
 
       // 4. Trigger reward sequence choreography
       setActiveQuestTitle(quest.title);
@@ -105,20 +136,23 @@ export const HearthView: React.FC<HearthViewProps> = ({
     handleCompleteQuest(questId);
   };
 
-  const handleCreateQuest = (
-    newQuestData: Omit<Quest, 'id' | 'userId' | 'version' | 'deletedAt' | 'createdAt' | 'updatedAt' | 'trialId'>
-  ) => {
-    const newQuest: Quest = {
-      ...newQuestData,
-      id: `q-local-${Date.now()}`,
-      userId: snapshot.userId,
-      version: 1,
-      deletedAt: null,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      trialId: null,
-    };
-    setQuests((prev) => [newQuest, ...prev]);
+  const handleCreateQuest = async (newQuestData: {
+    title: string;
+    attribute: AttributeId;
+    effort: Effort;
+    cadence: Cadence;
+  }) => {
+    try {
+      const result = await createQuestAction(newQuestData, supabaseClient);
+      setSnapshot(result.snapshot);
+      onSnapshotChange?.(result.snapshot);
+      setIsCreateDialogOpen(false);
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error ? err.message : 'Could not create quest. Try again.';
+      console.error('Create quest error:', message);
+      alert(message);
+    }
   };
 
   return (
@@ -128,32 +162,34 @@ export const HearthView: React.FC<HearthViewProps> = ({
         Skip to Quest Journal
       </a>
 
-      {/* Top Navigation Strip */}
-      <header className="hearth-nav-strip">
-        <div className="hearth-brand">
-          <div className="hearth-brand-mark" aria-hidden="true" />
-          <h1 className="hearth-brand-title">Ember &amp; Root</h1>
-        </div>
+      {/* Top Navigation Strip (Optional for standalone preview) */}
+      {showNav && (
+        <header className="hearth-nav-strip">
+          <div className="hearth-brand">
+            <div className="hearth-brand-mark" aria-hidden="true" />
+            <h1 className="hearth-brand-title">Ember &amp; Root</h1>
+          </div>
 
-        <nav aria-label="Primary destinations">
-          <ul className="hearth-nav-links">
-            <li className="hearth-nav-item is-active">
-              <a href="#hearth" aria-current="page">
-                Hearth
-              </a>
-            </li>
-            <li className="hearth-nav-item">
-              <a href="#root">Root</a>
-            </li>
-            <li className="hearth-nav-item">
-              <a href="#satchel">Satchel</a>
-            </li>
-            <li className="hearth-nav-item">
-              <a href="#chronicle">Chronicle</a>
-            </li>
-          </ul>
-        </nav>
-      </header>
+          <nav aria-label="Primary destinations">
+            <ul className="hearth-nav-links">
+              <li className="hearth-nav-item is-active">
+                <a href="#hearth" aria-current="page">
+                  Hearth
+                </a>
+              </li>
+              <li className="hearth-nav-item">
+                <a href="#root">Root</a>
+              </li>
+              <li className="hearth-nav-item">
+                <a href="#satchel">Satchel</a>
+              </li>
+              <li className="hearth-nav-item">
+                <a href="#chronicle">Chronicle</a>
+              </li>
+            </ul>
+          </nav>
+        </header>
+      )}
 
       {/* Status Strip: Level · Sparks · Streak */}
       <div className="hearth-status-strip" role="region" aria-label="Character Status">
@@ -173,20 +209,14 @@ export const HearthView: React.FC<HearthViewProps> = ({
             🔥
           </span>
           <span className="status-label">Streak:</span>
-          <span className="status-value">{snapshot.currentStreak} days</span>
+          <span className="status-value">{snapshot.currentStreak} {snapshot.currentStreak === 1 ? 'day' : 'days'}</span>
         </div>
 
-        {/* Demo inspection toggle for failure verification */}
-        <div className="hearth-demo-controls" style={{ marginLeft: 'auto' }}>
-          <label className="hearth-demo-toggle">
-            <input
-              type="checkbox"
-              checked={simulateFailure}
-              onChange={(e) => setSimulateFailure(e.target.checked)}
-            />
-            <span>Simulate server failure (for retry testing)</span>
-          </label>
-        </div>
+        {showDevPresets && (
+          <div className="hearth-demo-controls" style={{ marginLeft: 'auto' }}>
+            <span className="text-xs text-[#B9BEAC]">Preview Mode</span>
+          </div>
+        )}
       </div>
 
       {/* Main Grid Content */}
@@ -195,7 +225,6 @@ export const HearthView: React.FC<HearthViewProps> = ({
         <div className="hearth-left-column">
           <QuestJournal
             quests={quests}
-            completedQuestIds={completedQuestIds}
             pendingQuestId={pendingQuestId}
             errorQuestMap={errorQuestMap}
             onCompleteQuest={handleCompleteQuest}

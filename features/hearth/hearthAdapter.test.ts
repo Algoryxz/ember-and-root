@@ -1,0 +1,197 @@
+﻿import { describe, it } from 'vitest';
+import assert from 'node:assert/strict';
+import type { GameSnapshot, MutationResult } from '../../game/contracts';
+import {
+  completeQuestAction,
+  createQuestAction,
+  updateQuestAction,
+  softDeleteQuestAction,
+  fetchGameSnapshotAction,
+} from './hearthAdapter';
+import { DEMO_SNAPSHOT } from '../../game/fixtures/snapshot';
+
+describe('Hearth Adapters — Authoritative RPC Dispatch & Contract Verification', () => {
+  it('rejects missing or unconfigured client without silent fallback', async () => {
+    await assert.rejects(
+      async () => {
+        await completeQuestAction('q-1', null);
+      },
+      {
+        message: /An authoritative database client \(Supabase\) is required/,
+      }
+    );
+  });
+
+  it('completeQuestAction dispatches to complete_quest RPC with expected parameters', async () => {
+    let capturedFn: string | null = null;
+    let capturedParams: any = null;
+
+    const mockResult: MutationResult = {
+      revision: 13,
+      event: {
+        id: 'evt-1',
+        kind: 'quest_completed',
+        xpAwarded: 20,
+        sparksAwarded: 4,
+      },
+      snapshot: {
+        ...DEMO_SNAPSHOT,
+        revision: 13,
+        totalXp: 110,
+      },
+    };
+
+    const mockClient = {
+      rpc: async (fn: string, params: any) => {
+        capturedFn = fn;
+        capturedParams = params;
+        return { data: mockResult, error: null };
+      },
+    };
+
+    const res = await completeQuestAction('q-1', mockClient, '2026-09-12', 'req-fixed-1');
+
+    assert.equal(capturedFn, 'complete_quest');
+    assert.equal(capturedParams.p_quest_id, 'q-1');
+    assert.equal(capturedParams.p_expected_occurrence, '2026-09-12');
+    assert.equal(capturedParams.p_request_id, 'req-fixed-1');
+    assert.equal(res.revision, 13);
+  });
+
+  it('completeQuestAction surfaces database errors without pretending success', async () => {
+    const mockClient = {
+      rpc: async () => ({
+        data: null,
+        error: { message: 'quest already completed for this occurrence', code: 'P0008' },
+      }),
+    };
+
+    await assert.rejects(
+      async () => {
+        await completeQuestAction('q-1', mockClient);
+      },
+      {
+        message: /complete_quest failed: quest already completed for this occurrence/,
+      }
+    );
+  });
+
+  it('createQuestAction dispatches to create_quest RPC with canonical fields', async () => {
+    let capturedFn: string | null = null;
+    let capturedParams: any = null;
+
+    const mockClient = {
+      rpc: async (fn: string, params: any) => {
+        capturedFn = fn;
+        capturedParams = params;
+        return {
+          data: {
+            revision: 14,
+            event: { id: 'evt-2', kind: 'quest_created', questId: 'q-new-1' },
+            snapshot: DEMO_SNAPSHOT,
+          },
+          error: null,
+        };
+      },
+    };
+
+    const res = await createQuestAction(
+      {
+        title: 'Morning stretch',
+        attribute: 'body',
+        effort: 'quick',
+        cadence: 'daily',
+      },
+      mockClient,
+      'req-create-1'
+    );
+
+    assert.equal(capturedFn, 'create_quest');
+    assert.equal(capturedParams.p_title, 'Morning stretch');
+    assert.equal(capturedParams.p_attribute, 'body');
+    assert.equal(capturedParams.p_effort, 'quick');
+    assert.equal(capturedParams.p_cadence, 'daily');
+    assert.equal(res.event.kind, 'quest_created');
+  });
+
+  it('updateQuestAction dispatches to update_quest RPC with expectedVersion', async () => {
+    let capturedFn: string | null = null;
+    let capturedParams: any = null;
+
+    const mockClient = {
+      rpc: async (fn: string, params: any) => {
+        capturedFn = fn;
+        capturedParams = params;
+        return {
+          data: {
+            revision: 15,
+            event: { id: 'evt-3', kind: 'quest_updated', questId: 'q-1', version: 2 },
+            snapshot: DEMO_SNAPSHOT,
+          },
+          error: null,
+        };
+      },
+    };
+
+    const res = await updateQuestAction(
+      {
+        questId: 'q-1',
+        expectedVersion: 1,
+        title: 'Advanced Java recursion practice',
+        attribute: 'mind',
+        effort: 'deep',
+        cadence: 'daily',
+      },
+      mockClient,
+      'req-update-1'
+    );
+
+    assert.equal(capturedFn, 'update_quest');
+    assert.equal(capturedParams.p_quest_id, 'q-1');
+    assert.equal(capturedParams.p_expected_version, 1);
+    assert.equal(capturedParams.p_title, 'Advanced Java recursion practice');
+    assert.equal(res.event.kind, 'quest_updated');
+  });
+
+  it('softDeleteQuestAction dispatches to soft_delete_quest RPC', async () => {
+    let capturedFn: string | null = null;
+    let capturedParams: any = null;
+
+    const mockClient = {
+      rpc: async (fn: string, params: any) => {
+        capturedFn = fn;
+        capturedParams = params;
+        return {
+          data: {
+            revision: 16,
+            event: { id: 'evt-4', kind: 'quest_deleted', questId: 'q-1' },
+            snapshot: DEMO_SNAPSHOT,
+          },
+          error: null,
+        };
+      },
+    };
+
+    const res = await softDeleteQuestAction('q-1', mockClient, 'req-del-1');
+
+    assert.equal(capturedFn, 'soft_delete_quest');
+    assert.equal(capturedParams.p_quest_id, 'q-1');
+    assert.equal(res.event.kind, 'quest_deleted');
+  });
+
+  it('fetchGameSnapshotAction dispatches to get_game_snapshot RPC', async () => {
+    let capturedFn: string | null = null;
+
+    const mockClient = {
+      rpc: async (fn: string) => {
+        capturedFn = fn;
+        return { data: DEMO_SNAPSHOT, error: null };
+      },
+    };
+
+    const res = await fetchGameSnapshotAction(mockClient);
+
+    assert.equal(capturedFn, 'get_game_snapshot');
+    assert.equal(res.userId, 'fixture-user-id');
+  });
+});
