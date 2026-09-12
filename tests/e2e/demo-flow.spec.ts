@@ -205,6 +205,67 @@ test.describe('Ember & Root — Full E2E Browser Demo Flow', () => {
       });
       expect(hasHorizontalScrollbar, `Viewport ${vp.name} (${vp.width}x${vp.height}) must not have horizontal overflow`).toBe(false);
 
+      // Element-level containment: each branch card must be fully contained within branches grid
+      const branchesGrid = page.locator('.root-branches-grid');
+      await expect(branchesGrid).toBeVisible();
+      const gridBox = await branchesGrid.boundingBox();
+      expect(gridBox).not.toBeNull();
+
+      const branchCards = page.locator('.root-branch-card');
+      const cardCount = await branchCards.count();
+      expect(cardCount).toBe(4);
+
+      for (let i = 0; i < cardCount; i++) {
+        const card = branchCards.nth(i);
+        const cardBox = await card.boundingBox();
+        expect(cardBox).not.toBeNull();
+        if (cardBox && gridBox) {
+          expect(
+            cardBox.x + cardBox.width,
+            `Branch card #${i} right (${cardBox.x + cardBox.width}) must be <= grid right (${gridBox.x + gridBox.width}) on ${vp.name}`
+          ).toBeLessThanOrEqual(gridBox.x + gridBox.width + 1);
+        }
+      }
+
+      // Element-level containment: status badge must be fully contained in ember-info
+      const emberInfo = page.locator('.ember-info');
+      const emberBadge = page.locator('.ember-stage-badge');
+      await expect(emberBadge).toBeVisible();
+      const infoBox = await emberInfo.boundingBox();
+      const badgeBox = await emberBadge.boundingBox();
+      if (badgeBox && infoBox) {
+        expect(
+          badgeBox.x + badgeBox.width,
+          `Ember stage badge right (${badgeBox.x + badgeBox.width}) must be <= info container right (${infoBox.x + infoBox.width}) on ${vp.name}`
+        ).toBeLessThanOrEqual(infoBox.x + infoBox.width + 1);
+      }
+
+      // Element-level text safety: text elements must not have scrollWidth > clientWidth (no internal clipping)
+      const textClippingIssues = await page.evaluate(() => {
+        const selectors = [
+          '.ember-title',
+          '.ember-stage-badge',
+          '.root-preview-title',
+          '.root-preview-link-btn',
+          '.branch-name-label',
+          '.branch-xp-value',
+          '.branch-milestone-text',
+        ];
+        const issues: string[] = [];
+        for (const selector of selectors) {
+          const elements = document.querySelectorAll(selector);
+          elements.forEach((el, idx) => {
+            if (el.scrollWidth > el.clientWidth + 1) {
+              issues.push(
+                `${selector}[${idx}] clipped: scrollWidth=${el.scrollWidth} > clientWidth=${el.clientWidth} (text="${el.textContent?.trim()}")`
+              );
+            }
+          });
+        }
+        return issues;
+      });
+      expect(textClippingIssues, `Text elements must not be clipped on ${vp.name} (${vp.width}x${vp.height})`).toEqual([]);
+
       // Verify mobile bottom nav on small viewports
       if (vp.width < 768) {
         const mobileNav = page.locator('nav[aria-label="Mobile Navigation"]');
@@ -233,6 +294,10 @@ test.describe('Ember & Root — Full E2E Browser Demo Flow', () => {
       // Capture Hearth screenshot (viewport capture on mobile to represent true screen frame)
       await page.screenshot({
         path: `screenshots/hearth-${vp.name}-${vp.width}x${vp.height}.png`,
+        fullPage: vp.width >= 768,
+      });
+      await page.screenshot({
+        path: `docs/screenshots/demo-readiness/hearth-${vp.width}x${vp.height}.png`,
         fullPage: vp.width >= 768,
       });
 
@@ -273,6 +338,10 @@ test.describe('Ember & Root — Full E2E Browser Demo Flow', () => {
       // Capture Root screenshot
       await page.screenshot({
         path: `screenshots/root-${vp.name}-${vp.width}x${vp.height}.png`,
+        fullPage: vp.width >= 768,
+      });
+      await page.screenshot({
+        path: `docs/screenshots/demo-readiness/root-${vp.width}x${vp.height}.png`,
         fullPage: vp.width >= 768,
       });
 

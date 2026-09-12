@@ -31,6 +31,9 @@
   margin-bottom: var(--space-8);
   border-bottom: 1px solid rgba(185, 190, 172, 0.12);
   padding-bottom: var(--space-8);
+  flex-wrap: wrap;
+  gap: var(--space-8);
+  min-width: 0;
 }
 
 .root-preview-title {
@@ -38,6 +41,7 @@
   font-size: var(--text-xl);
   color: var(--color-text-primary);
   margin: 0;
+  min-width: 0;
 }
 
 .root-preview-subtitle {
@@ -64,6 +68,8 @@
   align-items: center;
   min-height: var(--min-touch-target);
   transition: color 150ms ease, background-color 150ms ease;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .root-preview-link:hover,
@@ -89,8 +95,9 @@
 /* Branches Grid */
 .root-branches-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--space-12);
+  min-width: 0;
 }
 
 .root-branch-card {
@@ -102,6 +109,8 @@
   border: 1px solid rgba(185, 190, 172, 0.1);
   border-radius: var(--radius-card);
   transition: border-color 200ms ease, background-color 200ms ease;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 .root-branch-card.is-highlighted {
@@ -123,6 +132,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: var(--space-8);
+  min-width: 0;
 }
 
 .branch-name-label {
@@ -130,6 +141,7 @@
   font-size: var(--text-sm);
   font-weight: 600;
   text-transform: capitalize;
+  min-width: 0;
 }
 
 .branch-name-label.branch-mind {
@@ -153,6 +165,8 @@
   font-size: var(--text-sm);
   color: var(--color-text-primary);
   font-weight: 500;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 /* Progress Track */
@@ -190,7 +204,11 @@
 .branch-milestone-text {
   font-size: var(--text-xs);
   color: var(--color-text-secondary);
-  line-height: 1.3;
+  line-height: 1.35;
+  white-space: normal;
+  overflow-wrap: break-word;
+  word-break: normal;
+  min-width: 0;
 }
 
 .branch-milestone-text.is-ready {
@@ -199,7 +217,7 @@
 }
 
 /* Mobile responsive density */
-@media (max-width: 640px) {
+@media (max-width: 600px) {
   .hearth-stage-duo .root-preview-container {
     padding: var(--space-12) var(--space-8);
   }
@@ -214,18 +232,18 @@
   }
 
   .root-motto {
-    margin: 0 0 var(--space-6) 0;
+    margin: 0 0 var(--space-8) 0;
     font-size: 11px;
   }
 
   .root-branches-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 6px;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-8);
   }
 
   .root-branch-card {
-    padding: 6px 8px;
-    gap: 2px;
+    padding: var(--space-8) var(--space-12);
+    gap: var(--space-4);
   }
 
   .branch-name-label {
@@ -237,11 +255,10 @@
   }
 
   .branch-milestone-text {
-    font-size: 10px;
-    line-height: 1.2;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    font-size: 11px;
+    line-height: 1.3;
+    white-space: normal;
+    overflow-wrap: break-word;
   }
 }
 
@@ -254,8 +271,18 @@
     font-size: var(--text-base);
   }
 
+  .root-preview-link-btn,
+  .root-preview-link {
+    font-size: 11px;
+    padding: var(--space-4) var(--space-8);
+  }
+
   .root-branch-card {
-    padding: 4px 6px;
+    padding: 6px var(--space-8);
+  }
+
+  .branch-milestone-text {
+    font-size: 10px;
   }
 }
 

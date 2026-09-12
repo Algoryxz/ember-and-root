@@ -209,18 +209,27 @@
    -------------------------------------------------------------------------- */
 .hearth-stage-duo {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr;
   align-items: stretch;
   background-color: var(--color-surface);
   border: 1px solid rgba(185, 190, 172, 0.16);
   border-radius: var(--radius-panel);
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.35);
-  overflow: hidden;
   position: relative;
+  min-width: 0;
 }
 
-@media (min-width: 861px) {
+.hearth-stage-duo > *:first-child {
+  border-bottom: 1px solid rgba(185, 190, 172, 0.12);
+}
+
+@media (min-width: 960px) {
+  .hearth-stage-duo {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+
   .hearth-stage-duo > *:first-child {
+    border-bottom: none;
     border-right: 1px solid rgba(185, 190, 172, 0.12);
   }
 }
@@ -261,14 +270,6 @@
 }
 
 @media (max-width: 860px) {
-  .hearth-stage-duo {
-    grid-template-columns: 1fr;
-  }
-
-  .hearth-stage-duo > *:first-child {
-    border-bottom: 1px solid rgba(185, 190, 172, 0.12);
-  }
-
   .hearth-header-inner {
     flex-direction: column;
     align-items: flex-start;
