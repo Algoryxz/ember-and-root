@@ -11,8 +11,23 @@ export async function middleware(request: NextRequest) {
 
   const { url, anonKey, isConfigured } = getSupabaseEnv();
 
-  // If Supabase is not configured (e.g., in a mock local environment), allow public navigation safely
+  const pathname = request.nextUrl.pathname;
+
+  const isAuthRoute = pathname.startsWith('/login') || pathname.startsWith('/signup');
+  const isProtectedRoute =
+    pathname.startsWith('/hearth') ||
+    pathname.startsWith('/root') ||
+    pathname.startsWith('/satchel') ||
+    pathname.startsWith('/chronicle') ||
+    pathname.startsWith('/settings') ||
+    pathname.startsWith('/onboard');
+
+  // If Supabase is not configured (e.g., in local dev/preview before env setup):
+  // Never permit unauthenticated bypass of protected routes in production!
   if (!isConfigured) {
+    if (process.env.NODE_ENV === 'production' && isProtectedRoute) {
+      return new NextResponse('Authentication Service Unavailable', { status: 503 });
+    }
     return response;
   }
 
@@ -36,17 +51,6 @@ export async function middleware(request: NextRequest) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-
-  const pathname = request.nextUrl.pathname;
-
-  const isAuthRoute = pathname.startsWith('/login') || pathname.startsWith('/signup');
-  const isProtectedRoute =
-    pathname.startsWith('/hearth') ||
-    pathname.startsWith('/root') ||
-    pathname.startsWith('/satchel') ||
-    pathname.startsWith('/chronicle') ||
-    pathname.startsWith('/settings') ||
-    pathname.startsWith('/onboard');
 
   // Unauthenticated user trying to access protected route
   if (!user && isProtectedRoute) {

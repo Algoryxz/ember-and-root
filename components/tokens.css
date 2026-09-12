@@ -1,0 +1,76 @@
+/* ==========================================================================
+   Ember & Root — Design Tokens
+   Owned by: Deeptiman (Experience / Frontend Lead)
+   Visual Direction: Illuminated Field Journal
+   Specification: docs/UI_UX_BRIEF.md
+   ========================================================================== */
+
+:root {
+  /* ------------------------------------------------------------------------
+     1. Frozen Palette
+     Do not introduce colors outside this frozen palette.
+     ------------------------------------------------------------------------ */
+  --color-bg: #141713;
+  --color-surface: #1D231D;
+  --color-text-primary: #F0E7D3;
+  --color-text-secondary: #B9BEAC;
+  --color-ember: #E98A4B;
+  --color-ember-core: #FFD38A;
+  --color-root: #9FBA87;
+  --color-root-mature: #D9E3B2;
+  --color-error: #F0A79D;
+  --color-focus: #C4A96A;
+
+  /* ------------------------------------------------------------------------
+     2. Typography
+     Only Fraunces (display/headings) and DM Sans (UI/body) are permitted.
+     ------------------------------------------------------------------------ */
+  --font-display: 'Fraunces', Georgia, 'Times New Roman', serif;
+  --font-body: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+  /* Typographic scale */
+  --text-xs: 0.75rem;    /* 12px */
+  --text-sm: 0.875rem;   /* 14px - metadata / secondary */
+  --text-base: 1rem;     /* 16px - body / quest titles */
+  --text-lg: 1.125rem;   /* 18px */
+  --text-xl: 1.25rem;    /* 20px */
+  --text-2xl: 1.5rem;    /* 24px - subheadings */
+  --text-3xl: 2rem;      /* 32px - section headings */
+  --text-4xl: 2.5rem;    /* 40px - major display headings */
+
+  /* ------------------------------------------------------------------------
+     3. Spacing Scale
+     Only allowed: 4px, 8px, 12px, 16px, 24px, 32px, 48px.
+     No arbitrary intermediate values.
+     ------------------------------------------------------------------------ */
+  --space-4: 4px;
+  --space-8: 8px;
+  --space-12: 12px;
+  --space-16: 16px;
+  --space-24: 24px;
+  --space-32: 32px;
+  --space-48: 48px;
+
+  /* ------------------------------------------------------------------------
+     4. Border Radius
+     Standard components: 6-10px
+     Buttons: 6-8px
+     Dialogs: 10-12px
+     Circles: Reserved for Ember motifs and Root nodes only.
+     ------------------------------------------------------------------------ */
+  --radius-btn: 6px;
+  --radius-btn-lg: 8px;
+  --radius-card: 8px;
+  --radius-panel: 10px;
+  --radius-dialog: 12px;
+  --radius-circle: 9999px; /* Reserved for Ember motifs & Root nodes */
+
+  /* ------------------------------------------------------------------------
+     5. Interaction & Motion Rules
+     Micro-animations: 80-120ms
+     ------------------------------------------------------------------------ */
+  --duration-press: 80ms;
+  --ease-press: cubic-bezier(0.4, 0, 0.2, 1);
+  --scale-pressed: 0.97;
+  --min-touch-target: 44px;
+}

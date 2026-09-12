@@ -6,17 +6,13 @@
  * will be wired once Susmita locks dependencies in `package.json`.
  */
 
-export interface SupabaseServerClient {
-  rpc<T = unknown>(
+export type SupabaseServerClient = {
+  rpc<T = any>(
     fn: string,
     params?: Record<string, unknown>
   ): Promise<{ data: T | null; error: Error | { message: string } | null }>;
 
-  from(table: string): {
-    select(columns?: string): {
-      eq(column: string, value: unknown): Promise<{ data: unknown; error: unknown }>;
-    };
-  };
+  from(table: string): any;
 
   auth: {
     getUser(): Promise<{
@@ -24,4 +20,5 @@ export interface SupabaseServerClient {
       error: Error | null;
     }>;
   };
-}
+  [key: string]: any;
+};
