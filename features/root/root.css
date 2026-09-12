@@ -1,0 +1,218 @@
+/* Root & Mind Branch Styling — Ember & Root Design System */
+
+:root {
+  --color-bg: #141713;
+  --color-surface: #1d231d;
+  --color-surface-hover: #262e26;
+  --color-text-primary: #f0e7d3;
+  --color-text-secondary: #b9beac;
+  --color-ember: #e98a4b;
+  --color-ember-core: #ffd38a;
+  --color-root: #9fba87;
+  --color-root-mature: #d9e3b2;
+  --color-error: #f0a79d;
+  --color-focus: #c4a96a;
+  --color-node-locked: #2a322a;
+  --color-border-locked: #3b463b;
+}
+
+/* Container */
+.root-branch-container {
+  position: relative;
+  width: 100%;
+  max-width: 440px;
+  margin: 0 auto;
+  background-color: var(--color-surface);
+  border: 1px solid rgba(159, 186, 135, 0.15);
+  border-radius: 12px;
+  padding: 16px;
+  box-sizing: border-box;
+  color: var(--color-text-primary);
+  font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
+}
+
+/* SVG Scene */
+.root-svg-wrapper {
+  position: relative;
+  width: 100%;
+  height: 480px;
+  overflow: hidden;
+  user-select: none;
+}
+
+.root-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* Path animations */
+.root-path {
+  transition: stroke 0.4s ease, stroke-width 0.4s ease, opacity 0.4s ease;
+}
+
+.root-path-glow {
+  filter: drop-shadow(0 0 6px rgba(159, 186, 135, 0.5));
+}
+
+.root-path-pulse {
+  animation: rootPulse 3s ease-in-out infinite alternate;
+}
+
+@keyframes rootPulse {
+  0% {
+    stroke-opacity: 0.7;
+    filter: drop-shadow(0 0 4px rgba(159, 186, 135, 0.4));
+  }
+  100% {
+    stroke-opacity: 1;
+    filter: drop-shadow(0 0 10px rgba(217, 227, 178, 0.8));
+  }
+}
+
+/* Node Overlay Layer */
+.root-nodes-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+/* Node Button */
+.root-node-button {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  pointer-events: auto;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 8px 12px;
+  border-radius: 22px;
+  background-color: var(--color-surface);
+  border: 2px solid var(--color-border-locked);
+  color: var(--color-text-secondary);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  transition: transform 0.2s ease, border-color 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.root-node-button:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 3px;
+  border-radius: 22px;
+}
+
+/* Node State Variants */
+.root-node-button.state-locked {
+  background-color: var(--color-node-locked);
+  border-color: var(--color-border-locked);
+  color: var(--color-text-secondary);
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.root-node-button.state-unlocked {
+  background-color: #1f2a1e;
+  border-color: var(--color-root);
+  color: var(--color-text-primary);
+  box-shadow: 0 0 12px rgba(159, 186, 135, 0.25);
+}
+
+.root-node-button.state-available {
+  background-color: #2b2319;
+  border-color: var(--color-ember);
+  color: var(--color-ember-core);
+  box-shadow: 0 0 16px rgba(233, 138, 75, 0.4);
+  animation: availableGlow 2s ease-in-out infinite alternate;
+}
+
+.root-node-button.state-available:hover,
+.root-node-button.state-available:focus-visible {
+  background-color: #382b1d;
+  transform: translate(-50%, -50%) scale(1.05);
+}
+
+.root-node-button.state-selected {
+  background-color: #263323;
+  border-color: var(--color-root-mature);
+  color: var(--color-text-primary);
+  box-shadow: 0 0 20px rgba(217, 227, 178, 0.5);
+}
+
+@keyframes availableGlow {
+  0% {
+    box-shadow: 0 0 8px rgba(233, 138, 75, 0.3);
+  }
+  100% {
+    box-shadow: 0 0 20px rgba(255, 211, 138, 0.7);
+  }
+}
+
+/* Node Icon Indicator */
+.node-indicator {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.state-locked .node-indicator {
+  background-color: var(--color-border-locked);
+}
+
+.state-unlocked .node-indicator {
+  background-color: var(--color-root);
+  box-shadow: 0 0 6px var(--color-root);
+}
+
+.state-available .node-indicator {
+  background-color: var(--color-ember);
+  box-shadow: 0 0 8px var(--color-ember-core);
+}
+
+.state-selected .node-indicator {
+  background-color: var(--color-root-mature);
+  box-shadow: 0 0 10px var(--color-root-mature);
+}
+
+/* Node Text Labels */
+.node-label-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  line-height: 1.2;
+}
+
+.node-title {
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.node-subtitle {
+  font-size: 10px;
+  opacity: 0.8;
+  font-family: 'Fraunces', serif;
+  font-style: italic;
+}
+
+/* Reduced Motion Override */
+@media (prefers-reduced-motion: reduce) {
+  .root-path,
+  .root-node-button {
+    transition: none !important;
+    animation: none !important;
+  }
+  
+  .root-path-pulse,
+  .root-node-button.state-available {
+    animation: none !important;
+  }
+}
