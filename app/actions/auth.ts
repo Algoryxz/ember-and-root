@@ -1,6 +1,7 @@
 'use server';
 
 import { redirect } from 'next/navigation';
+import { headers } from 'next/headers';
 import { createClient } from '@/lib/supabase/server';
 import { loginSchema, signupSchema, onboardingSchema } from '@/lib/auth/validation';
 
@@ -78,10 +79,18 @@ export async function signupAction(
     };
   }
 
+  const headersList = headers();
+  const host = headersList.get('host') || 'localhost:3000';
+  const protocol = headersList.get('x-forwarded-proto') || (host.startsWith('localhost') ? 'http' : 'https');
+  const origin = `${protocol}://${host}`;
+
   const supabase = await createClient();
   const { data, error } = await supabase.auth.signUp({
     email: parsed.data.email,
     password: parsed.data.password,
+    options: {
+      emailRedirectTo: `${origin}/auth/callback`,
+    },
   });
 
   if (error) {

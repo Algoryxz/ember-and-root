@@ -4,6 +4,7 @@ import React, { useTransition, useState, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { loginAction, type AuthActionResult } from '@/app/actions/auth';
+import { PathButton } from '@/components/ui/PathButton';
 
 function LoginForm() {
   const searchParams = useSearchParams();
@@ -28,110 +29,133 @@ function LoginForm() {
   }
 
   return (
-    <div className="w-full max-w-md p-6 sm:p-10 bg-[#1D231D]/80 rounded-[10px] border border-[#B9BEAC]/20 backdrop-blur-sm">
-      {/* Editorial Folio Header */}
-      <div className="text-center mb-8">
-        <span className="inline-block text-[11px] uppercase tracking-[0.16em] text-[#E98A4B] font-semibold mb-2">
-          Folio Access · Field Journal
-        </span>
-        <h1 className="text-3xl sm:text-4xl font-normal font-['Fraunces'] text-[#F0E7D3] tracking-tight mb-2">
+    <div className="w-full max-w-lg relative z-10">
+      {/* Folio Metadata & Heading */}
+      <header className="mb-10 text-center">
+        <div className="inline-flex items-center gap-2 mb-3">
+          <span className="w-2 h-2 rounded-full bg-[#E98A4B]" aria-hidden="true" />
+          <span className="font-mono text-xs uppercase tracking-[0.2em] text-[#C4A96A]">
+            Folio Gateway · Living Hearth
+          </span>
+        </div>
+        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-normal font-['Fraunces'] text-[#F0E7D3] tracking-tight leading-tight mb-3">
           Enter the Hearth
         </h1>
-        <p className="text-sm text-[#B9BEAC] leading-relaxed">
-          Open today’s folio page and tend your living roots.
+        <p className="text-sm text-[#B9BEAC] leading-relaxed max-w-sm mx-auto">
+          Open today’s folio page, tend your living roots, and kindle your daily spark.
         </p>
-        <div className="w-12 h-px bg-[#E98A4B]/40 mx-auto mt-4" aria-hidden="true" />
-      </div>
+        <div className="w-16 h-px bg-gradient-to-r from-transparent via-[#C4A96A]/40 to-transparent mx-auto mt-6" aria-hidden="true" />
+      </header>
 
       {result?.error && (
         <div
           role="alert"
           aria-live="polite"
-          className="mb-6 p-3.5 rounded-[6px] bg-[#2B1B19] border-l-2 border-[#F0A79D] text-[#F0A79D] text-sm"
+          className="mb-8 p-4 rounded-[6px] bg-[#2B1B19] border-l-2 border-[#F0A79D] text-[#F0A79D] text-sm leading-relaxed"
         >
           {result.error}
         </div>
       )}
 
-      <form onSubmit={handleSubmit} noValidate className="space-y-5">
-        <div>
+      <form onSubmit={handleSubmit} noValidate className="space-y-6">
+        {/* Field 1: Email */}
+        <div className="space-y-2">
           <label
             htmlFor="email"
-            className="block text-xs font-semibold uppercase tracking-wider text-[#F0E7D3] mb-1.5"
+            className="block font-mono text-xs uppercase tracking-wider text-[#B9BEAC]"
           >
-            Email address <span className="text-[#E98A4B]">*</span>
+            Wanderer Identifier (Email) <span className="text-[#E98A4B]">*</span>
           </label>
-          <input
-            id="email"
-            name="email"
-            type="email"
-            autoComplete="email"
-            required
-            disabled={isPending}
-            aria-describedby={result?.fieldErrors?.email ? 'email-error' : undefined}
-            className="w-full h-12 px-3.5 rounded-[6px] bg-[#141713] border border-[#B9BEAC]/25 text-[#F0E7D3] placeholder-[#6E7B6E] focus:outline-none focus:ring-2 focus:ring-[#C4A96A] focus:border-transparent transition-colors text-sm"
-            placeholder="wanderer@ember.game"
-          />
+          <div className="relative">
+            <input
+              id="email"
+              name="email"
+              type="email"
+              autoComplete="email"
+              required
+              disabled={isPending}
+              aria-describedby={result?.fieldErrors?.email ? 'email-error' : undefined}
+              className="w-full h-12 px-4 rounded-[6px] bg-[#181D18]/80 border border-[#B9BEAC]/25 text-[#F0E7D3] placeholder-[#6E7B6E] focus:outline-none focus:ring-2 focus:ring-[#C4A96A] focus:border-transparent transition-colors text-sm"
+              placeholder="wanderer@ember.game"
+            />
+          </div>
           {result?.fieldErrors?.email && (
-            <p id="email-error" className="mt-1.5 text-xs text-[#F0A79D]">
+            <p id="email-error" className="text-xs text-[#F0A79D] pt-1">
               {result.fieldErrors.email[0]}
             </p>
           )}
         </div>
 
-        <div>
+        {/* Field 2: Password */}
+        <div className="space-y-2">
           <label
             htmlFor="password"
-            className="block text-xs font-semibold uppercase tracking-wider text-[#F0E7D3] mb-1.5"
+            className="block font-mono text-xs uppercase tracking-wider text-[#B9BEAC]"
           >
-            Password <span className="text-[#E98A4B]">*</span>
+            Secret Seal <span className="text-[#E98A4B]">*</span>
           </label>
-          <input
-            id="password"
-            name="password"
-            type="password"
-            autoComplete="current-password"
-            required
-            disabled={isPending}
-            aria-describedby={result?.fieldErrors?.password ? 'password-error' : undefined}
-            className="w-full h-12 px-3.5 rounded-[6px] bg-[#141713] border border-[#B9BEAC]/25 text-[#F0E7D3] placeholder-[#6E7B6E] focus:outline-none focus:ring-2 focus:ring-[#C4A96A] focus:border-transparent transition-colors text-sm"
-            placeholder="••••••••••••"
-          />
+          <div className="relative">
+            <input
+              id="password"
+              name="password"
+              type="password"
+              autoComplete="current-password"
+              required
+              disabled={isPending}
+              aria-describedby={result?.fieldErrors?.password ? 'password-error' : undefined}
+              className="w-full h-12 px-4 rounded-[6px] bg-[#181D18]/80 border border-[#B9BEAC]/25 text-[#F0E7D3] placeholder-[#6E7B6E] focus:outline-none focus:ring-2 focus:ring-[#C4A96A] focus:border-transparent transition-colors text-sm font-mono"
+              placeholder="••••••••••••"
+            />
+          </div>
           {result?.fieldErrors?.password && (
-            <p id="password-error" className="mt-1.5 text-xs text-[#F0A79D]">
+            <p id="password-error" className="text-xs text-[#F0A79D] pt-1">
               {result.fieldErrors.password[0]}
             </p>
           )}
         </div>
 
-        <button
-          type="submit"
-          disabled={isPending}
-          className="w-full h-12 min-h-[48px] mt-3 px-4 rounded-[6px] bg-[#E98A4B] hover:brightness-105 text-[#141713] font-semibold text-sm tracking-wide uppercase transition-all duration-100 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C4A96A] focus-visible:ring-offset-2 focus-visible:ring-offset-[#1D231D] disabled:opacity-60 disabled:cursor-not-allowed active:scale-[0.98]"
-        >
-          {isPending ? 'Entering the Hearth…' : 'Open Field Journal'}
-        </button>
+        {/* Physical Tactile Submit Button */}
+        <div className="pt-2">
+          <PathButton
+            type="submit"
+            variant="ember"
+            size="lg"
+            disabled={isPending}
+            pending={isPending}
+            holdingPressure={isPending}
+            pendingText="Entering the Hearth…"
+            className="w-full h-13 min-h-[48px]"
+          >
+            Open Field Journal →
+          </PathButton>
+        </div>
       </form>
 
-      <div className="mt-8 pt-5 border-t border-[#B9BEAC]/15 text-center text-sm text-[#B9BEAC]">
-        <span>New wanderer? </span>
+      <footer className="mt-10 pt-6 border-t border-[#B9BEAC]/15 flex items-center justify-between text-xs text-[#B9BEAC]">
+        <span>New wanderer?</span>
         <Link
           href="/signup"
-          className="text-[#E98A4B] hover:text-[#FFD38A] font-medium underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C4A96A] rounded min-h-[44px] inline-flex items-center"
+          className="text-[#E98A4B] hover:text-[#FFD38A] font-semibold underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C4A96A] rounded min-h-[44px] inline-flex items-center px-2"
         >
           Begin your path
         </Link>
-      </div>
+      </footer>
     </div>
   );
 }
 
 export default function LoginPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-[#141713] text-[#F0E7D3]">
-      <Suspense fallback={<div className="text-sm text-[#B9BEAC]">Loading Hearth gateway…</div>}>
+    <main className="min-h-screen flex flex-col items-center justify-center p-6 sm:p-12 bg-[#141713] text-[#F0E7D3] relative overflow-hidden">
+      {/* Ambient atmospheric warmth */}
+      <div
+        className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[350px] bg-gradient-to-b from-[#E98A4B]/10 via-[#C4A96A]/5 to-transparent pointer-events-none blur-3xl"
+        aria-hidden="true"
+      />
+
+      <Suspense fallback={<div className="text-sm text-[#B9BEAC] font-mono">Loading Hearth gateway…</div>}>
         <LoginForm />
       </Suspense>
-    </div>
+    </main>
   );
 }

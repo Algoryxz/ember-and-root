@@ -30,8 +30,9 @@ test.describe('Ember & Root — Public Entry Experience (Phase 1)', () => {
     await expect(loopTitle).toContainText('The Living Cycle');
 
     const loopCards = page.locator('.loop-step-card');
-    await expect(loopCards).toHaveCount(4);
+    await expect(loopCards).toHaveCount(5);
     await expect(page.locator('.loop-step-title:has-text("Inscribe")')).toBeVisible();
+    await expect(page.locator('.loop-step-title:has-text("Act")')).toBeVisible();
     await expect(page.locator('.loop-step-title:has-text("Seal")')).toBeVisible();
     await expect(page.locator('.loop-step-title:has-text("Ember Responds")')).toBeVisible();
     await expect(page.locator('.loop-step-title:has-text("Root Grows")')).toBeVisible();

@@ -334,7 +334,7 @@ export const FirstSeal: React.FC<FirstSealProps> = ({
                 }
                 className="w-full min-h-[50px] px-6 py-3.5 rounded-lg bg-[#E98A4B] hover:bg-[#d87c3f] text-[#141713] font-semibold text-base transition-all duration-100 ease-in-out active:translate-y-[1px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C4A96A] shadow-xl"
               >
-                Retry Entering Hearth
+                Retry Finalization
               </button>
             </div>
           )}
@@ -460,7 +460,7 @@ export const FirstSeal: React.FC<FirstSealProps> = ({
                 disabled={!selectedQuest}
                 className="w-full min-h-[50px] px-6 py-3.5 rounded-lg bg-[#E98A4B] hover:bg-[#d87c3f] text-[#141713] font-semibold text-base transition-all duration-100 ease-in-out active:translate-y-[1px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C4A96A] disabled:opacity-50 shadow-xl flex items-center justify-center gap-2"
               >
-                <span>Seal First Practice</span>
+                <span>Seal First Quest</span>
                 <span className="text-sm">✦</span>
               </button>
             </div>

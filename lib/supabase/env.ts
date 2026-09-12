@@ -6,8 +6,16 @@
  */
 
 export function getSupabaseEnv() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  let url = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
+  let anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim();
+
+  // Strip wrapping double or single quotes if accidentally added in environment dashboard
+  if (url && ((url.startsWith('"') && url.endsWith('"')) || (url.startsWith("'") && url.endsWith("'")))) {
+    url = url.slice(1, -1).trim();
+  }
+  if (anonKey && ((anonKey.startsWith('"') && anonKey.endsWith('"')) || (anonKey.startsWith("'") && anonKey.endsWith("'")))) {
+    anonKey = anonKey.slice(1, -1).trim();
+  }
 
   if (!url || !anonKey) {
     // Provide a fallback dummy during build/prerender if needed, or throw in active runtime

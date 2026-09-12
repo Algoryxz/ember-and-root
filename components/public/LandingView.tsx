@@ -1,12 +1,15 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import Link from 'next/link';
 import { BranchSvgRenderer } from '../../features/root/svg/BranchSvgRenderer';
 import { BRANCH_CONFIGS } from '../../features/root/config';
 import type { NodeState, RootNodeInfo } from '../../features/root/types';
 import type { AttributeId, BranchState } from '../../features/hearth/contracts';
 import { DEMO_SNAPSHOT } from '../../game/fixtures/snapshot';
+import { EmberObject } from './EmberObject';
+import { ScrollRootSpine } from './ScrollRootSpine';
+import { PathButton } from '../ui/PathButton';
 import './LandingView.css';
 
 const ATTRIBUTES: AttributeId[] = ['mind', 'body', 'will', 'craft'];
@@ -78,15 +81,13 @@ interface SpecimenMarker {
 
 const SPECIMEN_MARKERS: SpecimenMarker[] = [
   { name: 'Dormant Seed', threshold: '0 XP', description: 'Slumbering soil awaiting your first commitment.' },
-  { name: 'Origin Sprout', threshold: '1 XP', description: 'First practice awakens life. A resilient shoot takes root.' },
+  { name: 'Origin Sprout', threshold: '20 XP', description: 'First practice awakens life. A resilient shoot takes root.' },
   { name: 'Specialization Fork', threshold: '80 XP', description: 'Branches divide into distinct disciplines like Scholar or Explorer.' },
   { name: 'Mastery Crest', threshold: '160 XP', description: 'Enduring discipline proven through trials. A permanent crest blooms.' },
 ];
 
 /**
  * Derive canonical SVG node states for Landing specimen demonstration
- * Integration boundary: Consumes Akriti's canonical SVG anatomy and branch configs.
- * DEPENDS ON AKRITI: Replace with canonical Root Specimen V1 when delivered.
  */
 function deriveCanonicalBranchNodes(attribute: AttributeId, branch: BranchState): RootNodeInfo[] {
   const config = BRANCH_CONFIGS[attribute];
@@ -148,330 +149,418 @@ function deriveCanonicalBranchNodes(attribute: AttributeId, branch: BranchState)
       label: spec1.label,
       subtitle: spec1.subtitle,
       type: 'specialization',
-      specializationKey: spec1.id,
       state: spec1State,
       xpRequired: 80,
       description: spec1.description,
-      coordinates: { x: 100, y: 220, percentX: 27.7, percentY: 45.8 },
+      coordinates: { x: 90, y: 220, percentX: 25, percentY: 45.8 },
     },
     {
       id: spec2.id,
       label: spec2.label,
       subtitle: spec2.subtitle,
       type: 'specialization',
-      specializationKey: spec2.id,
       state: spec2State,
       xpRequired: 80,
       description: spec2.description,
-      coordinates: { x: 260, y: 220, percentX: 72.2, percentY: 45.8 },
+      coordinates: { x: 270, y: 220, percentX: 75, percentY: 45.8 },
     },
     {
-      id: spec1.crest.id,
-      label: spec1.crest.label,
-      subtitle: spec1.crest.subtitle,
+      id: `${spec1.id}-crest`,
+      label: `${spec1.label} Crest`,
+      subtitle: spec1.crest.label,
       type: 'crest',
       state: spec1CrestState,
       xpRequired: 160,
-      description: spec1.crest.description,
-      coordinates: { x: 60, y: 380, percentX: 16.6, percentY: 79.1 },
+      description: spec1.crest.description || `Permanent testimony of ${spec1.label} mastery.`,
+      coordinates: { x: 60, y: 380, percentX: 16.6, percentY: 79.2 },
     },
     {
-      id: spec2.crest.id,
-      label: spec2.crest.label,
-      subtitle: spec2.crest.subtitle,
+      id: `${spec2.id}-crest`,
+      label: `${spec2.label} Crest`,
+      subtitle: spec2.crest.label,
       type: 'crest',
       state: spec2CrestState,
       xpRequired: 160,
-      description: spec2.crest.description,
-      coordinates: { x: 300, y: 380, percentX: 83.3, percentY: 79.1 },
+      description: spec2.crest.description || `Permanent testimony of ${spec2.label} mastery.`,
+      coordinates: { x: 300, y: 380, percentX: 83.3, percentY: 79.2 },
     },
   ];
 }
 
-/**
- * LandingView — Public Entry Surface
- * Owned by: Deeptiman (Experience / Frontend Lead)
- * Visual Direction: Contemporary Botanical Field Folio
- * 
- * Replaces generic 4-card SaaS grids with:
- * 1. ONE authored interactive causal loop folio (Inscribe -> Act -> Seal -> Ember -> Root)
- * 2. ONE botanical living specimen plate showing permanent becoming
- */
 export function LandingView() {
-  const [activeStepIndex, setActiveStepIndex] = useState<number>(0);
-  const [selectedAttribute, setSelectedAttribute] = useState<AttributeId>('mind');
+  const [activeAttribute, setActiveAttribute] = useState<AttributeId>('mind');
+  const [evolutionIndex, setEvolutionIndex] = useState<number>(2); // 80 XP default fork
+  const [demoSealed, setDemoSealed] = useState<boolean>(false);
+  const ritualSectionRef = useRef<HTMLElement>(null);
 
-  const activeStep = RITUAL_STEPS[activeStepIndex];
-  const demoBranches = DEMO_SNAPSHOT.branches;
-  const activeBranch: BranchState = demoBranches[selectedAttribute] || {
-    attribute: selectedAttribute,
-    xp: 85,
-    specialization: 'Scholar',
+  // Mock branch state reflecting selected evolution tier
+  const xpTiers = [0, 20, 80, 160];
+  const currentXp = xpTiers[evolutionIndex];
+
+  const currentBranch: BranchState = {
+    attribute: activeAttribute,
+    xp: currentXp,
+    specialization: currentXp >= 80 ? (activeAttribute === 'mind' ? 'scholar' : activeAttribute === 'body' ? 'endurance' : activeAttribute === 'will' ? 'focus' : 'builder') : null,
+    specializationAvailable: currentXp >= 80 && currentXp < 160,
+    trialStarted: currentXp >= 160,
+    trialComplete: currentXp >= 160,
+    crestAvailable: false,
+    crestClaimed: currentXp >= 160,
+    sproutAvailable: currentXp >= 1,
     selectedAt: null,
-    sproutAvailable: false,
-    specializationAvailable: false,
-    crestAvailable: true,
-    trialStarted: false,
-    trialComplete: false,
-    crestClaimed: false,
   };
 
-  const canonicalNodes = deriveCanonicalBranchNodes(selectedAttribute, activeBranch);
+  const branchNodes = deriveCanonicalBranchNodes(activeAttribute, currentBranch);
 
   return (
-    <div className="landing-shell">
-      {/* Accessible Skip Link */}
+    <div className="landing-v3-root">
+      {/* 1. Accessible Skip Link */}
       <a href="#hero-title" className="skip-link">
         Skip to main content
       </a>
 
-      {/* Top Navigation */}
-      <header className="landing-nav">
-        <div className="landing-nav-inner">
+      {/* 2. Top Navigation */}
+      <header className="landing-nav-bar">
+        <div className="nav-container">
           <Link href="/" className="landing-brand" aria-label="Ember & Root Home">
-            <div className="landing-brand-glyph" aria-hidden="true" />
-            <span className="landing-brand-title">Ember &amp; Root</span>
+            <span className="brand-dot" aria-hidden="true" />
+            <span className="brand-wordmark font-['Fraunces']">Ember &amp; Root</span>
           </Link>
 
-          <nav className="landing-nav-actions" aria-label="Account Navigation">
+          <nav className="nav-actions" aria-label="Account Navigation">
             <Link href="/login" className="btn-nav-login">
               Sign In
             </Link>
-            <Link href="/signup" className="btn-nav-primary">
-              Begin Path
-            </Link>
+            <PathButton href="/signup" variant="ember" size="sm" className="btn-nav-primary nav-path-btn">
+              Begin your path
+            </PathButton>
           </nav>
         </div>
       </header>
 
-      {/* Main Landing Canvas */}
-      <main className="landing-content">
-        {/* ==================================================================
-            SECTION 1: Living Ember & Hero
-            ================================================================== */}
-        <section className="landing-hero" aria-labelledby="hero-title">
-          {/* Living Brazier Vessel with Animated Flame */}
-          <div className="landing-brazier" aria-hidden="true">
-            <div className="landing-brazier-halo" />
-            <svg
-              className="landing-flame-svg"
-              viewBox="0 0 100 100"
-              focusable="false"
-            >
-              <defs>
-                <radialGradient id="landingGlow" cx="50%" cy="65%" r="45%">
-                  <stop offset="0%" stopColor="var(--color-ember-core)" stopOpacity="0.8" />
-                  <stop offset="45%" stopColor="var(--color-ember)" stopOpacity="0.5" />
-                  <stop offset="100%" stopColor="transparent" stopOpacity="0" />
-                </radialGradient>
-                <linearGradient id="landingFlame" x1="50%" y1="90%" x2="50%" y2="10%">
-                  <stop offset="0%" stopColor="var(--color-ember)" />
-                  <stop offset="60%" stopColor="var(--color-ember-core)" />
-                  <stop offset="100%" stopColor="var(--color-ember-core)" stopOpacity="0.95" />
-                </linearGradient>
-                <radialGradient id="landingSpark" cx="50%" cy="55%" r="35%">
-                  <stop offset="0%" stopColor="var(--color-ember-core)" />
-                  <stop offset="40%" stopColor="var(--color-ember-core)" />
-                  <stop offset="100%" stopColor="var(--color-ember)" stopOpacity="0" />
-                </radialGradient>
-              </defs>
-
-              {/* Charcoal bed */}
-              <ellipse cx="50" cy="80" rx="36" ry="12" fill="rgba(20, 23, 19, 0.9)" />
-              {/* Radial glow */}
-              <circle cx="50" cy="62" r="32" fill="url(#landingGlow)" />
-              {/* Primary Flame Body */}
-              <path
-                d="M50 84 C34 84 28 72 32 58 C35 48 42 42 45 32 C47 38 51 40 50 30 C53 38 62 44 65 54 C70 66 66 84 50 84 Z"
-                fill="url(#landingFlame)"
-                className="landing-flame-path"
-              />
-              {/* Inner core */}
-              <circle cx="50" cy="60" r="10" fill="url(#landingSpark)" className="landing-spark-core" />
-            </svg>
-          </div>
-
-          <div className="landing-headline-wrap">
-            <span className="landing-kicker">A Living Personal Field Journal</span>
-            <h1 id="hero-title" className="landing-title">
-              What you do each day becomes something you can see grow.
-            </h1>
-            <p className="landing-subtitle">
-              A personal practice where real daily efforts kindle today’s flame and physically cultivate a permanent root.
-            </p>
-          </div>
-
-          <div className="landing-cta-group">
-            <Link href="/signup" className="btn-primary-cta">
-              Begin your path →
-            </Link>
-            <Link href="/login" className="btn-secondary-cta">
-              I already have a path
-            </Link>
-          </div>
-        </section>
-
-        {/* ==================================================================
-            SECTION 2: The Causal Ritual Loop (Editorial Demonstration Folio)
-            Replaces the 4-card grid with ONE authored causal experience
-            ================================================================== */}
-        <section className="landing-loop-section" aria-labelledby="loop-title">
-          <div className="section-heading-cluster">
-            <div className="section-eyebrow">The Daily Rhythm</div>
-            <h2 id="loop-title" className="section-title">
-              The Causal Ritual
-            </h2>
-            <p className="section-desc">
-              Every practice follows a physical cause-and-effect loop. No abstract scores, no synthetic dopamine traps.
-            </p>
-          </div>
-
-          {/* Authored Editorial Demonstration Folio */}
-          <div className="ritual-folio-spread">
-            {/* Step Navigation Rail */}
-            <div className="ritual-step-rail" role="tablist" aria-label="Ritual progression steps">
-              {RITUAL_STEPS.map((step, idx) => {
-                const isActive = idx === activeStepIndex;
-                return (
-                  <button
-                    key={step.number}
-                    type="button"
-                    role="tab"
-                    aria-selected={isActive}
-                    className={`ritual-rail-item ${isActive ? 'is-active' : ''}`}
-                    onClick={() => setActiveStepIndex(idx)}
-                  >
-                    <span className="rail-step-num">{step.number}</span>
-                    <span className="rail-step-name">{step.title}</span>
-                    <span className="rail-step-action">{step.actionWord}</span>
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Active Stage Editorial Leaf */}
-            <div className="ritual-stage-leaf" role="tabpanel" aria-label={`Details for ${activeStep.title}`}>
-              <div className="leaf-header-row">
-                <span className="leaf-glyph" aria-hidden="true">{activeStep.glyph}</span>
-                <span className="leaf-step-badge">Stage {activeStep.number} · {activeStep.title}</span>
+      {/* 3. Asymmetric Hero & Living Flame */}
+      <main id="main-content">
+        <section className="landing-hero-scene landing-hero-section" aria-labelledby="hero-title">
+          <div className="hero-grid-container">
+            <div className="hero-editorial-col landing-hero-content">
+              <div className="hero-folio-badge font-mono text-xs text-[#C4A96A]">
+                <span className="badge-marker" aria-hidden="true" />
+                <span>Folio Specimen · Hand-Authored Life RPG</span>
               </div>
 
-              <h3 className="leaf-title">{activeStep.actionWord}</h3>
-              <p className="leaf-description">{activeStep.description}</p>
+              <h1 id="hero-title" className="hero-display-headline hero-headline font-['Fraunces']">
+                What you do each day becomes something you can see grow.
+              </h1>
 
-              <div className="leaf-consequence-box">
-                <span className="consequence-tag" aria-hidden="true">Physical Consequence</span>
-                <p className="consequence-text">{activeStep.consequence}</p>
+              <p className="hero-lead-narrative hero-lead">
+                A private life-RPG where one server-confirmed action produces one permanent, living consequence.
+                No algorithmic feeds. No social performativity. Just your genuine days and what they cultivate.
+              </p>
+
+              <div className="hero-cta-group landing-cta-group">
+                <PathButton href="/signup" variant="ember" size="lg" className="btn-primary-cta">
+                  Begin your path →
+                </PathButton>
+                <PathButton href="/login" variant="charcoal" size="lg" className="btn-secondary-cta">
+                  I already have a path
+                </PathButton>
               </div>
 
-              <div className="leaf-rule-line" aria-hidden="true" />
-            </div>
-          </div>
-        </section>
-
-        {/* ==================================================================
-            SECTION 3: Permanent Becoming (Botanical Specimen Plate)
-            Replaces the 4 evolution cards with ONE living specimen cutting
-            ================================================================== */}
-        <section className="landing-specimen-section" aria-labelledby="specimen-title">
-          <div className="section-heading-cluster">
-            <div className="section-eyebrow">Permanent Becoming</div>
-            <h2 id="specimen-title" className="section-title">
-              An Organism Shaped by Real Days
-            </h2>
-            <p className="section-desc">
-              Your Root never resets at midnight. Every effort accumulates permanently into living branches, branching paths, and claimed crests.
-            </p>
-          </div>
-
-          {/* Authored Botanical Plate Showcase */}
-          <div className="landing-specimen-plate">
-            <div className="specimen-plate-header">
-              <div className="specimen-tag-cluster">
-                <span className="specimen-plate-tag" aria-hidden="true">
-                  PLATE I · CANONICAL CUTTING ({ATTRIBUTE_LABELS[selectedAttribute]})
+              <div className="hero-editorial-annotation" aria-hidden="true">
+                <span className="annotation-line" />
+                <span className="annotation-text">
+                  One server-authoritative commitment · Permanent causal mark
                 </span>
-                <h3 className="specimen-plate-title">The Living Root Specimen</h3>
-              </div>
-
-              {/* Filament Discipline Selector */}
-              <div className="specimen-discipline-tabs" role="tablist" aria-label="Specimen branch disciplines">
-                {ATTRIBUTES.map((attr) => {
-                  const isSelected = attr === selectedAttribute;
-                  return (
-                    <button
-                      key={attr}
-                      type="button"
-                      role="tab"
-                      aria-selected={isSelected}
-                      className={`discipline-tab-btn ${isSelected ? 'is-selected' : ''}`}
-                      onClick={() => setSelectedAttribute(attr)}
-                    >
-                      <span className={`discipline-dot attr-${attr}`} aria-hidden="true" />
-                      <span>{ATTRIBUTE_LABELS[attr]}</span>
-                    </button>
-                  );
-                })}
               </div>
             </div>
 
-            {/* Specimen Visual & Marginal Progression */}
-            <div className="specimen-stage-grid">
-              {/* Canonical SVG Organism Cutting from Akriti */}
-              <div className="specimen-svg-viewport" aria-hidden="true">
-                <BranchSvgRenderer
-                  attribute={selectedAttribute}
-                  nodes={canonicalNodes}
-                  selectedSpecialization={activeBranch.specialization}
-                />
-              </div>
-
-              {/* Marginal Anatomical Progression Rail */}
-              <div className="specimen-anatomy-legend">
-                <span className="anatomy-legend-heading">Botanical Milestones</span>
-                <div className="anatomy-legend-list">
-                  {SPECIMEN_MARKERS.map((marker, idx) => (
-                    <div key={marker.name} className="anatomy-legend-item">
-                      <span className="legend-marker-dot" aria-hidden="true">
-                        {idx <= 2 ? '●' : '○'}
-                      </span>
-                      <div className="legend-marker-text">
-                        <div className="legend-marker-top">
-                          <span className="legend-marker-name">{marker.name}</span>
-                          <span className="legend-marker-xp">{marker.threshold}</span>
-                        </div>
-                        <p className="legend-marker-desc">{marker.description}</p>
-                      </div>
-                    </div>
-                  ))}
+            <div className="hero-ember-col landing-hero-visual" aria-hidden="true">
+              <div className="ember-focal-presentation hero-flame-plate">
+                <div className="ember-folium-well">
+                  <EmberObject size={240} state="kindled" interactive={true} />
+                </div>
+                <div className="ember-caption flame-caption font-mono">
+                  <span className="ember-status-label">Living Organism</span>
+                  <span className="text-xs text-[#C4A96A]">The Ember responds to action</span>
                 </div>
               </div>
             </div>
           </div>
         </section>
 
-        {/* ==================================================================
-            SECTION 4: Closing Field Journal Invitation
-            ================================================================== */}
-        <section className="landing-closing-section" aria-labelledby="closing-title">
-          <div className="closing-flame-dot" aria-hidden="true" />
-          <h2 id="closing-title" className="closing-title">
-            Begin your personal chronicle today.
-          </h2>
-          <p className="closing-desc">
-            No synthetic streaks, no commercial noise. Just your genuine days and what they become.
-          </p>
-          <div className="landing-cta-group">
-            <Link href="/signup" className="btn-primary-cta">
-              Begin your path →
-            </Link>
+      {/* 2. Spatial Scroll-Following Root Spine Container */}
+      <div id="ritual-section" className="ritual-spine-wrapper" ref={ritualSectionRef as any}>
+        <ScrollRootSpine containerRef={ritualSectionRef} />
+
+        {/* 5. The Causal Ritual — Sequential Scroll-Linked Story Scenes */}
+        <section className="landing-ritual-scene" aria-labelledby="loop-title">
+          <header className="ritual-section-header">
+            <span className="font-mono text-xs uppercase tracking-[0.2em] text-[#C4A96A] block mb-2">
+              The Causal Architecture
+            </span>
+            <h2 id="loop-title" className="section-title font-['Fraunces']">
+              The Living Cycle
+            </h2>
+            <p className="section-subtitle">
+              Every permanent mark begins with one honest act in the waking world.
+            </p>
+          </header>
+
+          <div className="ritual-scenes-flow">
+            {/* Step 1: INSCRIBE */}
+            <article className="ritual-flow-stage loop-step-card stage-inscribe">
+              <div className="stage-content-col">
+                <div className="stage-index font-mono">01 / STAGE</div>
+                <h3 className="loop-step-title font-['Fraunces']">Inscribe</h3>
+                <p className="stage-action-tag font-mono text-xs uppercase text-[#C4A96A] mb-3">
+                  Declare intention
+                </p>
+                <p className="stage-body">
+                  Choose meaningful daily practices aligned with Mind, Body, Will, or Craft in your field journal.
+                  No algorithmic noise or artificial quotas.
+                </p>
+                <div className="stage-consequence">
+                  <span className="consequence-glyph">✎</span>
+                  <span className="consequence-text">The entry awaits your real effort in the waking world.</span>
+                </div>
+              </div>
+
+              <div className="stage-visual-col">
+                <div className="journal-leaf-specimen">
+                  <div className="leaf-header font-mono text-xs text-[#C4A96A]">
+                    PRACTICE REGISTRATION · MIND
+                  </div>
+                  <div className="leaf-title font-serif text-lg text-[#F0E7D3] my-2">
+                    Morning Focus Meditation
+                  </div>
+                  <div className="leaf-meta font-mono text-xs text-[#B9BEAC]">
+                    Standard Effort · 20 XP · 4 Sparks
+                  </div>
+                </div>
+              </div>
+            </article>
+
+            {/* Step 2: ACT */}
+            <article className="ritual-flow-stage loop-step-card stage-act">
+              <div className="stage-content-col">
+                <div className="stage-index font-mono">02 / STAGE</div>
+                <h3 className="loop-step-title font-['Fraunces']">Act</h3>
+                <p className="stage-action-tag font-mono text-xs uppercase text-[#C4A96A] mb-3">
+                  Carry through
+                </p>
+                <p className="stage-body">
+                  Engage with your practice outside the screen. The software steps back while you run, read, write, or build.
+                  Zero timers, surveillance, or vanity metrics.
+                </p>
+                <div className="stage-consequence">
+                  <span className="consequence-glyph">✦</span>
+                  <span className="consequence-text">Real work is done where it matters most.</span>
+                </div>
+              </div>
+
+              <div className="stage-visual-col">
+                <div className="quiet-space-indicator">
+                  <span className="quiet-pulse" aria-hidden="true" />
+                  <span className="font-mono text-xs text-[#B9BEAC]">
+                    Physical world in progress · Screen quiet
+                  </span>
+                </div>
+              </div>
+            </article>
+
+            {/* Step 3: SEAL */}
+            <article className="ritual-flow-stage loop-step-card stage-seal">
+              <div className="stage-content-col">
+                <div className="stage-index font-mono">03 / STAGE</div>
+                <h3 className="loop-step-title font-['Fraunces']">Seal</h3>
+                <p className="stage-action-tag font-mono text-xs uppercase text-[#C4A96A] mb-3">
+                  Stamp impression
+                </p>
+                <p className="stage-body">
+                  Confirm completion with a tactile wax seal in your journal. Sealing is a deliberate personal testimony confirmed by server consensus.
+                </p>
+                <div className="stage-consequence">
+                  <span className="consequence-glyph">◎</span>
+                  <span className="consequence-text">The practice becomes permanent in today’s folio.</span>
+                </div>
+              </div>
+
+              <div className="stage-visual-col">
+                <div className="seal-interactive-pad">
+                  <PathButton
+                    variant="seal"
+                    size="lg"
+                    completed={demoSealed}
+                    onClick={() => setDemoSealed(!demoSealed)}
+                    className="demo-seal-trigger"
+                    aria-label="Interactive demo seal: click to experience physical depression"
+                  >
+                    {demoSealed ? 'Mark Sealed ✓' : 'Test Tactile Seal'}
+                  </PathButton>
+                  <p className="font-mono text-xs text-[#B9BEAC] mt-3">
+                    {demoSealed ? 'Permanent server receipt generated.' : 'Press button to test physical depth.'}
+                  </p>
+                </div>
+              </div>
+            </article>
+
+            {/* Step 4: EMBER RESPONDS */}
+            <article className="ritual-flow-stage loop-step-card stage-ember">
+              <div className="stage-content-col">
+                <div className="stage-index font-mono">04 / STAGE</div>
+                <h3 className="loop-step-title font-['Fraunces']">Ember Responds</h3>
+                <p className="stage-action-tag font-mono text-xs uppercase text-[#C4A96A] mb-3">
+                  Daily momentum
+                </p>
+                <p className="stage-body">
+                  Today’s brazier stirs from resting coals to vigorous flame, casting warmth across your field journal.
+                  Ember reflects today; Root reflects all time.
+                </p>
+                <div className="stage-consequence">
+                  <span className="consequence-glyph">🔥</span>
+                  <span className="consequence-text">Present-day momentum is visibly ignited.</span>
+                </div>
+              </div>
+
+              <div className="stage-visual-col">
+                <div className="ember-response-miniature">
+                  <EmberObject size={140} state="blazing" interactive={false} />
+                </div>
+              </div>
+            </article>
+
+            {/* Step 5: ROOT GROWS */}
+            <article className="ritual-flow-stage loop-step-card stage-root">
+              <div className="stage-content-col">
+                <div className="stage-index font-mono">05 / STAGE</div>
+                <h3 className="loop-step-title font-['Fraunces']">Root Grows</h3>
+                <p className="stage-action-tag font-mono text-xs uppercase text-[#C4A96A] mb-3">
+                  Permanent becoming
+                </p>
+                <p className="stage-body">
+                  Effort travels directly into the living organism. Primary filaments thicken, nodal forks awaken, and permanent mastery crests bloom.
+                </p>
+                <div className="stage-consequence">
+                  <span className="consequence-glyph">🌱</span>
+                  <span className="consequence-text">Who you become is permanently shaped.</span>
+                </div>
+              </div>
+
+              <div className="stage-visual-col">
+                <div className="root-shoot-visual">
+                  <div className="shoot-stem" />
+                  <div className="shoot-bud bud-mind" />
+                  <div className="shoot-bud bud-body" />
+                  <div className="shoot-bud bud-will" />
+                  <div className="shoot-bud bud-craft" />
+                </div>
+              </div>
+            </article>
           </div>
         </section>
+      </div>
+
+      {/* 6. The Living Root Specimen Section (Organism Organizes the Surface) */}
+      <section className="landing-organism-scene" aria-labelledby="root-title">
+        <header className="organism-header">
+          <span className="font-mono text-xs uppercase tracking-[0.2em] text-[#C4A96A] block mb-2">
+            The Permanent Becoming
+          </span>
+          <h2 id="root-title" className="section-title font-['Fraunces']">
+            A Living Organism Shaped by You
+          </h2>
+          <p className="section-subtitle">
+            The Root is not an illustration inside a dashboard; it is the physical ledger of your life choices.
+          </p>
+        </header>
+
+        {/* Botanical Specimen Attribute Selection Tabs */}
+        <div className="specimen-botanical-tabs" role="tablist" aria-label="Branch disciplines">
+          {ATTRIBUTES.map((attr) => (
+            <button
+              key={attr}
+              role="tab"
+              aria-selected={activeAttribute === attr}
+              className={`specimen-tab-tag tab-${attr} ${activeAttribute === attr ? 'specimen-tab-active' : ''}`}
+              onClick={() => setActiveAttribute(attr)}
+            >
+              <span className={`tag-dot dot-${attr}`} aria-hidden="true" />
+              <span className="tag-label">{ATTRIBUTE_LABELS[attr]}</span>
+            </button>
+          ))}
+        </div>
+
+        {/* Evolving Root Geometry Presentation Area */}
+        <div className="organism-focal-stage">
+          <div className="specimen-svg-frame">
+            <BranchSvgRenderer
+              attribute={activeAttribute}
+              nodes={branchNodes}
+              selectedSpecialization={currentBranch.specialization ?? null}
+            />
+          </div>
+
+          {/* Interactive Evolution Milestones Navigation */}
+          <div className="organism-evolution-controller">
+            <span className="controller-title font-mono text-xs uppercase tracking-wider text-[#B9BEAC] block mb-3">
+              Specimen Progression Milestones
+            </span>
+            <div className="evolution-tiers-grid">
+              {SPECIMEN_MARKERS.map((marker, idx) => (
+                <button
+                  key={marker.threshold}
+                  type="button"
+                  onClick={() => setEvolutionIndex(idx)}
+                  className={`evolution-card ${evolutionIndex === idx ? 'tier-active' : ''}`}
+                  aria-pressed={evolutionIndex === idx}
+                >
+                  <div className="tier-badge font-mono text-xs font-semibold">
+                    {marker.threshold}
+                  </div>
+                  <div className="tier-name font-serif text-sm text-[#F0E7D3]">
+                    {marker.name}
+                  </div>
+                  <p className="tier-desc text-xs text-[#B9BEAC]">
+                    {marker.description}
+                  </p>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 7. Closing Editorial Call */}
+      <section className="landing-closing-scene" aria-labelledby="closing-title">
+        <div className="closing-content-well">
+          <span className="font-mono text-xs uppercase tracking-[0.2em] text-[#C4A96A] block mb-3">
+            Open the Field Journal
+          </span>
+          <h2 id="closing-title" className="closing-headline font-['Fraunces']">
+            Begin your personal chronicle today.
+          </h2>
+          <p className="closing-lead text-sm text-[#B9BEAC]">
+            Take your first intentional step. One completed action, one rekindled flame, one permanent root.
+          </p>
+          <div className="closing-cta-row">
+            <PathButton href="/signup" variant="ember" size="lg" className="closing-primary-btn">
+              Begin your path →
+            </PathButton>
+            <PathButton href="/login" variant="charcoal" size="lg" className="closing-secondary-btn">
+              Sign in to Folio
+            </PathButton>
+          </div>
+        </div>
+      </section>
+
       </main>
 
-      {/* Footer */}
-      <footer className="landing-footer">
-        <p>Ember &amp; Root · “What you do becomes who you are.”</p>
+      {/* 8. Quiet Field Journal Colophon */}
+      <footer className="landing-colophon-bar">
+        <div className="colophon-inner text-xs text-[#B9BEAC] font-mono">
+          <span>Ember &amp; Root · Hand-authored Life RPG</span>
+          <span>Server-authoritative progression</span>
+        </div>
       </footer>
     </div>
   );

@@ -317,7 +317,7 @@ export const HearthRootPreview: React.FC<HearthRootPreviewProps> = ({
       </div>
 
       {/* Restrained Specimen Filaments Index (Mind, Body, Will, Craft) */}
-      <div className="root-filaments-index" role="tablist" aria-label="Root branch cuttings">
+      <div className="root-filaments-index root-branches-grid" role="tablist" aria-label="Root branch cuttings">
         {ATTRIBUTES.map((attr) => {
           const branch = branches[attr] || {
             attribute: attr,
@@ -350,7 +350,7 @@ export const HearthRootPreview: React.FC<HearthRootPreviewProps> = ({
             >
               <span className={`filament-dot branch-${attr}`} aria-hidden="true" />
               <span className={`branch-name-label branch-${attr}`}>{ATTRIBUTE_LABELS[attr]}</span>
-              <span className="filament-xp-value">{branch.xp} XP</span>
+              <span className="filament-xp-value branch-xp-value">{branch.xp} XP</span>
             </button>
           );
         })}

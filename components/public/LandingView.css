@@ -1,741 +1,791 @@
 /* ==========================================================================
-   LandingView — Public Entry Surface
-   Owned by: Deeptiman (Experience / Frontend Lead)
-   Visual Direction: Contemporary Botanical Field Folio (Not a SaaS Dashboard)
+   Ember & Root — Landing V3: One Continuous Story
+   Style Direction: Illuminated Botanical Field Journal
+   References: Spector (rhythm), PrismaHero (editorial typography),
+   Dynamic Hero (stateful depth), SVG Follow Scroll (spatial spine)
+   Zero glassmorphism. Zero generic card-grid dashboard look.
    ========================================================================== */
 
-.landing-shell {
+.landing-v3-root {
   min-height: 100vh;
-  background-color: var(--color-bg);
-  color: var(--color-text-primary);
-  font-family: var(--font-body);
-  display: flex;
-  flex-direction: column;
+  background-color: #141713;
+  color: #F0E7D3;
+  overflow-x: hidden;
+  position: relative;
+  font-family: var(--font-body, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
 }
 
-/* Accessible Skip Link */
+/* -----------------------------------------------------------------------------
+   Skip Link (Accessibility)
+   ----------------------------------------------------------------------------- */
 .skip-link {
   position: absolute;
   top: -100px;
-  left: var(--space-16);
-  background: var(--color-surface);
-  color: var(--color-text-primary);
-  padding: var(--space-8) var(--space-16);
-  border: 1px solid var(--color-focus);
-  border-radius: var(--radius-btn);
-  font-size: var(--text-sm);
+  left: 20px;
   z-index: 9999;
-  transition: top 120ms ease;
+  padding: 12px 20px;
+  background: #E98A4B;
+  color: #141713;
+  font-weight: 700;
+  border-radius: 4px;
+  text-decoration: none;
+  transition: top 150ms ease;
 }
 
 .skip-link:focus {
-  top: var(--space-16);
-  outline: 2px solid var(--color-focus);
+  top: 20px;
+  outline: 2px solid #C4A96A;
+  outline-offset: 2px;
 }
 
-/* Navigation */
-.landing-nav {
+/* -----------------------------------------------------------------------------
+   Navigation Bar (Quiet, Labeled, Restrained)
+   ----------------------------------------------------------------------------- */
+.landing-nav-bar {
   position: sticky;
   top: 0;
   z-index: 100;
-  background-color: rgba(20, 23, 19, 0.92);
-  backdrop-filter: blur(8px);
+  background: rgba(20, 23, 19, 0.88);
+  backdrop-filter: blur(12px);
   border-bottom: 1px solid rgba(185, 190, 172, 0.12);
+  width: 100%;
 }
 
-.landing-nav-inner {
-  max-width: 1200px;
+.nav-container {
+  max-width: 1280px;
   margin: 0 auto;
-  padding: 0 var(--space-24);
-  height: 64px;
+  padding: 14px 28px;
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
 
 .landing-brand {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: var(--space-8);
+  gap: 10px;
   text-decoration: none;
+  color: #F0E7D3;
+  outline: none;
 }
 
-.landing-brand-glyph {
-  width: 10px;
-  height: 10px;
-  background-color: var(--color-ember);
-  border-radius: var(--radius-circle);
-  box-shadow: 0 0 8px rgba(233, 138, 75, 0.6);
+.landing-brand:focus-visible {
+  outline: 2px solid #C4A96A;
+  outline-offset: 4px;
+  border-radius: 4px;
 }
 
-.landing-brand-title {
-  font-family: var(--font-display);
-  font-size: var(--text-lg);
-  font-weight: 500;
-  color: var(--color-text-primary);
-  letter-spacing: 0.02em;
+.brand-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #E98A4B;
+  box-shadow: 0 0 10px #E98A4B;
 }
 
-.landing-nav-actions {
+.brand-wordmark {
+  font-size: 1.25rem;
+  letter-spacing: -0.01em;
+  color: #F0E7D3;
+}
+
+.nav-actions {
   display: flex;
   align-items: center;
-  gap: var(--space-12);
+  gap: 18px;
 }
 
 .btn-nav-login {
+  color: #B9BEAC;
+  text-decoration: none;
+  font-size: 0.875rem;
+  font-weight: 500;
+  padding: 8px 14px;
+  border-radius: 4px;
+  min-height: 44px;
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  min-height: 44px;
-  min-width: 44px;
-  padding: 0 var(--space-16);
-  color: var(--color-text-secondary);
-  font-family: var(--font-body);
-  font-size: var(--text-sm);
-  font-weight: 500;
-  text-decoration: none;
-  border-radius: var(--radius-btn);
-  transition: color 120ms ease;
+  transition: color 150ms ease;
 }
 
 .btn-nav-login:hover {
-  color: var(--color-text-primary);
+  color: #F0E7D3;
 }
 
 .btn-nav-login:focus-visible {
-  outline: 2px solid var(--color-focus);
+  outline: 2px solid #C4A96A;
   outline-offset: 2px;
 }
 
 .btn-nav-primary {
+  text-decoration: none;
   display: inline-flex;
   align-items: center;
-  justify-content: center;
   min-height: 44px;
-  min-width: 44px;
-  padding: 0 var(--space-16);
-  background-color: var(--color-ember);
-  color: var(--color-bg);
-  font-family: var(--font-body);
-  font-size: var(--text-sm);
-  font-weight: 600;
-  text-decoration: none;
-  border-radius: var(--radius-btn);
-  transition: filter 120ms ease;
-}
-
-.btn-nav-primary:hover {
-  filter: brightness(1.08);
+  outline: none;
 }
 
 .btn-nav-primary:focus-visible {
-  outline: 2px solid var(--color-focus);
+  outline: 2px solid #C4A96A;
   outline-offset: 2px;
+  border-radius: 6px;
 }
 
-/* Main Content */
-.landing-content {
-  flex: 1;
-  width: 100%;
-  max-width: 1200px;
+.nav-path-btn {
+  min-height: 38px;
+}
+
+/* -----------------------------------------------------------------------------
+   Hero Scene — Asymmetric Editorial Composition
+   ----------------------------------------------------------------------------- */
+.landing-hero-scene {
+  position: relative;
+  max-width: 1280px;
   margin: 0 auto;
-  padding: var(--space-48) var(--space-24) var(--space-48);
+  padding: 80px 28px 120px;
+  min-height: calc(100vh - 72px);
+  display: flex;
+  align-items: center;
+}
+
+.hero-grid-container {
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: 60px;
+  align-items: center;
+  width: 100%;
+}
+
+.hero-editorial-col {
   display: flex;
   flex-direction: column;
-  gap: var(--space-48);
+  align-items: flex-start;
 }
 
-/* Section Headings */
-.section-heading-cluster {
-  text-align: center;
-  max-width: 720px;
-  margin: 0 auto var(--space-32);
+.hero-folio-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 24px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(196, 169, 106, 0.08);
+  border: 1px solid rgba(196, 169, 106, 0.22);
 }
 
-.section-eyebrow {
-  font-family: var(--font-body);
-  font-size: var(--text-xs);
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.14em;
-  color: var(--color-root);
-  margin-bottom: var(--space-8);
+.badge-marker {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #E98A4B;
 }
 
-.section-title {
-  font-family: var(--font-display);
-  font-size: var(--text-3xl);
-  font-weight: 500;
-  color: var(--color-text-primary);
-  letter-spacing: -0.01em;
-  margin: 0 0 var(--space-8);
+.hero-display-headline {
+  font-size: clamp(2.4rem, 5vw, 4.2rem);
+  font-weight: 400;
+  line-height: 1.08;
+  letter-spacing: -0.025em;
+  color: #F0E7D3;
+  margin-bottom: 24px;
 }
 
-.section-desc {
-  font-family: var(--font-body);
-  font-size: var(--text-base);
-  color: var(--color-text-secondary);
+.hero-lead-narrative {
+  font-size: clamp(1rem, 1.4vw, 1.25rem);
   line-height: 1.6;
-  margin: 0;
+  color: #B9BEAC;
+  max-width: 540px;
+  margin-bottom: 40px;
 }
 
-/* SECTION 1: Hero */
-.landing-hero {
+.hero-cta-group {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 48px;
+}
+
+.btn-primary-cta,
+.btn-secondary-cta {
+  text-decoration: none;
+  display: inline-flex;
+  outline: none;
+}
+
+.btn-primary-cta:focus-visible,
+.btn-secondary-cta:focus-visible {
+  outline: 2px solid #C4A96A;
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+.hero-editorial-annotation {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  max-width: 520px;
+}
+
+.annotation-line {
+  flex-shrink: 0;
+  width: 32px;
+  height: 1px;
+  background: rgba(196, 169, 106, 0.4);
+}
+
+.annotation-text {
+  font-family: var(--font-mono, monospace);
+  font-size: 0.75rem;
+  color: #8E9684;
+  letter-spacing: 0.04em;
+}
+
+/* Ember Column Presentation */
+.hero-ember-col {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
-  text-align: center;
-  padding: var(--space-24) 0;
+  justify-content: center;
 }
 
-.landing-brazier {
+.ember-focal-presentation {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   position: relative;
-  width: 160px;
-  height: 160px;
-  margin-bottom: var(--space-24);
+}
+
+.ember-folium-well {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.landing-brazier-halo {
+.ember-caption {
+  margin-top: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  text-align: center;
+}
+
+.ember-status-label {
+  font-size: 0.7rem;
+  color: #8E9684;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.ember-status-value {
+  font-size: 0.85rem;
+  color: #E98A4B;
+  font-weight: 500;
+}
+
+.ember-micro-hint {
+  font-size: 0.7rem;
+  color: rgba(185, 190, 172, 0.5);
+  margin-top: 4px;
+}
+
+.hero-filament-descent {
   position: absolute;
-  width: 180px;
-  height: 180px;
-  background: radial-gradient(circle, rgba(233, 138, 75, 0.18) 0%, transparent 70%);
-  border-radius: var(--radius-circle);
+  bottom: -60px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 2px;
+  height: 80px;
+  background: linear-gradient(180deg, #E98A4B 0%, rgba(233, 138, 75, 0.2) 60%, transparent 100%);
   pointer-events: none;
 }
 
-.landing-flame-svg {
+/* -----------------------------------------------------------------------------
+   Spine Wrapper & The Continuous Causal Ritual Scenes
+   ----------------------------------------------------------------------------- */
+.ritual-spine-wrapper {
+  position: relative;
   width: 100%;
-  height: 100%;
+  background: #141713;
+  padding: 80px 0 140px;
 }
 
-.landing-headline-wrap {
-  max-width: 820px;
-  margin-bottom: var(--space-32);
+.landing-ritual-scene {
+  position: relative;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 0 28px;
+  z-index: 10;
 }
 
-.landing-kicker {
-  display: inline-block;
-  font-family: var(--font-body);
-  font-size: var(--text-xs);
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.16em;
-  color: var(--color-ember);
-  margin-bottom: var(--space-12);
+.ritual-section-header {
+  text-align: center;
+  margin-bottom: 90px;
 }
 
-.landing-title {
-  font-family: var(--font-display);
-  font-size: var(--text-4xl);
+.section-title {
+  font-size: clamp(2rem, 3.8vw, 3.2rem);
   font-weight: 400;
-  line-height: 1.2;
-  color: var(--color-text-primary);
-  margin: 0 0 var(--space-16);
+  color: #F0E7D3;
   letter-spacing: -0.02em;
+  margin-bottom: 14px;
 }
 
-.landing-subtitle {
-  font-family: var(--font-body);
-  font-size: var(--text-lg);
-  color: var(--color-text-secondary);
-  line-height: 1.55;
-  margin: 0;
+.section-subtitle {
+  font-size: 1rem;
+  color: #B9BEAC;
+  max-width: 520px;
+  margin: 0 auto;
+  line-height: 1.6;
 }
 
-.landing-cta-group {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: var(--space-16);
-}
-
-.btn-primary-cta {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 48px;
-  min-width: 44px;
-  padding: 0 var(--space-24);
-  background-color: var(--color-ember);
-  color: var(--color-bg);
-  font-family: var(--font-body);
-  font-size: var(--text-base);
-  font-weight: 600;
-  text-decoration: none;
-  border-radius: var(--radius-btn);
-  box-shadow: 0 0 16px rgba(233, 138, 75, 0.25);
-  transition: all 120ms ease;
-}
-
-.btn-primary-cta:hover {
-  filter: brightness(1.08);
-  box-shadow: 0 0 24px rgba(233, 138, 75, 0.35);
-}
-
-.btn-primary-cta:focus-visible {
-  outline: 2px solid var(--color-focus);
-  outline-offset: 2px;
-}
-
-.btn-secondary-cta {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 48px;
-  min-width: 44px;
-  padding: 0 var(--space-24);
-  background-color: transparent;
-  border: 1px solid rgba(185, 190, 172, 0.24);
-  color: var(--color-text-secondary);
-  font-family: var(--font-body);
-  font-size: var(--text-base);
-  font-weight: 500;
-  text-decoration: none;
-  border-radius: var(--radius-btn);
-  transition: all 120ms ease;
-}
-
-.btn-secondary-cta:hover {
-  border-color: var(--color-text-secondary);
-  color: var(--color-text-primary);
-  background-color: rgba(185, 190, 172, 0.06);
-}
-
-.btn-secondary-cta:focus-visible {
-  outline: 2px solid var(--color-focus);
-  outline-offset: 2px;
-}
-
-/* SECTION 2: The Causal Ritual Folio Spread */
-.landing-loop-section {
-  width: 100%;
-}
-
-.ritual-folio-spread {
-  display: grid;
-  grid-template-columns: 1fr 1.35fr;
-  gap: var(--space-32);
-  align-items: stretch;
-  background: rgba(29, 35, 29, 0.45);
-  border: 1px solid rgba(185, 190, 172, 0.16);
-  border-radius: var(--radius-panel);
-  padding: var(--space-24);
-}
-
-/* Step Rail */
-.ritual-step-rail {
+.ritual-scenes-flow {
   display: flex;
   flex-direction: column;
-  gap: var(--space-8);
-  border-right: 1px solid rgba(185, 190, 172, 0.14);
-  padding-right: var(--space-24);
+  gap: 140px;
 }
 
-.ritual-rail-item {
+.ritual-flow-stage {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 60px;
+  align-items: center;
+  position: relative;
+}
+
+/* Alternate scene alignment for editorial cadence */
+.stage-act,
+.stage-ember {
+  grid-template-columns: 0.9fr 1.1fr;
+}
+.stage-act .stage-content-col,
+.stage-ember .stage-content-col {
+  order: 2;
+}
+.stage-act .stage-visual-col,
+.stage-ember .stage-visual-col {
+  order: 1;
+}
+
+.stage-content-col {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: var(--space-4);
-  width: 100%;
-  min-height: 52px;
-  padding: var(--space-12) var(--space-16);
-  background: transparent;
-  border: 1px solid transparent;
-  border-radius: var(--radius-btn);
-  color: var(--color-text-secondary);
-  cursor: pointer;
-  text-align: left;
-  transition: all 120ms ease;
 }
 
-.ritual-rail-item:hover {
-  background: rgba(185, 190, 172, 0.06);
-  color: var(--color-text-primary);
+.stage-index {
+  font-size: 0.75rem;
+  color: #C4A96A;
+  letter-spacing: 0.16em;
+  margin-bottom: 10px;
 }
 
-.ritual-rail-item.is-active {
-  background: rgba(233, 138, 75, 0.1);
-  border-color: rgba(233, 138, 75, 0.35);
-  color: var(--color-text-primary);
+.loop-step-title {
+  font-size: clamp(1.8rem, 2.8vw, 2.4rem);
+  font-weight: 400;
+  color: #F0E7D3;
+  margin-bottom: 6px;
+  letter-spacing: -0.015em;
 }
 
-.ritual-rail-item:focus-visible {
-  outline: 2px solid var(--color-focus);
-  outline-offset: 2px;
+.stage-body {
+  font-size: 1rem;
+  line-height: 1.65;
+  color: #B9BEAC;
+  margin-bottom: 24px;
+  max-width: 480px;
 }
 
-.rail-step-num {
-  font-family: var(--font-body);
-  font-size: var(--text-xs);
-  font-weight: 600;
-  color: var(--color-ember);
-  letter-spacing: 0.08em;
-}
-
-.rail-step-name {
-  font-family: var(--font-display);
-  font-size: var(--text-lg);
-  font-weight: 500;
-  color: var(--color-text-primary);
-  line-height: 1.2;
-}
-
-.rail-step-action {
-  font-family: var(--font-body);
-  font-size: var(--text-xs);
-  color: var(--color-text-secondary);
-  opacity: 0.8;
-}
-
-/* Active Stage Leaf */
-.ritual-stage-leaf {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  padding: var(--space-16) var(--space-24);
-}
-
-.leaf-header-row {
-  display: flex;
+.stage-consequence {
+  display: inline-flex;
   align-items: center;
-  gap: var(--space-8);
-  margin-bottom: var(--space-12);
+  gap: 12px;
+  padding: 10px 16px;
+  border-radius: 6px;
+  background: rgba(29, 35, 29, 0.7);
+  border: 1px solid rgba(185, 190, 172, 0.15);
 }
 
-.leaf-glyph {
-  font-size: 1.25rem;
-  color: var(--color-ember);
-  line-height: 1;
-}
-
-.leaf-step-badge {
-  font-family: var(--font-body);
-  font-size: var(--text-xs);
-  font-weight: 600;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--color-root);
-}
-
-.leaf-title {
-  font-family: var(--font-display);
-  font-size: var(--text-2xl);
-  font-weight: 500;
-  color: var(--color-text-primary);
-  margin: 0 0 var(--space-12);
-}
-
-.leaf-description {
-  font-family: var(--font-body);
-  font-size: var(--text-base);
-  color: var(--color-text-secondary);
-  line-height: 1.6;
-  margin: 0 0 var(--space-24);
-}
-
-.leaf-consequence-box {
-  background: rgba(20, 23, 19, 0.7);
-  border-left: 2px solid var(--color-root-mature);
-  border-radius: 0 var(--radius-btn) var(--radius-btn) 0;
-  padding: var(--space-12) var(--space-16);
-}
-
-.consequence-tag {
-  display: block;
-  font-family: var(--font-body);
-  font-size: 0.6875rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--color-root-mature);
-  margin-bottom: var(--space-4);
+.consequence-glyph {
+  color: #E98A4B;
+  font-size: 1.1rem;
 }
 
 .consequence-text {
-  font-family: var(--font-body);
-  font-size: var(--text-sm);
-  color: var(--color-text-primary);
-  line-height: 1.45;
-  margin: 0;
+  font-size: 0.85rem;
+  color: #D9E3B2;
 }
 
-/* SECTION 3: Permanent Becoming (Specimen Plate) */
-.landing-specimen-section {
-  width: 100%;
+/* Stage 1 Visual: Journal Leaf Specimen */
+.journal-leaf-specimen {
+  background: #1A201A;
+  border: 1px solid rgba(185, 190, 172, 0.25);
+  border-radius: 8px;
+  padding: 24px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5),
+              inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
-.landing-specimen-plate {
-  background: rgba(29, 35, 29, 0.45);
-  border: 1px solid rgba(159, 186, 135, 0.2);
-  border-radius: var(--radius-panel);
-  padding: var(--space-24);
-}
-
-.specimen-plate-header {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: var(--space-16);
-  margin-bottom: var(--space-24);
-  padding-bottom: var(--space-16);
-  border-bottom: 1px solid rgba(185, 190, 172, 0.12);
-}
-
-.specimen-plate-tag {
-  font-family: var(--font-body);
-  font-size: var(--text-xs);
-  font-weight: 600;
-  letter-spacing: 0.14em;
-  color: var(--color-root);
-}
-
-.specimen-plate-title {
-  font-family: var(--font-display);
-  font-size: var(--text-2xl);
-  font-weight: 500;
-  color: var(--color-text-primary);
-  margin: var(--space-4) 0 0;
-}
-
-/* Discipline Tabs */
-.specimen-discipline-tabs {
+/* Stage 2 Visual: Quiet Space */
+.quiet-space-indicator {
   display: flex;
   align-items: center;
-  gap: var(--space-8);
-  flex-wrap: wrap;
+  gap: 14px;
+  padding: 20px 24px;
+  background: rgba(20, 23, 19, 0.9);
+  border: 1px dashed rgba(185, 190, 172, 0.25);
+  border-radius: 8px;
 }
 
-.discipline-tab-btn {
-  display: inline-flex;
+.quiet-pulse {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #9FBA87;
+  box-shadow: 0 0 12px #9FBA87;
+}
+
+/* Stage 3 Visual: Interactive Seal Pad */
+.seal-interactive-pad {
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: var(--space-6);
-  min-height: 44px;
-  min-width: 44px;
-  padding: 0 var(--space-12);
-  background: rgba(20, 23, 19, 0.6);
-  border: 1px solid rgba(185, 190, 172, 0.18);
-  border-radius: var(--radius-btn);
-  color: var(--color-text-secondary);
-  font-family: var(--font-body);
-  font-size: var(--text-xs);
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  cursor: pointer;
-  transition: all 120ms ease;
+  text-align: center;
+  padding: 30px;
+  background: rgba(29, 35, 29, 0.6);
+  border: 1px solid rgba(196, 169, 106, 0.2);
+  border-radius: 10px;
 }
 
-.discipline-tab-btn:hover {
-  border-color: rgba(159, 186, 135, 0.4);
-  color: var(--color-text-primary);
+.demo-seal-trigger {
+  min-width: 200px;
 }
 
-.discipline-tab-btn.is-selected {
-  border-color: var(--color-root);
-  background: rgba(159, 186, 135, 0.15);
-  color: var(--color-text-primary);
-}
-
-.discipline-tab-btn:focus-visible {
-  outline: 2px solid var(--color-focus);
-  outline-offset: 2px;
-}
-
-.discipline-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: var(--radius-circle);
-}
-
-.discipline-dot.attr-mind { background: var(--color-root-mature); }
-.discipline-dot.attr-body { background: var(--color-ember); }
-.discipline-dot.attr-will { background: var(--color-ember-core); }
-.discipline-dot.attr-craft { background: var(--color-root); }
-
-/* Stage Grid */
-.specimen-stage-grid {
-  display: grid;
-  grid-template-columns: 1.2fr 0.8fr;
-  gap: var(--space-32);
-  align-items: center;
-}
-
-.specimen-svg-viewport {
-  position: relative;
-  width: 100%;
-  height: 340px;
+/* Stage 4 Visual: Ember Response */
+.ember-response-miniature {
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.specimen-svg-viewport svg {
-  max-height: 100%;
-  width: auto;
-}
-
-/* Legend Rail */
-.specimen-anatomy-legend {
+/* Stage 5 Visual: Root Shoots */
+.root-shoot-visual {
+  position: relative;
+  width: 200px;
+  height: 160px;
   display: flex;
-  flex-direction: column;
-  gap: var(--space-12);
+  align-items: center;
+  justify-content: center;
 }
 
-.anatomy-legend-heading {
-  font-family: var(--font-body);
-  font-size: var(--text-xs);
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--color-text-secondary);
+.shoot-stem {
+  width: 4px;
+  height: 120px;
+  background: linear-gradient(180deg, #9FBA87 0%, #C4A96A 100%);
+  border-radius: 2px;
 }
 
-.anatomy-legend-list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-12);
+.shoot-bud {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+.bud-mind { top: 30px; left: 60px; background: #7BA3C7; box-shadow: 0 0 8px #7BA3C7; }
+.bud-body { top: 45px; right: 60px; background: #B87D67; box-shadow: 0 0 8px #B87D67; }
+.bud-will { top: 80px; left: 55px; background: #C4A96A; box-shadow: 0 0 8px #C4A96A; }
+.bud-craft { top: 95px; right: 55px; background: #8EA878; box-shadow: 0 0 8px #8EA878; }
+
+/* -----------------------------------------------------------------------------
+   Living Root Specimen Section (Organism Organizes the Surface)
+   ----------------------------------------------------------------------------- */
+.landing-organism-scene {
+  position: relative;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 100px 28px 140px;
+  border-top: 1px solid rgba(185, 190, 172, 0.12);
 }
 
-.anatomy-legend-item {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--space-8);
-}
-
-.legend-marker-dot {
-  font-size: 0.6875rem;
-  color: var(--color-root-mature);
-  margin-top: 2px;
-}
-
-.legend-marker-top {
-  display: flex;
-  align-items: baseline;
-  gap: var(--space-6);
-}
-
-.legend-marker-name {
-  font-family: var(--font-body);
-  font-size: var(--text-sm);
-  font-weight: 600;
-  color: var(--color-text-primary);
-}
-
-.legend-marker-xp {
-  font-family: var(--font-body);
-  font-size: 0.6875rem;
-  color: var(--color-ember);
-  font-weight: 600;
-}
-
-.legend-marker-desc {
-  font-family: var(--font-body);
-  font-size: var(--text-xs);
-  color: var(--color-text-secondary);
-  margin: var(--space-4) 0 0;
-  line-height: 1.4;
-}
-
-/* SECTION 4: Closing Invitation */
-.landing-closing-section {
+.organism-header {
   text-align: center;
-  padding: var(--space-32) var(--space-16);
-  border-top: 1px dashed rgba(185, 190, 172, 0.16);
+  margin-bottom: 50px;
 }
 
-.closing-flame-dot {
+.specimen-botanical-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 60px;
+  flex-wrap: wrap;
+}
+
+.specimen-tab-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: rgba(29, 35, 29, 0.7);
+  border: 1px solid rgba(185, 190, 172, 0.2);
+  border-radius: 999px;
+  color: #B9BEAC;
+  font-family: var(--font-mono, monospace);
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 150ms ease;
+  min-height: 44px;
+}
+
+.specimen-tab-tag:hover {
+  border-color: rgba(196, 169, 106, 0.4);
+  color: #F0E7D3;
+}
+
+.specimen-tab-tag.specimen-tab-active {
+  background: #242C24;
+  border-color: #C4A96A;
+  color: #FFFFFF;
+  box-shadow: 0 0 14px rgba(196, 169, 106, 0.2);
+}
+
+.specimen-tab-tag:focus-visible {
+  outline: 2px solid #C4A96A;
+  outline-offset: 2px;
+}
+
+.tag-dot {
   width: 8px;
   height: 8px;
-  background: var(--color-ember);
-  border-radius: var(--radius-circle);
-  margin: 0 auto var(--space-16);
-  box-shadow: 0 0 10px rgba(233, 138, 75, 0.6);
+  border-radius: 50%;
+}
+.dot-mind { background: #7BA3C7; }
+.dot-body { background: #B87D67; }
+.dot-will { background: #C4A96A; }
+.dot-craft { background: #8EA878; }
+
+.organism-focal-stage {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 60px;
+  align-items: center;
 }
 
-.closing-title {
-  font-family: var(--font-display);
-  font-size: var(--text-3xl);
-  font-weight: 400;
-  color: var(--color-text-primary);
-  margin: 0 0 var(--space-8);
+.specimen-svg-frame {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 420px;
 }
 
-.closing-desc {
-  font-family: var(--font-body);
-  font-size: var(--text-base);
-  color: var(--color-text-secondary);
-  max-width: 520px;
-  margin: 0 auto var(--space-24);
-  line-height: 1.55;
+.organism-evolution-controller {
+  display: flex;
+  flex-direction: column;
 }
 
-/* Footer */
-.landing-footer {
+.controller-title {
+  color: #C4A96A;
+}
+
+.evolution-tiers-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.evolution-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 16px 20px;
+  background: rgba(29, 35, 29, 0.5);
+  border: 1px solid rgba(185, 190, 172, 0.15);
+  border-radius: 8px;
+  cursor: pointer;
+  text-align: left;
+  transition: all 150ms ease;
+  min-height: 44px;
+}
+
+.evolution-card:hover {
+  background: rgba(36, 44, 36, 0.8);
+  border-color: rgba(196, 169, 106, 0.35);
+}
+
+.evolution-card.tier-active {
+  background: #1F271F;
+  border-color: #E98A4B;
+  box-shadow: 0 0 16px rgba(233, 138, 75, 0.15);
+}
+
+.evolution-card:focus-visible {
+  outline: 2px solid #C4A96A;
+  outline-offset: 2px;
+}
+
+.tier-badge {
+  color: #E98A4B;
+  margin-bottom: 4px;
+}
+
+.tier-name {
+  font-size: 1rem;
+  margin-bottom: 4px;
+}
+
+.tier-desc {
+  line-height: 1.5;
+}
+
+/* -----------------------------------------------------------------------------
+   Closing Editorial Call
+   ----------------------------------------------------------------------------- */
+.landing-closing-scene {
+  max-width: 840px;
+  margin: 0 auto;
+  padding: 120px 28px 160px;
   text-align: center;
-  padding: var(--space-24);
-  border-top: 1px solid rgba(185, 190, 172, 0.1);
-  font-family: var(--font-body);
-  font-size: var(--text-xs);
-  color: var(--color-text-secondary);
-  opacity: 0.7;
 }
 
-/* Reduced Motion */
-@media (prefers-reduced-motion: reduce) {
+.closing-content-well {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.closing-headline {
+  font-size: clamp(2.2rem, 4vw, 3.4rem);
+  font-weight: 400;
+  line-height: 1.15;
+  color: #F0E7D3;
+  letter-spacing: -0.02em;
+  margin-bottom: 18px;
+}
+
+.closing-lead {
+  font-size: 1.05rem;
+  line-height: 1.6;
+  max-width: 480px;
+  margin-bottom: 40px;
+}
+
+.closing-cta-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+}
+
+.closing-cta-row a {
+  text-decoration: none;
+  outline: none;
+}
+
+.closing-cta-row a:focus-visible {
+  outline: 2px solid #C4A96A;
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* -----------------------------------------------------------------------------
+   Colophon Footer
+   ----------------------------------------------------------------------------- */
+.landing-colophon-bar {
+  border-top: 1px solid rgba(185, 190, 172, 0.12);
+  padding: 24px 28px;
+}
+
+.colophon-inner {
+  max-width: 1280px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #6E7B6E;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+/* ==========================================================================
+   Responsive Adaptations
+   ========================================================================== */
+
+/* Tablet (768px - 1024px) */
+@media (max-width: 1024px) {
+  .hero-grid-container {
+    grid-template-columns: 1fr;
+    gap: 50px;
+  }
+  .hero-ember-col {
+    order: -1;
+  }
+  .organism-focal-stage {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+  .ritual-flow-stage,
+  .stage-act,
+  .stage-ember {
+    grid-template-columns: 1fr;
+    gap: 30px;
+  }
+  .stage-act .stage-content-col,
+  .stage-ember .stage-content-col {
+    order: 1;
+  }
+  .stage-act .stage-visual-col,
+  .stage-ember .stage-visual-col {
+    order: 2;
+  }
+}
+
+/* Mobile (390px - 767px) */
+@media (max-width: 767px) {
+  .landing-hero-scene {
+    padding: 40px 20px 80px;
+  }
+  .hero-display-headline {
+    font-size: 2.2rem;
+  }
+  .ritual-scenes-flow {
+    gap: 90px;
+  }
+  .specimen-botanical-tabs {
+    gap: 8px;
+  }
+  .specimen-tab-tag {
+    padding: 8px 14px;
+    font-size: 0.8rem;
+  }
+  .colophon-inner {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+/* Small Mobile (320px - 389px) */
+@media (max-width: 389px) {
+  .nav-container {
+    padding: 12px 16px;
+  }
+  .hero-cta-group,
+  .closing-cta-row {
+    flex-direction: column;
+    width: 100%;
+  }
   .btn-primary-cta,
   .btn-secondary-cta,
-  .ritual-rail-item,
-  .discipline-tab-btn {
-    transition: none !important;
-    transform: none !important;
+  .hero-primary-btn,
+  .hero-secondary-btn,
+  .closing-primary-btn,
+  .closing-secondary-btn {
+    width: 100%;
   }
-}
-
-/* Responsive Breakpoints */
-@media (max-width: 1023px) {
-  .ritual-folio-spread {
-    grid-template-columns: 1fr;
-    gap: var(--space-24);
-  }
-
-  .ritual-step-rail {
-    border-right: none;
-    border-bottom: 1px solid rgba(185, 190, 172, 0.14);
-    padding-right: 0;
-    padding-bottom: var(--space-16);
-  }
-
-  .specimen-stage-grid {
-    grid-template-columns: 1fr;
-    gap: var(--space-24);
-  }
-}
-
-@media (max-width: 640px) {
-  .landing-title {
-    font-size: var(--text-3xl);
-  }
-
-  .landing-content {
-    padding: var(--space-24) var(--space-16) var(--space-32);
-    gap: var(--space-32);
-  }
-
-  .ritual-folio-spread {
-    padding: var(--space-16);
-  }
-
-  .ritual-rail-item {
-    min-height: 48px;
-    padding: var(--space-8) var(--space-12);
-  }
-
-  .landing-specimen-plate {
-    padding: var(--space-16);
+  .hero-display-headline {
+    font-size: 1.85rem;
   }
 }

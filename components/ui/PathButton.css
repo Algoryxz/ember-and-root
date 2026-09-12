@@ -1,0 +1,256 @@
+/* ==========================================================================
+   Ember & Root — PathButton Tactile Physical Primitive
+   Visual Direction: Illuminated Field Journal
+   Inspiration: Petr Knoll physics adapted to pure charcoal, brass, & ember materials
+   Zero glassmorphism. Hand-crafted material depths.
+   ========================================================================== */
+
+.path-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-body, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  box-sizing: border-box;
+  background: transparent;
+  border: none;
+  padding: 0;
+  outline: none;
+  border-radius: var(--radius-btn, 6px);
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Sizing Tokens */
+.path-btn-sm {
+  font-size: var(--text-xs, 0.75rem);
+}
+.path-btn-md {
+  font-size: var(--text-sm, 0.875rem);
+}
+.path-btn-lg {
+  font-size: var(--text-base, 1rem);
+}
+
+/* -----------------------------------------------------------------------------
+   Layer 1: The Depression Well (Dark Ink Base)
+   ----------------------------------------------------------------------------- */
+.path-btn-well {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: #0E110E;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.85),
+              0 1px 2px rgba(0, 0, 0, 0.5);
+  pointer-events: none;
+}
+
+/* -----------------------------------------------------------------------------
+   Layer 2: Hand-Ground Brass / Copper Rim
+   ----------------------------------------------------------------------------- */
+.path-btn-rim {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  border: 1px solid rgba(196, 169, 106, 0.25);
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+  pointer-events: none;
+}
+
+/* -----------------------------------------------------------------------------
+   Layer 3: The Raised Surface Face
+   ----------------------------------------------------------------------------- */
+.path-btn-face {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-8, 8px);
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  padding: 10px 18px;
+  transform: translateY(-2px);
+  transition: transform 90ms cubic-bezier(0.2, 0.8, 0.4, 1),
+              background-color 150ms ease,
+              box-shadow 150ms ease,
+              filter 150ms ease;
+  box-sizing: border-box;
+}
+
+.path-btn-sm .path-btn-face {
+  padding: 6px 12px;
+}
+
+.path-btn-lg .path-btn-face {
+  padding: 14px 24px;
+}
+
+/* -----------------------------------------------------------------------------
+   Variants
+   ----------------------------------------------------------------------------- */
+
+/* 1. Ember Variant (Primary Action & Seal Climax) */
+.path-btn-ember .path-btn-face {
+  background: linear-gradient(180deg, #F09657 0%, #E98A4B 60%, #D87C3F 100%);
+  color: #141713;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.45),
+              inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+
+.path-btn-ember:hover:not(:disabled):not([aria-disabled="true"]) .path-btn-face {
+  background: linear-gradient(180deg, #FCA265 0%, #EE9356 60%, #E08548 100%);
+  box-shadow: 0 0 14px rgba(233, 138, 75, 0.35),
+              0 2px 8px rgba(0, 0, 0, 0.5),
+              inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.path-btn-ember:hover:not(:disabled):not([aria-disabled="true"]) .path-btn-rim {
+  border-color: rgba(255, 211, 138, 0.45);
+}
+
+/* 2. Charcoal Variant (Journal Action / Keep / Alt) */
+.path-btn-charcoal .path-btn-face {
+  background: linear-gradient(180deg, #242C24 0%, #1D231D 100%);
+  color: #F0E7D3;
+  border: 1px solid rgba(55, 69, 55, 0.8);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.45),
+              inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.path-btn-charcoal:hover:not(:disabled):not([aria-disabled="true"]) .path-btn-face {
+  background: linear-gradient(180deg, #2A342A 0%, #222922 100%);
+  border-color: rgba(185, 190, 172, 0.35);
+  color: #FFFFFF;
+}
+
+/* 3. Parchment / Neutral Variant (Secondary / Not for me) */
+.path-btn-parchment .path-btn-face {
+  background: #161A16;
+  color: #B9BEAC;
+  border: 1px solid rgba(45, 56, 45, 0.8);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.35);
+}
+
+.path-btn-parchment:hover:not(:disabled):not([aria-disabled="true"]) .path-btn-face {
+  background: #1D231D;
+  color: #F0E7D3;
+  border-color: rgba(196, 169, 106, 0.3);
+}
+
+/* 4. Seal Variant (Tactile Heavy Wax/Ember Climax) */
+.path-btn-seal .path-btn-face {
+  background: radial-gradient(circle at 50% 30%, #F59F64 0%, #E98A4B 50%, #C46D32 100%);
+  color: #141713;
+  font-family: var(--font-display, 'Fraunces', serif);
+  letter-spacing: 0.02em;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6),
+              0 0 18px rgba(233, 138, 75, 0.25),
+              inset 0 1px 1px rgba(255, 255, 255, 0.35);
+}
+
+.path-btn-seal:hover:not(:disabled):not([aria-disabled="true"]) .path-btn-face {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.7),
+              0 0 24px rgba(255, 211, 138, 0.4),
+              inset 0 1px 1px rgba(255, 255, 255, 0.45);
+}
+
+/* 5. Ghost Variant */
+.path-btn-ghost .path-btn-face {
+  background: transparent;
+  color: #B9BEAC;
+  box-shadow: none;
+}
+.path-btn-ghost .path-btn-well,
+.path-btn-ghost .path-btn-rim {
+  opacity: 0;
+}
+.path-btn-ghost:hover:not(:disabled):not([aria-disabled="true"]) .path-btn-face {
+  background: rgba(29, 35, 29, 0.6);
+  color: #F0E7D3;
+}
+
+/* -----------------------------------------------------------------------------
+   Active Press Physics (80–120ms downward depression into well)
+   ----------------------------------------------------------------------------- */
+.path-btn:active:not(:disabled):not([aria-disabled="true"]) .path-btn-face,
+.path-btn.is-depressed .path-btn-face {
+  transform: translateY(1px);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.6),
+              inset 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+/* Holding Pressure (First Seal pending confirmation) */
+.path-btn.is-depressed .path-btn-rim {
+  border-color: rgba(233, 138, 75, 0.6);
+  box-shadow: 0 0 10px rgba(233, 138, 75, 0.3);
+}
+
+/* -----------------------------------------------------------------------------
+   Focus Rings (WCAG AA Pale Gold 2px with 2px offset)
+   ----------------------------------------------------------------------------- */
+.path-btn:focus-visible {
+  outline: 2px solid var(--color-focus, #C4A96A);
+  outline-offset: 2px;
+}
+
+/* -----------------------------------------------------------------------------
+   Disabled States
+   ----------------------------------------------------------------------------- */
+.path-btn:disabled,
+.path-btn[aria-disabled="true"] {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.path-btn:disabled .path-btn-face,
+.path-btn[aria-disabled="true"] .path-btn-face {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+/* -----------------------------------------------------------------------------
+   Simmering Ember Spark (Pending Indicator)
+   ----------------------------------------------------------------------------- */
+.path-btn-ember-spark {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #FFD38A;
+  box-shadow: 0 0 8px #FFD38A, 0 0 14px #E98A4B;
+  animation: ember-pulse 1s infinite alternate ease-in-out;
+}
+
+@keyframes ember-pulse {
+  from {
+    transform: scale(0.85);
+    opacity: 0.7;
+  }
+  to {
+    transform: scale(1.2);
+    opacity: 1;
+  }
+}
+
+/* -----------------------------------------------------------------------------
+   Reduced Motion
+   ----------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  .path-btn-face {
+    transition: none !important;
+    transform: none !important;
+  }
+  .path-btn:active:not(:disabled) .path-btn-face,
+  .path-btn.is-depressed .path-btn-face {
+    transform: none !important;
+  }
+  .path-btn-ember-spark {
+    animation: none !important;
+  }
+}

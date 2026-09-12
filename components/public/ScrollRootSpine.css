@@ -1,0 +1,49 @@
+/* ==========================================================================
+   Ember & Root — Scroll-Following Root Spine
+   Physical SVG spatial guide running vertically through the continuous story
+   ========================================================================== */
+
+.scroll-root-spine-container {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 140px;
+  pointer-events: none;
+  z-index: 2;
+  opacity: 0.85;
+}
+
+.scroll-root-spine-svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+/* Reduced Motion Fallback: Immediate Drawn Path */
+@media (prefers-reduced-motion: reduce) {
+  .scroll-root-spine-svg motion-path,
+  .scroll-root-spine-svg path {
+    stroke-dashoffset: 0 !important;
+    transition: none !important;
+  }
+}
+
+/* Mobile responsive alignment */
+@media (max-width: 768px) {
+  .scroll-root-spine-container {
+    left: 28px;
+    transform: none;
+    width: 60px;
+    opacity: 0.55;
+  }
+}
+
+@media (max-width: 480px) {
+  .scroll-root-spine-container {
+    left: 14px;
+    width: 44px;
+    opacity: 0.4;
+  }
+}

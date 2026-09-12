@@ -1,0 +1,181 @@
+/* ==========================================================================
+   Ember & Root — Authored SVG Ember Organism
+   Physical flame geometry with layered depth, convective warmth, and tactile pulse
+   ========================================================================== */
+
+.ember-object-container {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  user-select: none;
+  border-radius: 50%;
+  outline: none;
+  transition: transform 300ms cubic-bezier(0.2, 0.8, 0.4, 1);
+}
+
+.ember-object-container:focus-visible {
+  outline: 2px solid #C4A96A;
+  outline-offset: 6px;
+}
+
+/* -----------------------------------------------------------------------------
+   Directional Halo (Ambient Heat)
+   ----------------------------------------------------------------------------- */
+.ember-directional-halo {
+  position: absolute;
+  inset: -15%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 65%, rgba(233, 138, 75, 0.28) 0%, rgba(196, 169, 106, 0.12) 40%, transparent 75%);
+  filter: blur(14px);
+  pointer-events: none;
+  animation: ember-halo-breathe 4.6s ease-in-out infinite alternate;
+}
+
+/* -----------------------------------------------------------------------------
+   SVG Flame Anatomy
+   ----------------------------------------------------------------------------- */
+.ember-svg-organism {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.ember-coal-bed {
+  fill: #1B1210;
+  stroke: rgba(60, 30, 20, 0.6);
+  stroke-width: 1px;
+}
+
+.ember-coal-glow {
+  fill: #852C11;
+  filter: blur(2px);
+  opacity: 0.85;
+}
+
+.ember-flame-envelope {
+  transform-origin: 80px 125px;
+  animation: ember-envelope-breathe 3.8s ease-in-out infinite alternate;
+}
+
+.ember-flame-body {
+  transform-origin: 80px 125px;
+  animation: ember-body-sway 2.8s ease-in-out infinite alternate;
+}
+
+.ember-flame-tongue {
+  transform-origin: 80px 110px;
+}
+
+.tongue-left {
+  animation: tongue-left-flicker 1.9s ease-in-out infinite alternate;
+}
+
+.tongue-right {
+  animation: tongue-right-flicker 2.3s ease-in-out infinite alternate;
+}
+
+.ember-flame-core {
+  transform-origin: 80px 120px;
+  animation: ember-core-pulse 2.4s ease-in-out infinite alternate;
+}
+
+.ember-white-hot {
+  fill: #FFFFFF;
+  filter: blur(1.5px);
+  opacity: 0.95;
+  animation: ember-white-pulse 1.6s ease-in-out infinite alternate;
+}
+
+/* Ascending Motes */
+.ember-mote {
+  fill: #FFD38A;
+  opacity: 0;
+  animation: ember-mote-ascend 3.2s ease-out infinite;
+}
+
+.mote-1 { animation-delay: 0.2s; }
+.mote-2 { animation-delay: 1.4s; }
+.mote-3 { animation-delay: 2.3s; }
+
+/* -----------------------------------------------------------------------------
+   Pulsing Click / Interaction Climax
+   ----------------------------------------------------------------------------- */
+.ember-object-container.is-pulsing {
+  transform: scale(1.12);
+}
+
+.ember-object-container.is-pulsing .ember-directional-halo {
+  background: radial-gradient(circle at 50% 65%, rgba(255, 211, 138, 0.5) 0%, rgba(233, 138, 75, 0.35) 45%, transparent 80%);
+  filter: blur(20px);
+}
+
+.ember-object-container.is-pulsing .ember-flame-core {
+  filter: drop-shadow(0 0 12px #FFD38A);
+}
+
+/* -----------------------------------------------------------------------------
+   Keyframe Animations
+   ----------------------------------------------------------------------------- */
+@keyframes ember-halo-breathe {
+  0% { transform: scale(0.92); opacity: 0.7; }
+  100% { transform: scale(1.08); opacity: 1; }
+}
+
+@keyframes ember-envelope-breathe {
+  0% { transform: scale(0.97, 0.95); }
+  100% { transform: scale(1.03, 1.05); }
+}
+
+@keyframes ember-body-sway {
+  0% { transform: scale(0.98, 0.97) rotate(-1deg); }
+  50% { transform: scale(1.02, 1.03) rotate(0.5deg); }
+  100% { transform: scale(0.99, 1.01) rotate(1.2deg); }
+}
+
+@keyframes tongue-left-flicker {
+  0% { transform: scaleY(0.92) rotate(-1.5deg); opacity: 0.65; }
+  100% { transform: scaleY(1.08) rotate(1deg); opacity: 0.9; }
+}
+
+@keyframes tongue-right-flicker {
+  0% { transform: scaleY(1.06) rotate(1.5deg); opacity: 0.85; }
+  100% { transform: scaleY(0.94) rotate(-0.5deg); opacity: 0.6; }
+}
+
+@keyframes ember-core-pulse {
+  0% { transform: scale(0.95); opacity: 0.85; }
+  100% { transform: scale(1.06); opacity: 1; }
+}
+
+@keyframes ember-white-pulse {
+  0% { opacity: 0.75; transform: scale(0.85); }
+  100% { opacity: 1; transform: scale(1.15); }
+}
+
+@keyframes ember-mote-ascend {
+  0% { transform: translateY(10px) scale(0.5); opacity: 0; }
+  30% { opacity: 0.9; }
+  80% { opacity: 0.5; }
+  100% { transform: translateY(-35px) translateX(var(--drift, 4px)) scale(1.2); opacity: 0; }
+}
+
+/* -----------------------------------------------------------------------------
+   Reduced Motion Support
+   ----------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  .ember-directional-halo,
+  .ember-flame-envelope,
+  .ember-flame-body,
+  .ember-flame-tongue,
+  .ember-flame-core,
+  .ember-white-hot,
+  .ember-mote {
+    animation: none !important;
+    transition: none !important;
+  }
+  .ember-object-container.is-pulsing {
+    transform: none !important;
+  }
+}
