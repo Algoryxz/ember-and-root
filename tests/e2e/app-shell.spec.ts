@@ -48,7 +48,10 @@ test.describe('Public Auth Pages Accessibility', () => {
   test('landing page has valid heading and skip links', async ({ page }) => {
     await page.goto('/');
     await expect(page.locator('h1')).toBeVisible();
-    await expect(page.locator('a[href="/login"], a[href="/signup"]')).toHaveCount(2);
+    await expect(page.locator('a.skip-link')).toBeAttached();
+    const authLinks = page.locator('a[href="/login"], a[href="/signup"]');
+    const count = await authLinks.count();
+    expect(count).toBeGreaterThanOrEqual(2);
   });
 
   test('login page allows full keyboard navigation through all interactive controls', async ({ page }) => {

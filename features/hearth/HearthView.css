@@ -1,84 +1,84 @@
 /* ==========================================================================
-   Ember & Root — Hearth View Styles
+   HearthView — Botanical Field Journal Shell & Folio Layout
    Owned by: Deeptiman (Experience / Frontend Lead)
-   Visual Direction: Illuminated Field Journal
-   Specification: docs/UI_UX_BRIEF.md
+   Visual Direction: Botanical Field Journal (Asymmetric Folio Spread)
    ========================================================================== */
 
 .hearth-shell {
-  width: 100%;
+  min-height: 100vh;
   background-color: var(--color-bg);
   color: var(--color-text-primary);
+  font-family: var(--font-body);
   display: flex;
   flex-direction: column;
-  box-sizing: border-box;
 }
 
-/* --------------------------------------------------------------------------
-   Accessible Skip Link
-   -------------------------------------------------------------------------- */
+/* Accessible Skip Link */
 .skip-link {
   position: absolute;
-  top: -60px;
+  top: -100px;
   left: var(--space-16);
-  background: var(--color-ember);
-  color: var(--color-bg);
+  background: var(--color-surface);
+  color: var(--color-text-primary);
   padding: var(--space-8) var(--space-16);
-  z-index: 9999;
-  font-weight: 600;
+  border: 1px solid var(--color-focus);
   border-radius: var(--radius-btn);
-  transition: top 150ms ease;
-  text-decoration: none;
+  font-size: var(--text-sm);
+  z-index: 9999;
+  transition: top 120ms ease;
 }
 
 .skip-link:focus {
   top: var(--space-16);
+  outline: 2px solid var(--color-focus);
 }
 
-/* --------------------------------------------------------------------------
-   App Shell Header
-   Restrained fantasy field journal atmosphere, not corporate dashboard
-   -------------------------------------------------------------------------- */
+/* App Header & Navigation Bar */
 .hearth-app-header {
-  background-color: var(--color-surface);
-  border-bottom: 1px solid rgba(185, 190, 172, 0.15);
-  padding: var(--space-12) var(--space-24);
-  box-sizing: border-box;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background-color: rgba(20, 23, 19, 0.92);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid rgba(185, 190, 172, 0.12);
 }
 
 .hearth-header-inner {
-  max-width: 1080px;
+  max-width: 1280px;
   margin: 0 auto;
+  padding: 0 var(--space-24);
+  height: 64px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: var(--space-16);
-  flex-wrap: wrap;
 }
 
-/* Brand Identifier */
+/* Brand Identity */
 .hearth-brand {
   display: flex;
   align-items: center;
-  gap: var(--space-12);
+  gap: var(--space-8);
+  text-decoration: none;
 }
 
 .hearth-brand-flame {
-  width: 14px;
-  height: 14px;
-  border-radius: var(--radius-circle);
+  width: 10px;
+  height: 10px;
   background-color: var(--color-ember);
-  box-shadow: 0 0 10px var(--color-ember);
+  border-radius: var(--radius-circle);
+  box-shadow: 0 0 8px rgba(233, 138, 75, 0.6);
 }
 
 .hearth-brand-name {
   font-family: var(--font-display);
-  font-size: var(--text-xl);
+  font-size: var(--text-lg);
+  font-weight: 500;
   color: var(--color-text-primary);
   letter-spacing: 0.02em;
 }
 
-/* Main Navigation Destinations */
+/* Primary Navigation */
 .hearth-main-nav {
   display: flex;
   align-items: center;
@@ -87,52 +87,56 @@
 .hearth-nav-list {
   display: flex;
   align-items: center;
-  gap: var(--space-4);
+  gap: var(--space-8);
   list-style: none;
   margin: 0;
   padding: 0;
 }
 
 .hearth-nav-item a {
-  font-family: var(--font-body);
-  font-size: var(--text-sm);
-  color: var(--color-text-secondary);
-  text-decoration: none;
-  padding: var(--space-8) var(--space-12);
-  border-radius: var(--radius-btn);
-  min-height: var(--min-touch-target);
   display: inline-flex;
   align-items: center;
-  transition: color 150ms ease, background-color 150ms ease;
+  padding: var(--space-8) var(--space-12);
+  color: var(--color-text-secondary);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  text-decoration: none;
+  border-radius: var(--radius-btn);
+  transition: color 120ms ease, background-color 120ms ease;
 }
 
 .hearth-nav-item a:hover {
   color: var(--color-text-primary);
-  background-color: rgba(255, 255, 255, 0.04);
+  background-color: rgba(185, 190, 172, 0.08);
 }
 
 .hearth-nav-item.is-active a {
-  color: var(--color-ember);
-  font-weight: 600;
+  color: var(--color-text-primary);
   background-color: rgba(233, 138, 75, 0.12);
 }
 
-/* Character Status Strip */
+.hearth-nav-item a:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+/* Status Strip */
 .hearth-status-strip {
   display: flex;
   align-items: center;
   gap: var(--space-8);
-  background: rgba(20, 23, 19, 0.65);
+  padding: var(--space-4) var(--space-12);
+  background-color: rgba(29, 35, 29, 0.6);
   border: 1px solid rgba(185, 190, 172, 0.12);
-  border-radius: var(--radius-panel);
-  padding: var(--space-4) var(--space-16);
-  font-size: var(--text-xs);
+  border-radius: var(--radius-btn);
 }
 
 .status-item {
   display: flex;
   align-items: center;
   gap: var(--space-4);
+  font-size: var(--text-xs);
 }
 
 .status-label {
@@ -140,13 +144,13 @@
 }
 
 .status-value {
-  font-family: var(--font-display);
-  color: var(--color-text-primary);
   font-weight: 600;
+  color: var(--color-text-primary);
 }
 
 .status-divider {
   color: rgba(185, 190, 172, 0.3);
+  font-size: 0.625rem;
 }
 
 .sparks-icon {
@@ -154,162 +158,120 @@
 }
 
 .streak-icon {
-  color: var(--color-ember);
+  font-size: 0.8rem;
 }
 
-/* --------------------------------------------------------------------------
-   Main Field Journal Canvas
-   Centered, grounded, intentional hierarchy
-   -------------------------------------------------------------------------- */
+/* Main Canvas */
 .hearth-canvas {
   flex: 1;
-  max-width: 1040px;
   width: 100%;
+  max-width: 1280px;
   margin: 0 auto;
-  padding: var(--space-24) var(--space-24);
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-24);
+  padding: var(--space-24) var(--space-24) var(--space-48);
 }
 
-/* --------------------------------------------------------------------------
-   Hero Heading Block: HEARTH
-   "Today is where the path begins."
-   -------------------------------------------------------------------------- */
+/* Hero Section */
 .hearth-hero-section {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
   text-align: center;
-  gap: var(--space-4);
+  margin-bottom: var(--space-24);
 }
 
 .hearth-hero-title {
   font-family: var(--font-display);
-  font-size: var(--text-4xl);
+  font-size: var(--text-3xl);
+  font-weight: 500;
   color: var(--color-text-primary);
-  letter-spacing: 0.08em;
+  letter-spacing: 0.12em;
   margin: 0;
-  line-height: 1.1;
 }
 
 .hearth-hero-subtitle {
   font-family: var(--font-body);
-  font-style: italic;
-  font-size: var(--text-base);
+  font-size: var(--text-sm);
   color: var(--color-text-secondary);
-  letter-spacing: 0.02em;
-  margin: 0;
+  margin: var(--space-4) 0 0;
+  letter-spacing: 0.04em;
 }
 
-/* --------------------------------------------------------------------------
-   The Hearth Stage: Illuminated Field Journal Folio Spread
-   Single cohesive spread uniting Ember Momentum & Root Becoming
-   -------------------------------------------------------------------------- */
-.hearth-stage-duo {
+/* Focal Top Anchor: Living Ember Momentum */
+.hearth-ember-stage {
+  display: flex;
+  justify-content: center;
+  margin-bottom: var(--space-32);
+}
+
+/* Editorial Field Spread (Asymmetric Folio Columns) */
+.hearth-field-spread {
   display: grid;
-  grid-template-columns: 1fr;
-  align-items: stretch;
-  background-color: var(--color-surface);
-  border: 1px solid rgba(185, 190, 172, 0.16);
-  border-radius: var(--radius-panel);
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.35);
-  position: relative;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: var(--space-48);
+  align-items: start;
+}
+
+.hearth-spread-journal {
   min-width: 0;
 }
 
-.hearth-stage-duo > *:first-child {
-  border-bottom: 1px solid rgba(185, 190, 172, 0.12);
+.hearth-spread-specimen {
+  min-width: 0;
 }
 
-@media (min-width: 960px) {
-  .hearth-stage-duo {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  }
-
-  .hearth-stage-duo > *:first-child {
-    border-bottom: none;
-    border-right: 1px solid rgba(185, 190, 172, 0.12);
-  }
-}
-
-/* --------------------------------------------------------------------------
-   QA Diagnostic Tool
-   -------------------------------------------------------------------------- */
+/* QA Diagnostic Tool */
 .hearth-qa-diagnostic {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  margin-top: var(--space-48);
   padding: var(--space-12) var(--space-16);
-  background: rgba(29, 35, 29, 0.4);
-  border: 1px dashed rgba(185, 190, 172, 0.15);
-  border-radius: var(--radius-card);
-  font-size: var(--text-xs);
-  color: var(--color-text-secondary);
-  margin-top: var(--space-16);
+  background-color: rgba(29, 35, 29, 0.4);
+  border: 1px dashed rgba(185, 190, 172, 0.2);
+  border-radius: var(--radius-panel);
 }
 
 .qa-toggle-label {
   display: flex;
   align-items: center;
   gap: var(--space-8);
-  cursor: pointer;
-  user-select: none;
-}
-
-.qa-toggle-label input {
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
   cursor: pointer;
 }
 
-/* --------------------------------------------------------------------------
-   Mobile Safe Area & Responsiveness (320px, 375px, 390px, 768px)
-   -------------------------------------------------------------------------- */
 .mobile-safe-bottom {
-  height: max(var(--space-16), env(safe-area-inset-bottom, 16px));
+  height: env(safe-area-inset-bottom, 0px);
 }
 
-@media (max-width: 860px) {
-  .hearth-header-inner {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: var(--space-12);
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  .skip-link,
+  .hearth-nav-item a {
+    transition: none !important;
+  }
+}
+
+/* Responsive Breakpoints */
+@media (max-width: 1023px) {
+  .hearth-field-spread {
+    grid-template-columns: 1fr;
+    gap: var(--space-32);
   }
 
-  .hearth-status-strip {
-    width: 100%;
-    justify-content: space-around;
+  .hearth-canvas {
+    padding: var(--space-16) var(--space-16) var(--space-32);
   }
 }
 
 @media (max-width: 640px) {
-  .hearth-canvas {
-    padding: var(--space-12) var(--space-8);
-    gap: var(--space-16);
+  .hearth-header-inner {
+    padding: 0 var(--space-12);
+  }
+
+  .hearth-status-strip {
+    display: none; /* Preserved in mobile profile/menu when navigation shell active */
   }
 
   .hearth-hero-title {
-    font-size: var(--text-3xl);
-    letter-spacing: 0.05em;
+    font-size: var(--text-2xl);
   }
 
-  .hearth-hero-subtitle {
-    font-size: var(--text-sm);
-  }
-}
-
-@media (max-width: 380px) {
-  .hearth-canvas {
-    padding: var(--space-8) var(--space-4);
-    gap: var(--space-12);
-  }
-
-  .hearth-hero-title {
-    font-size: 22px;
-    letter-spacing: 0.04em;
-  }
-
-  .hearth-hero-subtitle {
-    font-size: 13px;
+  .hearth-ember-stage {
+    margin-bottom: var(--space-24);
   }
 }

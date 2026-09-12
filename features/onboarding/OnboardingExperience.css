@@ -1,0 +1,60 @@
+/* OnboardingExperience.css — Ember & Root Choice-First Onboarding */
+
+.onboarding-container {
+  min-height: 100vh;
+  background-color: var(--color-bg, #141713);
+  color: var(--color-text-primary, #F0E7D3);
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* Journal paper subtle noise / vignette */
+.onboarding-container::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    circle at 50% 30%,
+    rgba(233, 138, 75, 0.04) 0%,
+    rgba(20, 23, 19, 0) 70%
+  );
+  z-index: 0;
+}
+
+/* Asymmetric desktop grid */
+.onboarding-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  min-height: 100vh;
+  position: relative;
+  z-index: 1;
+}
+
+@media (min-width: 1024px) {
+  .onboarding-grid {
+    grid-template-columns: 1.15fr 0.85fr;
+  }
+}
+
+/* Touch targets and keyboard focus */
+.onboarding-btn {
+  min-height: 44px;
+  touch-action: manipulation;
+}
+
+.onboarding-btn:focus-visible {
+  outline: 2px solid var(--color-focus, #C4A96A);
+  outline-offset: 2px;
+}
+
+/* Tactile press depth */
+.tactile-press:active {
+  transform: translateY(2px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tactile-press:active {
+    transform: none;
+  }
+}

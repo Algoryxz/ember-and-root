@@ -17,6 +17,16 @@ export default async function GameLayout({
     redirect('/login');
   }
 
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('preferences')
+    .single();
+
+  const preferences = (profile?.preferences as { onboarded?: boolean } | null) || {};
+  if (!preferences.onboarded) {
+    redirect('/onboard');
+  }
+
   return (
     <div className="min-h-screen flex flex-col bg-[#141713] text-[#F0E7D3]">
       <GameNav />

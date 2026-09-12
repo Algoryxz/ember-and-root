@@ -42,20 +42,59 @@ test.describe('Ember & Root — Full E2E Browser Demo Flow', () => {
     ]);
 
     // ------------------------------------------------------------------------
-    // Step 2: Onboarding (Timezone Confirmation)
+    // Step 2: Onboarding V2 Journey
     // ------------------------------------------------------------------------
-    await expect(page.locator('h1')).toContainText('Welcome, Wanderer');
-    const tzInput = page.locator('#timezone');
-    await expect(tzInput).toBeVisible();
+    await expect(page.locator('h2')).toContainText('Choose What Matters');
 
-    const currentTz = await tzInput.inputValue();
-    if (!currentTz || currentTz.trim() === '') {
-      await tzInput.fill('Asia/Kolkata');
-    }
+    // Choose 2 Body goals so Mind starts at 0 XP
+    const notForMeBtn = page.getByRole('button', { name: /^Not for me:/ });
+    const chooseBtn = page.getByRole('button', { name: /^Choose:/ });
 
+    // Skip 3 Mind goals
+    await notForMeBtn.click();
+    await page.waitForTimeout(250);
+    await notForMeBtn.click();
+    await page.waitForTimeout(250);
+    await notForMeBtn.click();
+    await page.waitForTimeout(250);
+
+    // Choose 2 Body goals
+    await chooseBtn.click();
+    await page.waitForTimeout(300);
+    await chooseBtn.click();
+    await page.waitForTimeout(300);
+
+    const continueGoalsBtn = page.locator('button:has-text("Continue with")');
+    await expect(continueGoalsBtn).toBeEnabled();
+    await continueGoalsBtn.click();
+
+    // Choose Intensity
+    await expect(page.locator('h2')).toContainText('Choose Your Intensity');
+    await page.click('button[role="radio"]:has-text("Balanced")');
+    await page.click('button:has-text("Continue to Available Time")');
+
+    // Choose Time & Rhythm
+    await expect(page.locator('h2')).toContainText('Available Daily Time');
+    await page.click('button[role="radio"]:has-text("15–30 minutes")');
+    await page.click('button:has-text("Assemble Starter Quests")');
+
+    // Confirm Starter Quests
+    await expect(page.locator('h2')).toContainText('Author Your Starting Quests');
+    await page.click('button:has-text("Confirm")');
+
+    // Confirm Timezone
+    await expect(page.locator('h2')).toContainText('Your Day Resets Here');
+    await page.click('button:has-text("Looks Right")');
+
+    // Select First Quest & Seal
+    await expect(page.locator('h2')).toContainText('BEGIN WITH ONE REAL ACT');
+    await page.click('button:has-text("Seal First Quest")');
+
+    // Climax & Enter Hearth
+    await expect(page.locator('h2')).toContainText("THAT’S THE LOOP.", { timeout: 15000 });
     await Promise.all([
       page.waitForURL(/\/hearth/, { timeout: 15000 }),
-      page.click('button[type="submit"]:has-text("Enter the Hearth")'),
+      page.click('button:has-text("Enter the Hearth")'),
     ]);
 
     // ------------------------------------------------------------------------
@@ -65,9 +104,9 @@ test.describe('Ember & Root — Full E2E Browser Demo Flow', () => {
     await expect(page.locator('#hearth-title')).toHaveText('HEARTH');
     await expect(page.locator('.hearth-hero-subtitle')).toHaveText('Today is where the path begins.');
 
-    // Status strip initial values
-    await expect(page.locator('text=Resting Ember')).toBeVisible();
-    await expect(page.locator('text=0 Completed · Dormant')).toBeVisible();
+    // Status strip initial values (1 completed from onboarding seal)
+    await expect(page.locator('text=Kindled Ember')).toBeVisible();
+    await expect(page.locator('text=1 Completed · Stirring')).toBeVisible();
 
     // ------------------------------------------------------------------------
     // Step 4: Inscribe "Finish Java recursion practice"
@@ -117,9 +156,9 @@ test.describe('Ember & Root — Full E2E Browser Demo Flow', () => {
     const liveRegion = page.locator('div[aria-live="polite"].sr-only');
     await expect(liveRegion).toContainText('sealed. +20 XP awarded, +4 Sparks gathered. mind branch grows.');
 
-    // Verify Ember state transitioned to Kindled
-    await expect(page.locator('text=Kindled Ember')).toBeVisible();
-    await expect(page.locator('text=1 Completed · Stirring')).toBeVisible();
+    // Verify Ember state transitioned to Steady (2 completed today)
+    await expect(page.locator('text=Steady Ember')).toBeVisible();
+    await expect(page.locator('text=2 Completed · Burning')).toBeVisible();
 
     // Verify Root preview on Hearth shows Mind 20 XP
     const mindPreviewCard = page.locator('.root-branch-card:has(.branch-name-label:has-text("Mind"))');
@@ -167,9 +206,9 @@ test.describe('Ember & Root — Full E2E Browser Demo Flow', () => {
     await expect(refreshedSealBtn).toBeDisabled();
     await expect(refreshedSealBtn).toHaveAttribute('aria-disabled', 'true');
 
-    // Verify Ember remains Kindled after refresh
-    await expect(page.locator('text=Kindled Ember')).toBeVisible();
-    await expect(page.locator('text=1 Completed · Stirring')).toBeVisible();
+    // Verify Ember remains Steady after refresh (2 completed today)
+    await expect(page.locator('text=Steady Ember')).toBeVisible();
+    await expect(page.locator('text=2 Completed · Burning')).toBeVisible();
 
     // Verify duplicate completion is unavailable (button cannot be clicked)
     await expect(refreshedSealBtn).toBeDisabled();
