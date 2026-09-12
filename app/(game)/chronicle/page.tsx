@@ -1,12 +1,22 @@
 import React from 'react';
 import { createClient } from '@/lib/supabase/server';
+import { levelFromTotalXp } from '@/game/progression';
 
 export const metadata = {
   title: 'Chronicle — Ember & Root',
 };
 
-export default async function ChroniclePage() {
+export interface ChroniclePageProps {
+  searchParams?: {
+    limit?: string;
+  };
+}
+
+export default async function ChroniclePage({ searchParams }: ChroniclePageProps) {
   const supabase = await createClient();
+
+  const requestedLimit = parseInt(searchParams?.limit ?? '20', 10);
+  const limit = Math.min(200, Math.max(20, isNaN(requestedLimit) ? 20 : requestedLimit));
 
   const [profileRes, completionsRes, branchesRes] = await Promise.all([
     supabase
@@ -17,7 +27,7 @@ export default async function ChroniclePage() {
       .from('quest_completions')
       .select('id, quest_title_snapshot, quest_attribute_snapshot, xp_awarded, sparks_awarded, local_date, completed_at')
       .order('completed_at', { ascending: false })
-      .limit(20),
+      .limit(limit),
     supabase
       .from('branches')
       .select('attribute, selected_specialization'),
@@ -30,12 +40,16 @@ export default async function ChroniclePage() {
   const totalXp = profile?.total_xp ?? 0;
   const currentStreak = profile?.current_streak ?? 0;
   const longestStreak = profile?.longest_streak ?? 0;
-  const level = Math.floor(Math.sqrt(totalXp / 20)) + 1;
+
+  // Authoritative character level derived from canonical progression rules
+  const level = levelFromTotalXp(totalXp);
 
   // Derived Achievements
   const hasFirstLight = completions.length > 0;
   const hasChosenPath = branches.some((b) => b.selected_specialization !== null);
   const hasReturned = longestStreak >= 2 || currentStreak > 0;
+
+  const hasMore = completions.length >= limit;
 
   return (
     <div className="space-y-8">
@@ -209,6 +223,17 @@ export default async function ChroniclePage() {
                 </div>
               </article>
             ))}
+
+            {hasMore && (
+              <div className="pt-4 text-center">
+                <a
+                  href={`/chronicle?limit=${limit + 20}`}
+                  className="inline-block px-4 py-2 rounded-[6px] bg-[#1D231D] border border-[#2A332A] hover:border-[#9FBA87]/50 text-xs font-medium text-[#F0E7D3] transition-colors"
+                >
+                  Load older entries →
+                </a>
+              </div>
+            )}
           </div>
         )}
       </section>

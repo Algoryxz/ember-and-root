@@ -87,7 +87,7 @@ test.describe('Ember & Root — Full E2E Browser Demo Flow', () => {
     await page.click('button:has-text("Looks Right")');
 
     // Select First Quest & Seal
-    await expect(page.locator('h2')).toContainText('BEGIN WITH ONE SMALL ACT');
+    await expect(page.locator('h2')).toContainText('BEGIN WITH ONE REAL ACT');
     await page.click('button:has-text("Seal First Quest")');
 
     // Climax & Enter Hearth

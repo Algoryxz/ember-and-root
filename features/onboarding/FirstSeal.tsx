@@ -262,7 +262,7 @@ export const FirstSeal: React.FC<FirstSealProps> = ({
               What you do becomes what grows.
             </p>
             <p className="text-xs sm:text-sm text-[#B9BEAC] max-w-md mx-auto leading-relaxed pt-1">
-              You performed a real act. The server confirmed it. The Ember kindled, and your Root awoke.
+              You completed your first quest. The Ember kindled, and your Root awoke.
             </p>
           </div>
 
@@ -347,10 +347,10 @@ export const FirstSeal: React.FC<FirstSealProps> = ({
               Chapter V · The First Spark
             </span>
             <h2 className="text-2xl sm:text-3xl font-serif text-[#F0E7D3] tracking-tight">
-              BEGIN WITH ONE SMALL ACT
+              BEGIN WITH ONE REAL ACT
             </h2>
             <p className="text-sm text-[#B9BEAC] mt-1.5 leading-relaxed">
-              Choose one of your kept starting quests. Complete this when you have actually done it. Then seal it.
+              Complete it when you&rsquo;ve actually done it, then Seal it.
             </p>
           </div>
 
@@ -442,11 +442,11 @@ export const FirstSeal: React.FC<FirstSealProps> = ({
             >
               <div className="inline-block text-xl">🔥</div>
               <p className="text-sm font-serif text-[#FFD38A]">
-                {motionStage === 'in_flight' && 'Inscribing Quests & Performing Real Server Seal…'}
-                {motionStage === 'seal_land' && 'Wax Seal Lands on the Ledger…'}
-                {motionStage === 'ember_warm' && 'The Hearth Ember Awakens…'}
-                {motionStage === 'light_travel' && 'Light Traces Along the Living Filament…'}
-                {motionStage === 'root_wake' && 'First Root Filament Comes Alive…'}
+                {motionStage === 'in_flight' && 'Sealing your first quest…'}
+                {motionStage === 'seal_land' && 'Wax seal lands on the ledger…'}
+                {motionStage === 'ember_warm' && 'The Hearth Ember awakens…'}
+                {motionStage === 'light_travel' && 'Light traces along the living filament…'}
+                {motionStage === 'root_wake' && 'First Root filament comes alive…'}
               </p>
             </div>
           )}
@@ -463,9 +463,6 @@ export const FirstSeal: React.FC<FirstSealProps> = ({
                 <span>Seal First Quest</span>
                 <span className="text-sm">✦</span>
               </button>
-              <p className="text-[11px] text-[#8E9782] text-center mt-2">
-                This triggers a real, authoritative transaction. No mock XP.
-              </p>
             </div>
           )}
         </div>
