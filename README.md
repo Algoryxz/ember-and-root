@@ -120,6 +120,8 @@ main                    ← stable, always deployable
 | [`docs/UI_UX_BRIEF.md`](docs/UI_UX_BRIEF.md) | Frozen visual language, palette, typography, motion |
 | [`docs/BACKEND_SCHEMA.md`](docs/BACKEND_SCHEMA.md) | All tables, constraints, RPC contracts, reward rules |
 | [`docs/CONTRACTS.md`](docs/CONTRACTS.md) | TypeScript type contracts shared between all workstreams |
+| [`docs/ONBOARDING_V2.md`](docs/ONBOARDING_V2.md) | Choice-first onboarding flow, starter engine, and first-seal specification |
+| [`docs/ATTRIBUTIONS.md`](docs/ATTRIBUTIONS.md) | Mandatory provenance and external component attribution ledger |
 | [`docs/IMPLEMENTATION_PLAN.md`](docs/IMPLEMENTATION_PLAN.md) | 24-hour checkpoints, ownership, cut rules, demo fixture |
 | [`AGENTS.md`](AGENTS.md) | Rules for AI coding agents working in this repository |
 | [`project/context-graph.yaml`](project/context-graph.yaml) | Lightweight project knowledge graph |
