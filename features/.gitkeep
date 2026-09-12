@@ -1,0 +1,10 @@
+This directory contains feature-specific components and logic.
+
+Structure:
+  features/
+    hearth/             — owned by Deeptiman
+    root/               — owned by Akriti (SVG geometry is single-owner)
+    satchel/            — owned by Susmita
+    chronicle/          — owned by Susmita
+
+See docs/IMPLEMENTATION_PLAN.md § "Single-Owner Files" for full ownership details.

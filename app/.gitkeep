@@ -1,0 +1,20 @@
+This directory will contain the Next.js App Router pages and layouts.
+
+Structure (to be created when Next.js is initialized):
+
+  app/
+    layout.tsx          — root layout (fonts, global styles, auth shell)
+    page.tsx            — root redirect (→ /hearth or /login)
+    (auth)/
+      login/page.tsx
+      signup/page.tsx
+    (app)/
+      layout.tsx        — authenticated layout (navigation, GameShell)
+      hearth/page.tsx
+      root/page.tsx
+      satchel/page.tsx
+      chronicle/page.tsx
+      onboard/page.tsx
+      settings/page.tsx
+
+Do not create this structure until the Next.js skeleton is initialized by Susmita.

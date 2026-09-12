@@ -1,0 +1,380 @@
+version: 1
+description: >
+  Project context graph for Ember & Root.
+  Nodes represent requirements, features, modules, database objects, tests, and owners.
+  Edges represent relationships between them.
+  Status values: planned, working, verified, blocked.
+
+nodes:
+  # ── Requirements ─────────────────────────────────────────────
+  - id: REQ_AUTH
+    type: requirement
+    label: "Real authentication and user isolation"
+    status: planned
+    owner: susmita
+
+  - id: REQ_PERSISTENCE
+    type: requirement
+    label: "DB-backed persistence; refresh retains state"
+    status: planned
+    owner: smarak
+
+  - id: REQ_NONLINEAR_LEVELS
+    type: requirement
+    label: "Nonlinear level formula: 100 + 50(L-1)"
+    status: planned
+    owner: smarak
+
+  - id: REQ_ATTRIBUTES
+    type: requirement
+    label: "Four attributes with independent XP branches"
+    status: planned
+    owner: smarak
+
+  - id: REQ_SPECIALIZATIONS
+    type: requirement
+    label: "Two specializations per attribute; choice is final"
+    status: planned
+    owner: smarak
+
+  - id: REQ_TRIALS
+    type: requirement
+    label: "Trials gate Crests; two evaluator types"
+    status: planned
+    owner: smarak
+
+  - id: REQ_ECONOMY
+    type: requirement
+    label: "Sparks = XP/5; 140 XP daily cap; three cosmetics"
+    status: planned
+    owner: smarak
+
+  - id: REQ_STREAKS
+    type: requirement
+    label: "Streak logic using IANA timezone; longest preserved"
+    status: planned
+    owner: smarak
+
+  - id: REQ_TACTILE_FEEDBACK
+    type: requirement
+    label: "Tactile quest completion with real visual consequence"
+    status: planned
+    owner: deeptiman
+
+  - id: REQ_MOBILE_FIRST
+    type: requirement
+    label: "Responsive mobile-first UI; usable at 320-390px"
+    status: planned
+    owner: deeptiman
+
+  - id: REQ_ACCESSIBILITY
+    type: requirement
+    label: "Full keyboard navigation, screen-reader, reduced-motion"
+    status: planned
+    owner: susmita
+
+  - id: REQ_ROOT_GEOMETRY
+    type: requirement
+    label: "Hand-authored fixed SVG Root; reveal state not generate"
+    status: planned
+    owner: akriti
+
+  # ── Features ─────────────────────────────────────────────────
+  - id: FEATURE_QUEST_CRUD
+    type: feature
+    label: "Quest create/edit/delete (soft)"
+    status: planned
+    owner: smarak
+
+  - id: FEATURE_COMPLETION
+    type: feature
+    label: "Quest completion with atomic reward"
+    status: planned
+    owner: smarak
+
+  - id: FEATURE_REWARD_SEQUENCE
+    type: feature
+    label: "Reward choreography: Ember → XP travel → Root glow"
+    status: planned
+    owner: deeptiman
+
+  - id: FEATURE_ROOT
+    type: feature
+    label: "Root surface: branches, specialization, Trial, Crest"
+    status: planned
+    owner: akriti
+
+  - id: FEATURE_SPECIALIZATION
+    type: feature
+    label: "Specialization choice at 80 attribute XP"
+    status: planned
+    owner: akriti
+
+  - id: FEATURE_TRIAL
+    type: feature
+    label: "Trial start, evidence, and claim"
+    status: planned
+    owner: akriti
+
+  - id: FEATURE_SATCHEL
+    type: feature
+    label: "Satchel: three items, purchase, equip"
+    status: planned
+    owner: susmita
+
+  - id: FEATURE_CHRONICLE
+    type: feature
+    label: "Chronicle: history, streaks, achievements"
+    status: planned
+    owner: susmita
+
+  # ── Modules ──────────────────────────────────────────────────
+  - id: MODULE_COMPLETE_QUEST
+    type: module
+    label: "completeQuest RPC (PostgreSQL function)"
+    status: planned
+    owner: smarak
+
+  - id: MODULE_GAME_CONTRACTS
+    type: module
+    label: "game/contracts.ts: GameSnapshot, MutationResult"
+    status: planned
+    owner: smarak
+
+  - id: MODULE_GAME_FIXTURES
+    type: module
+    label: "game/fixtures/snapshot.ts: demo fixture data"
+    status: planned
+    owner: smarak
+
+  - id: MODULE_REWARD_SEQUENCE
+    type: module
+    label: "features/hearth/RewardSequence component"
+    status: planned
+    owner: deeptiman
+
+  - id: MODULE_ROOT_SCENE
+    type: module
+    label: "features/root/RootScene + authored SVG assets"
+    status: planned
+    owner: akriti
+
+  - id: MODULE_AUTH_MIDDLEWARE
+    type: module
+    label: "middleware.ts: session refresh + route protection"
+    status: planned
+    owner: susmita
+
+  # ── Database ─────────────────────────────────────────────────
+  - id: DB_PROFILES
+    type: database
+    label: "profiles table"
+    status: planned
+    owner: smarak
+
+  - id: DB_QUESTS
+    type: database
+    label: "quests table (soft-delete)"
+    status: planned
+    owner: smarak
+
+  - id: DB_COMPLETIONS
+    type: database
+    label: "quest_completions table (immutable)"
+    status: planned
+    owner: smarak
+
+  - id: DB_BRANCHES
+    type: database
+    label: "branches table (user, attribute, xp)"
+    status: planned
+    owner: smarak
+
+  - id: DB_RECEIPTS
+    type: database
+    label: "mutation_receipts table (idempotency)"
+    status: planned
+    owner: smarak
+
+  - id: DB_TRIALS
+    type: database
+    label: "trials table"
+    status: planned
+    owner: smarak
+
+  - id: DB_INVENTORY
+    type: database
+    label: "inventory table (with partial unique index)"
+    status: planned
+    owner: smarak
+
+  # ── Tests ────────────────────────────────────────────────────
+  - id: TEST_DUPLICATE_COMPLETION
+    type: test
+    label: "Duplicate completion returns same result (Vitest)"
+    status: planned
+    owner: smarak
+
+  - id: TEST_USER_ISOLATION
+    type: test
+    label: "User B cannot read/mutate user A (Playwright)"
+    status: planned
+    owner: susmita
+
+  - id: TEST_LEVEL_BOUNDARY
+    type: test
+    label: "XP at/below/above level threshold (Vitest)"
+    status: planned
+    owner: smarak
+
+  - id: TEST_STREAK_LOGIC
+    type: test
+    label: "Same/next/missed day streak behavior (Vitest)"
+    status: planned
+    owner: smarak
+
+  - id: TEST_MOBILE_COMPLETION
+    type: test
+    label: "Quest completion visible/operable at 375px (Playwright)"
+    status: planned
+    owner: deeptiman
+
+  - id: TEST_AXE_ROUTES
+    type: test
+    label: "axe-core on Hearth, Root, Satchel, Chronicle"
+    status: planned
+    owner: susmita
+
+edges:
+  # Requirements → Features
+  - from: REQ_NONLINEAR_LEVELS
+    relation: satisfied_by
+    to: FEATURE_COMPLETION
+
+  - from: REQ_ATTRIBUTES
+    relation: satisfied_by
+    to: FEATURE_ROOT
+
+  - from: REQ_SPECIALIZATIONS
+    relation: satisfied_by
+    to: FEATURE_SPECIALIZATION
+
+  - from: REQ_TRIALS
+    relation: satisfied_by
+    to: FEATURE_TRIAL
+
+  - from: REQ_ECONOMY
+    relation: satisfied_by
+    to: FEATURE_SATCHEL
+
+  - from: REQ_STREAKS
+    relation: satisfied_by
+    to: FEATURE_COMPLETION
+
+  - from: REQ_TACTILE_FEEDBACK
+    relation: satisfied_by
+    to: FEATURE_REWARD_SEQUENCE
+
+  - from: REQ_ROOT_GEOMETRY
+    relation: satisfied_by
+    to: MODULE_ROOT_SCENE
+
+  - from: REQ_AUTH
+    relation: satisfied_by
+    to: MODULE_AUTH_MIDDLEWARE
+
+  - from: REQ_ACCESSIBILITY
+    relation: verified_by
+    to: TEST_AXE_ROUTES
+
+  # Features → Modules
+  - from: FEATURE_COMPLETION
+    relation: implemented_in
+    to: MODULE_COMPLETE_QUEST
+
+  - from: FEATURE_REWARD_SEQUENCE
+    relation: implemented_in
+    to: MODULE_REWARD_SEQUENCE
+
+  - from: FEATURE_ROOT
+    relation: implemented_in
+    to: MODULE_ROOT_SCENE
+
+  # Modules → DB
+  - from: FEATURE_COMPLETION
+    relation: writes
+    to: DB_PROFILES
+
+  - from: FEATURE_COMPLETION
+    relation: writes
+    to: DB_COMPLETIONS
+
+  - from: FEATURE_COMPLETION
+    relation: writes
+    to: DB_BRANCHES
+
+  - from: FEATURE_COMPLETION
+    relation: writes
+    to: DB_RECEIPTS
+
+  - from: FEATURE_QUEST_CRUD
+    relation: writes
+    to: DB_QUESTS
+
+  - from: FEATURE_SPECIALIZATION
+    relation: writes
+    to: DB_BRANCHES
+
+  - from: FEATURE_TRIAL
+    relation: writes
+    to: DB_TRIALS
+
+  - from: FEATURE_SATCHEL
+    relation: writes
+    to: DB_INVENTORY
+
+  - from: MODULE_REWARD_SEQUENCE
+    relation: reads
+    to: MODULE_GAME_CONTRACTS
+
+  - from: MODULE_ROOT_SCENE
+    relation: reads
+    to: MODULE_GAME_CONTRACTS
+
+  # Tests → Features/Modules
+  - from: FEATURE_COMPLETION
+    relation: verified_by
+    to: TEST_DUPLICATE_COMPLETION
+
+  - from: FEATURE_COMPLETION
+    relation: verified_by
+    to: TEST_LEVEL_BOUNDARY
+
+  - from: FEATURE_COMPLETION
+    relation: verified_by
+    to: TEST_STREAK_LOGIC
+
+  - from: FEATURE_REWARD_SEQUENCE
+    relation: verified_by
+    to: TEST_MOBILE_COMPLETION
+
+  - from: MODULE_AUTH_MIDDLEWARE
+    relation: verified_by
+    to: TEST_USER_ISOLATION
+
+  # Ownership
+  - from: MODULE_GAME_CONTRACTS
+    relation: owned_by
+    to: smarak
+
+  - from: MODULE_ROOT_SCENE
+    relation: owned_by
+    to: akriti
+
+  - from: MODULE_REWARD_SEQUENCE
+    relation: owned_by
+    to: deeptiman
+
+  - from: MODULE_AUTH_MIDDLEWARE
+    relation: owned_by
+    to: susmita

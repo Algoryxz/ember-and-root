@@ -1,0 +1,9 @@
+This directory will contain all React components.
+
+Structure:
+  components/
+    tokens.css          — design tokens (CSS custom properties) — owned by Deeptiman
+    ui/                 — shared semantic primitives
+    icons/              — icon components
+
+Design tokens are owned by Deeptiman. Do not edit tokens.css without coordination.

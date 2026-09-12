@@ -1,0 +1,10 @@
+This directory contains the game contracts, type definitions, and fixture data.
+
+Files (created by Smarak when the Next.js skeleton exists):
+  game/
+    contracts.ts        — GameSnapshot, MutationResult, Quest, BranchState, etc.
+    fixtures/
+      snapshot.ts       — Demo fixture GameSnapshot for frontend development
+
+See docs/CONTRACTS.md for the full type definitions.
+Owned by Smarak.

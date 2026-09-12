@@ -1,0 +1,13 @@
+This directory contains Next.js server actions.
+
+Files (created by Smarak):
+  server/
+    actions/
+      quests.ts         — createQuest, updateQuest, deleteQuest, completeQuest
+      progression.ts    — chooseSpecialization, startTrial, claimTrial
+      economy.ts        — purchaseItem, equipItem
+      snapshot.ts       — getGameSnapshot
+      preferences.ts    — updatePreferences
+
+All server actions call Supabase RPC functions and return MutationResult.
+Owned by Smarak.

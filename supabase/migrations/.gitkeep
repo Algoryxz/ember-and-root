@@ -1,0 +1,14 @@
+This directory contains Supabase configuration and database migrations.
+
+Structure:
+  supabase/
+    config.toml         — Supabase local dev config
+    migrations/
+      001_initial_schema.sql
+      002_rls_policies.sql
+      003_rpc_functions.sql
+      004_seed_items.sql
+
+Migrations are ordered and immutable once applied to production.
+Do not rename, reorder, or rewrite applied migrations.
+Owned by Smarak.
