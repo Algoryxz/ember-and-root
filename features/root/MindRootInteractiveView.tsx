@@ -71,7 +71,7 @@ export const MindRootInteractiveView: React.FC = () => {
               borderRadius: '6px',
               border: '1px solid #3B463B',
               backgroundColor:
-                currentState.mindXP === 70 ? '#263323' : '#141713',
+                currentState.xp === 70 ? '#263323' : '#141713',
               color: '#F0E7D3',
               cursor: 'pointer',
             }}

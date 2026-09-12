@@ -1,8 +1,8 @@
 'use client';
 
 import React from 'react';
-import { MindRootInteractiveView } from '@/features/root';
+import { RootInteractiveView } from '@/features/root';
 
 export default function RootPage() {
-  return <MindRootInteractiveView />;
+  return <RootInteractiveView />;
 }
