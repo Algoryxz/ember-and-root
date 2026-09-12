@@ -56,6 +56,8 @@ Apply this checklist to every new or changed RPC function:
 
 ### Input validation
 - [ ] All text inputs trimmed and length-constrained
+- [ ] Attribute validated against canonical `AttributeId` (`'mind' | 'body' | 'will' | 'craft'`)
+- [ ] Specialization matches valid canonical pair for the attribute (mind: scholar/explorer, body: endurance/mobility, will: focus/courage, craft: builder/artisan)
 - [ ] Enum values validated against CHECK constraint or explicit check
 - [ ] Numeric values have non-negative checks where applicable
 

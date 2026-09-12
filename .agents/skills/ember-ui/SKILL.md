@@ -1,4 +1,4 @@
-﻿---
+---
 name: ember-ui
 description: Implements or reviews Ember & Root frontend surfaces, responsive layouts, SVG Root presentation, accessibility, purposeful motion, and browser visual inspection using Playwright MCP while enforcing the illuminated field-journal visual language.
 ---
@@ -86,8 +86,8 @@ These rules apply specifically to the Root surface (owned by Akriti):
 - All SVG paths are authored and fixed. **Do not compute, randomize, or morph path geometry.**
 - Decorative SVG: `aria-hidden="true"`.
 - Interactive nodes (fork choice, crest claim): `<button>` elements absolutely positioned over known SVG coordinates.
-- Desktop: fixed SVG viewBox, all four branches visible, no zoom/pan.
-- Mobile: four labeled attribute tab buttons, one branch readable at a time, no drag/pinch/zoom required.
+- Desktop: fixed SVG viewBox, all four branches (`mind`, `body`, `will`, `craft`) visible, no zoom/pan.
+- Mobile: four labeled attribute tab buttons (`mind`, `body`, `will`, `craft`), one branch readable at a time, no drag/pinch/zoom required.
 - Root List: accessible linear view equivalent must be present for each branch.
 - State reveals use `stroke-dashoffset` drawing or opacity on authored overlays. **No SVG morph engine, Three.js, Rive, Lottie, or GSAP.**
 
@@ -95,7 +95,7 @@ These rules apply specifically to the Root surface (owned by Akriti):
 
 ## Quest Journal Rules
 - Quests are rows in a journal, not floating cards.
-- Each row shows: title, attribute indicator, effort badge, completion control.
+- Each row shows: title, attribute indicator (`mind` | `body` | `will` | `craft`), effort badge, completion control.
 - The completion control is an explicit "Complete quest" button (not a small checkbox).
 - Minimum 44×44px touch target.
 - Pending state: button disabled, row visually indicates in-flight.

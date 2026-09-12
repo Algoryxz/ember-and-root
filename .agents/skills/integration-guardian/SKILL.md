@@ -8,6 +8,8 @@ description: Protects shared data contracts, Supabase schema, TypeScript interfa
 ## Purpose
 This skill protects all shared contracts, data types, and integration surfaces across Ember & Root. It guarantees that frontend, backend, database migrations, and geometry layers remain completely synchronized without silent breakages or uncoordinated schema drift.
 
+Source of truth for all contracts: `docs/CONTRACTS.md`.
+
 ## Protected Contracts & Assets
 This skill strictly protects:
 
@@ -21,14 +23,41 @@ This skill strictly protects:
 - `Profile` (user identity, level, total XP, Sparks, streak)
 
 ### 2. Canonical Identifier Systems
-- **Attribute IDs**: `vitality`, `discipline`, `resilience`, `insight`
-- **Specialization IDs**: defined fork choices per branch
+
+#### Canonical Attribute IDs
+```typescript
+export type AttributeId = 'mind' | 'body' | 'will' | 'craft';
+```
+
+#### Canonical Specialization Mapping
+```typescript
+export const SPECIALIZATIONS_BY_ATTRIBUTE: Record<AttributeId, [Specialization, Specialization]> = {
+  mind:  ['scholar', 'explorer'],
+  body:  ['endurance', 'mobility'],
+  will:  ['focus', 'courage'],
+  craft: ['builder', 'artisan'],
+};
+```
+- **mind**:
+  - `scholar`
+  - `explorer`
+- **body**:
+  - `endurance`
+  - `mobility`
+- **will**:
+  - `focus`
+  - `courage`
+- **craft**:
+  - `builder`
+  - `artisan`
+
+#### Other Canonical IDs
 - **Root Node IDs**: fixed authored SVG node coordinates and keys
 - **Item IDs**: catalog store item IDs and equipment slots
 
 ### 3. Design System & Schema Contracts
-- **Design Tokens**: Canonical CSS variables and tokens
-- **Supabase Schema**: Table schemas, RLS policies, RPC signatures, and check constraints
+- **Design Tokens**: Canonical CSS variables and tokens (`--color-bg`, `--color-raised`, `--color-text`, etc.)
+- **Supabase Schema**: Table schemas, RLS policies, RPC signatures, and check constraints (`attribute IN ('mind','body','will','craft')`)
 
 ---
 
@@ -69,6 +98,8 @@ Before changing ANY shared contract, interface, or migration:
 Whenever a PR or change touches a protected contract:
 - [ ] Has every consumer file been updated and compiled without type errors?
 - [ ] Has `docs/CONTRACTS.md` or `docs/BACKEND_SCHEMA.md` been updated to match?
+- [ ] Does `AttributeId` match `'mind' | 'body' | 'will' | 'craft'` exactly?
+- [ ] Do specializations map strictly to the canonical attribute pairs?
 - [ ] Are test fixtures and mock snapshots updated?
 - [ ] Does `MutationResult` maintain idempotency and backward compatibility?
 - [ ] Was the designated owner consulted before modifying the contract?
