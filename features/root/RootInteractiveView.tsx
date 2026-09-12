@@ -1,6 +1,12 @@
 import React, { useState } from 'react';
+import { AttributeId, GameSnapshot, Specialization } from '../../game/contracts';
 import { RootSvg } from './RootSvg';
-import { AttributeId, RootTreeState, Specialization } from './types';
+import {
+  startTrialAdapter,
+  progressTrialSessionAdapter,
+  recordMilestoneAdapter,
+  claimTrialCrestAdapter,
+} from './trialAdapter';
 import {
   INITIAL_TREE_STATE,
   SPEC_READY_TREE_STATE,
@@ -8,22 +14,50 @@ import {
 } from './fixtures';
 
 export const RootInteractiveView: React.FC = () => {
-  const [treeState, setTreeState] = useState<RootTreeState>(INITIAL_TREE_STATE);
+  const [snapshot, setSnapshot] = useState<GameSnapshot>({
+    revision: 1,
+    userId: 'demo-user',
+    totalXp: 280,
+    level: 2,
+    sparksBalance: 20,
+    currentStreak: 3,
+    longestStreak: 7,
+    emberState: 'kindled',
+    todayXpAwarded: 20,
+    branches: INITIAL_TREE_STATE.branches,
+    trials: {},
+    equippedItemId: null,
+    inventory: { items: [] },
+  });
 
   const handleSelectSpecialization = (attribute: AttributeId, spec: Specialization): void => {
-    setTreeState((prev: RootTreeState) => ({
+    setSnapshot((prev) => ({
       ...prev,
       branches: {
         ...prev.branches,
         [attribute]: {
           ...prev.branches[attribute],
           specialization: spec,
-          selectedSpecialization: spec,
           specializationAvailable: false,
-          crestAvailable: true,
         },
       },
     }));
+  };
+
+  const handleStartTrial = (attribute: AttributeId, spec: Specialization): void => {
+    setSnapshot((prev) => startTrialAdapter(prev, attribute, spec));
+  };
+
+  const handleProgressSession = (attribute: AttributeId): void => {
+    setSnapshot((prev) => progressTrialSessionAdapter(prev, attribute));
+  };
+
+  const handleRecordMilestone = (attribute: AttributeId, milestoneText: string): void => {
+    setSnapshot((prev) => recordMilestoneAdapter(prev, attribute, milestoneText));
+  };
+
+  const handleClaimCrest = (attribute: AttributeId): void => {
+    setSnapshot((prev) => claimTrialCrestAdapter(prev, attribute));
   };
 
   return (
@@ -48,7 +82,7 @@ export const RootInteractiveView: React.FC = () => {
             color: '#F0E7D3',
           }}
         >
-          Ember & Root — Specializations & Crests
+          Ember & Root — Skill Tree & Trials
         </h1>
         <p style={{ margin: 0, fontSize: '13px', color: '#B9BEAC' }}>
           Mind · Body · Will · Craft (Lead: <strong>Akriti</strong>)
@@ -66,12 +100,18 @@ export const RootInteractiveView: React.FC = () => {
         }}
       >
         <div style={{ fontSize: '12px', fontWeight: 600, color: '#B9BEAC', marginBottom: '8px' }}>
-          TREE FIXTURE PRESETS:
+          SNAPSHOT FIXTURE PRESETS:
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px' }}>
           <button
             type="button"
-            onClick={() => setTreeState(INITIAL_TREE_STATE)}
+            onClick={() =>
+              setSnapshot((prev) => ({
+                ...prev,
+                branches: INITIAL_TREE_STATE.branches,
+                trials: {},
+              }))
+            }
             style={{
               padding: '8px 4px',
               fontSize: '11px',
@@ -87,7 +127,13 @@ export const RootInteractiveView: React.FC = () => {
 
           <button
             type="button"
-            onClick={() => setTreeState(SPEC_READY_TREE_STATE)}
+            onClick={() =>
+              setSnapshot((prev) => ({
+                ...prev,
+                branches: SPEC_READY_TREE_STATE.branches,
+                trials: {},
+              }))
+            }
             style={{
               padding: '8px 4px',
               fontSize: '11px',
@@ -103,7 +149,12 @@ export const RootInteractiveView: React.FC = () => {
 
           <button
             type="button"
-            onClick={() => setTreeState(SPECIALIZED_TREE_STATE)}
+            onClick={() =>
+              setSnapshot((prev) => ({
+                ...prev,
+                branches: SPECIALIZED_TREE_STATE.branches,
+              }))
+            }
             style={{
               padding: '8px 4px',
               fontSize: '11px',
@@ -121,8 +172,12 @@ export const RootInteractiveView: React.FC = () => {
 
       {/* Main Root Component */}
       <RootSvg
-        treeState={treeState}
+        snapshot={snapshot}
         onSelectSpecialization={handleSelectSpecialization}
+        onStartTrial={handleStartTrial}
+        onProgressSession={handleProgressSession}
+        onRecordMilestone={handleRecordMilestone}
+        onClaimCrest={handleClaimCrest}
       />
     </div>
   );

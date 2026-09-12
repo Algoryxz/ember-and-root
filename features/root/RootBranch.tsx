@@ -1,22 +1,35 @@
 import React, { useState } from 'react';
-import { AttributeId, BranchState, NodeState, RootNodeInfo, Specialization } from './types';
+import { AttributeId, BranchState, NodeState, RootNodeInfo, Specialization, TrialState } from './types';
 import { BRANCH_CONFIGS } from './config';
+import { TRIAL_CONFIGS } from './trialConfig';
 import { BranchSvgRenderer } from './svg/BranchSvgRenderer';
 import { RootNodeButton } from './RootNodeButton';
 import { RootList } from './RootList';
+import { SessionTrialPanel } from './SessionTrialPanel';
+import { MilestoneTrialPanel } from './MilestoneTrialPanel';
 import './root.css';
 
 export interface RootBranchProps {
   attribute: AttributeId;
   state: BranchState;
+  trial?: TrialState | null;
   onSelectSpecialization?: (attribute: AttributeId, spec: Specialization) => void;
+  onStartTrial?: (attribute: AttributeId, spec: Specialization) => void;
+  onProgressSession?: (attribute: AttributeId) => void;
+  onRecordMilestone?: (attribute: AttributeId, text: string) => void;
+  onClaimCrest?: (attribute: AttributeId) => void;
   className?: string;
 }
 
 export const RootBranch: React.FC<RootBranchProps> = ({
   attribute,
   state,
+  trial = null,
   onSelectSpecialization,
+  onStartTrial,
+  onProgressSession,
+  onRecordMilestone,
+  onClaimCrest,
   className = '',
 }: RootBranchProps) => {
   const [viewMode, setViewMode] = useState<'visual' | 'list'>('visual');
@@ -32,6 +45,7 @@ export const RootBranch: React.FC<RootBranchProps> = ({
   } = state;
 
   const activeSpec = specialization || selectedSpecialization || null;
+  const activeTrialConfig = activeSpec ? TRIAL_CONFIGS[activeSpec] : null;
 
   // Node state derivations
   const originState: NodeState = xp >= 1 ? 'unlocked' : 'locked';
@@ -53,11 +67,13 @@ export const RootBranch: React.FC<RootBranchProps> = ({
     spec2State = 'available';
   }
 
+  const isCrestAvailable = crestAvailable || (state.trialComplete && !crestClaimed);
+
   const spec1CrestState: NodeState =
     activeSpec === spec1.id
       ? crestClaimed
         ? 'selected'
-        : crestAvailable
+        : isCrestAvailable
         ? 'available'
         : 'unlocked'
       : 'locked';
@@ -66,7 +82,7 @@ export const RootBranch: React.FC<RootBranchProps> = ({
     activeSpec === spec2.id
       ? crestClaimed
         ? 'selected'
-        : crestAvailable
+        : isCrestAvailable
         ? 'available'
         : 'unlocked'
       : 'locked';
@@ -248,7 +264,7 @@ export const RootBranch: React.FC<RootBranchProps> = ({
               </strong>
             </span>
           </div>
-          {crestAvailable && (
+          {isCrestAvailable && (
             <span
               style={{
                 fontSize: '11px',
@@ -295,6 +311,31 @@ export const RootBranch: React.FC<RootBranchProps> = ({
           selectedSpecialization={activeSpec}
           onSelectSpecialization={onSelectSpecialization}
         />
+      )}
+
+      {/* Trial Panel Integration when Specialization is Active */}
+      {activeSpec && activeTrialConfig && (
+        activeTrialConfig.kind === 'distinct_days' ? (
+          <SessionTrialPanel
+            attribute={attribute}
+            specialization={activeSpec}
+            branch={state}
+            trial={trial}
+            onStartTrial={onStartTrial}
+            onProgressSession={onProgressSession}
+            onClaimCrest={onClaimCrest}
+          />
+        ) : (
+          <MilestoneTrialPanel
+            attribute={attribute}
+            specialization={activeSpec}
+            branch={state}
+            trial={trial}
+            onStartTrial={onStartTrial}
+            onRecordMilestone={onRecordMilestone}
+            onClaimCrest={onClaimCrest}
+          />
+        )
       )}
     </section>
   );

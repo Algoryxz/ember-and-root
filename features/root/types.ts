@@ -1,14 +1,6 @@
-export type AttributeId = 'mind' | 'body' | 'will' | 'craft';
+import { AttributeId, BranchState as GameBranchState, Specialization } from '../../game/contracts';
 
-export type Specialization =
-  | 'scholar'
-  | 'explorer'
-  | 'endurance'
-  | 'mobility'
-  | 'focus'
-  | 'courage'
-  | 'builder'
-  | 'artisan';
+export type { AttributeId, Specialization, TrialKind, TrialState, GameSnapshot, MutationResult } from '../../game/contracts';
 
 // Backward compatibility alias
 export type SpecializationId = Specialization;
@@ -36,26 +28,14 @@ export interface RootNodeInfo {
   coordinates: NodeCoordinates;
 }
 
-// Backward compatibility alias
 export type MindNodeInfo = RootNodeInfo;
 
-// Canonical BranchState matching Smarak's docs/CONTRACTS.md contract
-export interface BranchState {
-  attribute: AttributeId;
-  xp: number;
-  mindXP?: number; // legacy alias
-  specialization: Specialization | null;
-  selectedSpecialization?: Specialization | null; // legacy alias getter
-  selectedAt?: string | null;
-  sproutAvailable?: boolean;
-  specializationAvailable: boolean;
-  crestAvailable?: boolean;
-  trialStarted?: boolean;
-  trialComplete?: boolean;
-  crestClaimed?: boolean;
+// BranchState matching game/contracts.ts with compatibility aliases
+export interface BranchState extends GameBranchState {
+  mindXP?: number;
+  selectedSpecialization?: Specialization | null;
 }
 
-// Backward compatibility alias
 export type MindBranchState = BranchState;
 
 export interface BranchConfig {

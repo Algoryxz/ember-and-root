@@ -1,38 +1,54 @@
 import React, { useState } from 'react';
-import { AttributeId, BranchState, MindBranchState, RootTreeState, SpecializationId } from './types';
+import { AttributeId, BranchState, GameSnapshot, Specialization } from '../../game/contracts';
+import { RootTreeState } from './types';
 import { RootTabs } from './RootTabs';
 import { RootBranch } from './RootBranch';
 import { INITIAL_TREE_STATE } from './fixtures';
 
 export interface RootSvgProps {
+  snapshot?: GameSnapshot;
   treeState?: RootTreeState;
-  mindState?: MindBranchState;
+  mindState?: BranchState;
   selectedAttribute?: AttributeId;
-  onSelectSpecialization?: (attribute: AttributeId, spec: SpecializationId) => void;
+  onSelectSpecialization?: (attribute: AttributeId, spec: Specialization) => void;
+  onStartTrial?: (attribute: AttributeId, spec: Specialization) => void;
+  onProgressSession?: (attribute: AttributeId) => void;
+  onRecordMilestone?: (attribute: AttributeId, text: string) => void;
+  onClaimCrest?: (attribute: AttributeId) => void;
   className?: string;
 }
 
 export const RootSvg: React.FC<RootSvgProps> = ({
+  snapshot,
   treeState,
   mindState,
   selectedAttribute: initialAttribute = 'mind',
   onSelectSpecialization,
+  onStartTrial,
+  onProgressSession,
+  onRecordMilestone,
+  onClaimCrest,
   className = '',
 }: RootSvgProps) => {
   const [selectedAttribute, setSelectedAttribute] = useState<AttributeId>(initialAttribute);
 
-  // Reconcile props: if treeState is provided use it, otherwise fall back to mindState or initial state
-  const activeTreeState: RootTreeState = treeState || {
-    branches: {
-      mind: mindState || INITIAL_TREE_STATE.branches.mind,
-      body: INITIAL_TREE_STATE.branches.body,
-      will: INITIAL_TREE_STATE.branches.will,
-      craft: INITIAL_TREE_STATE.branches.craft,
-    },
-  };
+  // Reconcile snapshot or treeState props
+  const activeTreeState: RootTreeState = snapshot
+    ? { branches: snapshot.branches }
+    : treeState || {
+        branches: {
+          mind: mindState || INITIAL_TREE_STATE.branches.mind,
+          body: INITIAL_TREE_STATE.branches.body,
+          will: INITIAL_TREE_STATE.branches.will,
+          craft: INITIAL_TREE_STATE.branches.craft,
+        },
+      };
 
+  const trials = snapshot?.trials || {};
   const currentBranchState: BranchState =
     activeTreeState.branches[selectedAttribute] || INITIAL_TREE_STATE.branches[selectedAttribute];
+
+  const currentTrial = trials[selectedAttribute] || null;
 
   return (
     <div className={`root-svg-container ${className}`}>
@@ -42,11 +58,16 @@ export const RootSvg: React.FC<RootSvgProps> = ({
         onSelectAttribute={setSelectedAttribute}
       />
 
-      {/* Render Current Attribute Branch */}
+      {/* Render Current Attribute Branch & Active Trial */}
       <RootBranch
         attribute={selectedAttribute}
         state={currentBranchState}
+        trial={currentTrial}
         onSelectSpecialization={onSelectSpecialization}
+        onStartTrial={onStartTrial}
+        onProgressSession={onProgressSession}
+        onRecordMilestone={onRecordMilestone}
+        onClaimCrest={onClaimCrest}
       />
     </div>
   );

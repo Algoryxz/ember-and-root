@@ -1,5 +1,7 @@
 export * from './types';
 export * from './config';
+export * from './trialConfig';
+export * from './trialAdapter';
 export * from './fixtures';
 export * from './RootSvg';
 export * from './RootBranch';
@@ -8,6 +10,8 @@ export * from './RootNodeButton';
 export * from './RootTabs';
 export * from './RootList';
 export * from './MindRootList';
+export * from './SessionTrialPanel';
+export * from './MilestoneTrialPanel';
 export * from './MindRootInteractiveView';
 export * from './RootInteractiveView';
 export * from './svg/MindBranchSvg';
