@@ -82,8 +82,8 @@ Do not claim:
 
 Original single-owner boundaries remain important for core/shared files:
 
-- **Smarak owns:** DB migrations, shared game contracts (`game/`), seed scripts, server-side progression logic, final integration.
-- **Deeptiman owns:** design-token implementation, shared UI primitives, `features/hearth/`, Ember/daily experience.
+- **Smarak owns:** DB migrations, shared game contracts (`game/`), `components/tokens.css`, global typography/motion primitives, seed scripts, server-side progression logic, final integration.
+- **Deeptiman owns:** shared UI primitives (`components/ui/`), `features/hearth/`, Ember/daily experience.
 - **Akriti owns:** Root SVG geometry/assets, Root renderer, specialization/Trial/Crest presentation.
 - **Susmita owns:** `package.json`, lockfile, Vercel/CI, Satchel, Chronicle, Settings, E2E/accessibility systems.
 

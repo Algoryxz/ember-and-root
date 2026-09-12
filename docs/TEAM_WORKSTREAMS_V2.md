@@ -282,16 +282,40 @@ The following areas require explicit coordination before concurrent editing:
 
 | Shared area | Primary gatekeeper |
 |---|---|
-| `components/tokens.css` | Smarak integration approval + Deeptiman implementation |
-| global typography/font loading | Smarak + Deeptiman |
+| `components/tokens.css` | Smarak (Integration Lead & Architecture Guardian) |
+| global typography / font loading | Smarak (Integration Lead) |
+| global motion primitives | Smarak (Integration Lead) |
+| game contracts / server progression / read models | Smarak (Integration Lead) |
 | shared Root SVG contract/assets | Akriti |
 | shared navigation primitives | Susmita, reviewed by Deeptiman/Smarak |
 | `package.json` / lockfile | Susmita |
-| game contracts / server progression | Smarak |
-| global motion utilities | Smarak integration approval |
 | attribution ledger | contributor making the adaptation; Smarak verifies |
 
+Deeptiman, Akriti, and Susmita may propose changes to tokens, typography, motion primitives, and shared contracts, but should not independently modify them without coordination.
+
 If two workstreams need the same shared file, coordinate before editing rather than resolving divergent visual systems after the fact.
+
+---
+
+## Screenshot Collision Policy
+
+Do not repeatedly overwrite common baseline screenshots from every workstream.
+
+For Experience V2 experiments, use workstream-scoped evidence directories:
+
+- `docs/screenshots/experience-v2/entry-hearth/`
+- `docs/screenshots/experience-v2/living-root/`
+- `docs/screenshots/experience-v2/world-history/`
+- `docs/screenshots/experience-v2/system-integration/`
+
+Within each directory, organize captures into:
+- `baseline/`
+- `experiment/`
+
+Rules:
+- Keep identical viewport naming across all workstreams: `1440x900`, `768x1024`, `390x844`, `320x700`.
+- Do not regenerate or commit unrelated baseline screenshots across surfaces your workstream does not touch.
+- Every visual experiment pull request or handoff must compare `baseline/` against `experiment/` within its own scoped directory.
 
 ---
 
