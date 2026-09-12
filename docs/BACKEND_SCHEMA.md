@@ -312,17 +312,17 @@ All return a `MutationResult` JSON object unless noted.
 
 | RPC | Purpose |
 |-----|---------|
-| `createQuest` | Create a new quest; returns new quest ID |
-| `updateQuest` | Edit title/attribute/effort/cadence/trialId with version check |
-| `deleteQuest` | Soft-delete (set `deleted_at`) |
-| `completeQuest` | Core reward transaction (see transaction spec above) |
-| `chooseSpecialization` | Set `branches.selected_specialization`; validate eligibility |
-| `startTrial` | Create `trials` row |
-| `claimTrial` | Set `trials.claimed_at` after validating evidence conditions |
-| `purchaseItem` | Debit Sparks, insert inventory row, insert ledger row |
-| `equipItem` | Set `equipped = true` on item, unset any other equipped item |
-| `updatePreferences` | Update `profiles.preferences` JSONB |
-| `getGameSnapshot` | Return full `GameSnapshot` for the current user |
+| `create_quest` | Create a new quest; returns authoritative MutationResult with `quest_created` event and fresh snapshot |
+| `update_quest` | Edit title/attribute/effort/cadence/trialId with optimistic concurrency (`expectedVersion`); returns `quest_updated` event |
+| `soft_delete_quest` | Soft-delete quest (`deleted_at = now()`); retains immutable completion history; returns `quest_deleted` event |
+| `complete_quest` | Core reward transaction (see transaction spec above) |
+| `choose_specialization` | Set `branches.selected_specialization`; validate eligibility (>= 80 XP) |
+| `start_trial` | Create/start active trial on specialized branch |
+| `progress_trial` | Record distinct calendar day progress for distinct_days trial |
+| `record_trial_milestone` | Record milestone reflection text for milestone trial |
+| `claim_trial` | Claim crest after verifying trial completion and >= 160 branch XP |
+| `update_profile_preferences` | Update `profiles.preferences` JSONB and/or validate/update IANA timezone |
+| `get_game_snapshot` | Return full authoritative `GameSnapshot` for the current user |
 
 ### Authoritative Quest Occurrence Derivation (`get_game_snapshot`)
 

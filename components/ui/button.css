@@ -1,0 +1,130 @@
+/* ==========================================================================
+   Ember & Root — Reusable Button Primitive Styles
+   Owned by: Deeptiman (Experience / Frontend Lead)
+   Visual Direction: Illuminated Field Journal
+   Specification: docs/UI_UX_BRIEF.md
+   ========================================================================== */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-8);
+  min-height: var(--min-touch-target);
+  min-width: var(--min-touch-target);
+  padding: var(--space-8) var(--space-16);
+  border-radius: var(--radius-btn);
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  font-weight: 500;
+  line-height: 1.25;
+  text-decoration: none;
+  cursor: pointer;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--color-text-primary);
+  transition: transform var(--duration-press) var(--ease-press),
+              background-color 150ms ease,
+              border-color 150ms ease,
+              opacity 150ms ease;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  box-sizing: border-box;
+}
+
+/* Pressed Micro-interaction (scale-down 0.97, 80ms) */
+.btn:active:not(:disabled):not([aria-disabled="true"]) {
+  transform: scale(var(--scale-pressed));
+}
+
+/* Primary Variant — Warm Solid Ember */
+.btn-primary {
+  background-color: var(--color-ember);
+  color: var(--color-bg);
+  font-weight: 600;
+  border-color: var(--color-ember);
+}
+
+.btn-primary:hover:not(:disabled):not([aria-disabled="true"]) {
+  filter: brightness(1.08);
+  border-color: var(--color-ember);
+}
+
+/* Secondary / Ghost Variant — Border-based */
+.btn-secondary,
+.btn-ghost {
+  border-color: rgba(185, 190, 172, 0.3);
+  background-color: transparent;
+  color: var(--color-text-primary);
+}
+
+.btn-secondary:hover:not(:disabled):not([aria-disabled="true"]),
+.btn-ghost:hover:not(:disabled):not([aria-disabled="true"]) {
+  background-color: var(--color-surface);
+  border-color: var(--color-text-secondary);
+}
+
+/* Quest Completion Variant — Tactile Seal Feel */
+.btn-completion {
+  border: 1px solid rgba(233, 138, 75, 0.45);
+  background-color: rgba(29, 35, 29, 0.85);
+  color: var(--color-ember);
+  padding: var(--space-8) var(--space-16);
+  font-weight: 600;
+}
+
+.btn-completion:hover:not(:disabled):not([aria-disabled="true"]) {
+  background-color: rgba(233, 138, 75, 0.15);
+  border-color: var(--color-ember);
+}
+
+.btn-completion.is-completed {
+  background-color: transparent;
+  border-color: rgba(159, 186, 135, 0.4);
+  color: var(--color-root);
+  cursor: default;
+}
+
+/* Disabled & Pending States */
+.btn:disabled,
+.btn[aria-disabled="true"] {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+.btn-pending {
+  cursor: wait;
+}
+
+/* Minimal Spinner for Pending State */
+.btn-spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: var(--radius-circle);
+  animation: btn-spin 0.6s linear infinite;
+  box-sizing: border-box;
+}
+
+@keyframes btn-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Reduced Motion Override */
+@media (prefers-reduced-motion: reduce) {
+  .btn {
+    transition: none !important;
+  }
+  .btn:active:not(:disabled):not([aria-disabled="true"]) {
+    transform: none !important;
+  }
+  .btn-spinner {
+    animation: none !important;
+    opacity: 0.8;
+  }
+}

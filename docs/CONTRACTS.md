@@ -260,6 +260,10 @@ export type MutationEvent = {
 
   // Specialization/trial fields
   specialization?: Specialization;
+
+  // Quest CRUD fields
+  questId?: string;
+  version?: number;
 };
 
 export type MutationResult = {
@@ -268,6 +272,33 @@ export type MutationResult = {
   snapshot: GameSnapshot;
 };
 ```
+
+---
+
+## Quest CRUD RPC Operation Contracts
+
+Hearth and server actions invoke these authoritative RPCs for quest lifecycle management:
+
+### `create_quest`
+- **Signature:** `create_quest(p_request_id uuid, p_title text, p_attribute text, p_effort text, p_cadence text, p_trial_id uuid DEFAULT NULL)`
+- **Caller:** Authenticated (`auth.uid()`).
+- **Validation:** Trimmed title 1–120 characters; attribute in `('mind','body','will','craft')`; effort in `('quick','standard','deep')`; cadence in `('once','daily')`.
+- **Behavior:** Inserts new quest with `version = 1`, `deleted_at = NULL`. Increments profile revision. Idempotent via `mutation_receipts`.
+- **Returns:** `MutationResult` with `kind: 'quest_created'`, `questId`, and fresh `GameSnapshot`.
+
+### `update_quest`
+- **Signature:** `update_quest(p_request_id uuid, p_quest_id uuid, p_expected_version integer, p_title text, p_attribute text, p_effort text, p_cadence text, p_trial_id uuid DEFAULT NULL)`
+- **Caller:** Authenticated owner only.
+- **Validation:** Rejects soft-deleted quests; validates canonical fields; enforces optimistic lock: `quest.version === p_expected_version` (rejects stale with error `stale_version_conflict` / `P0015`).
+- **Behavior:** Updates quest fields, server timestamp `updated_at = now()`, increments `version` (`version + 1`). Increments profile revision. Idempotent via `mutation_receipts`.
+- **Returns:** `MutationResult` with `kind: 'quest_updated'`, `questId`, `version`, and fresh `GameSnapshot`.
+
+### `soft_delete_quest`
+- **Signature:** `soft_delete_quest(p_request_id uuid, p_quest_id uuid)`
+- **Caller:** Authenticated owner only.
+- **Behavior:** Sets `deleted_at = now()`, increments `version`. Increments profile revision. **Preserves immutable completion history in `quest_completions`**. Excludes deleted quest from returned `GameSnapshot.quests`. Idempotent via `mutation_receipts`.
+- **Returns:** `MutationResult` with `kind: 'quest_deleted'`, `questId`, and fresh `GameSnapshot`.
+
 
 ---
 

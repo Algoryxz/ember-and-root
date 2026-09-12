@@ -1,0 +1,300 @@
+/* ==========================================================================
+   Ember & Root — Quest Journal Row Styles
+   Owned by: Deeptiman (Experience / Frontend Lead)
+   Visual Direction: Illuminated Field Journal (ruled ink lines, not SaaS cards)
+   Specification: docs/UI_UX_BRIEF.md
+   ========================================================================== */
+
+.quest-journal-entry {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-16);
+  padding: var(--space-16) var(--space-12);
+  background-color: transparent;
+  border-bottom: 1px solid rgba(185, 190, 172, 0.12);
+  position: relative;
+  box-sizing: border-box;
+  transition: background-color 150ms ease;
+  border-radius: var(--radius-btn);
+}
+
+.quest-journal-entry:hover {
+  background-color: rgba(240, 231, 211, 0.03);
+}
+
+/* Focused state for row when interacting */
+.quest-journal-entry:focus-within {
+  background-color: rgba(240, 231, 211, 0.04);
+}
+
+/* Left ink margin indicator */
+.entry-ink-margin {
+  width: 4px;
+  align-self: stretch;
+  border-radius: var(--radius-btn);
+  background-color: rgba(185, 190, 172, 0.2);
+  transition: background-color 200ms ease, box-shadow 200ms ease;
+  flex-shrink: 0;
+}
+
+/* Attribute-specific margin tones */
+.entry-attr-mind .entry-ink-margin {
+  background-color: var(--color-root);
+}
+
+.entry-attr-body .entry-ink-margin {
+  background-color: var(--color-ember);
+}
+
+.entry-attr-will .entry-ink-margin {
+  background-color: var(--color-focus);
+}
+
+.entry-attr-craft .entry-ink-margin {
+  background-color: var(--color-root-mature);
+}
+
+/* --------------------------------------------------------------------------
+   Content Area
+   -------------------------------------------------------------------------- */
+.entry-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+  flex: 1;
+  min-width: 0;
+}
+
+.entry-header {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-8);
+}
+
+.entry-title {
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  font-weight: 500;
+  color: var(--color-text-primary);
+  line-height: 1.4;
+  word-break: break-word;
+  transition: color 150ms ease;
+}
+
+/* Metadata Chips (Field journal ink tags) */
+.entry-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-8);
+}
+
+.entry-tag {
+  display: inline-flex;
+  align-items: center;
+  font-size: var(--text-xs);
+  padding: var(--space-4) var(--space-8);
+  border-radius: var(--radius-btn);
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  text-transform: capitalize;
+}
+
+.tag-mind {
+  background-color: rgba(159, 186, 135, 0.12);
+  color: var(--color-root-mature);
+  border: 1px solid rgba(159, 186, 135, 0.25);
+}
+
+.tag-body {
+  background-color: rgba(233, 138, 75, 0.12);
+  color: var(--color-ember);
+  border: 1px solid rgba(233, 138, 75, 0.25);
+}
+
+.tag-will {
+  background-color: rgba(196, 169, 106, 0.12);
+  color: var(--color-focus);
+  border: 1px solid rgba(196, 169, 106, 0.25);
+}
+
+.tag-craft {
+  background-color: rgba(217, 227, 178, 0.12);
+  color: var(--color-root);
+  border: 1px solid rgba(217, 227, 178, 0.25);
+}
+
+.tag-effort {
+  color: var(--color-text-secondary);
+  border: 1px solid rgba(185, 190, 172, 0.18);
+  background: transparent;
+}
+
+.entry-cadence {
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
+}
+
+/* --------------------------------------------------------------------------
+   State: Completed / Sealed
+   -------------------------------------------------------------------------- */
+.quest-journal-entry.is-sealed {
+  opacity: 0.65;
+}
+
+.quest-journal-entry.is-sealed .entry-title {
+  text-decoration: line-through;
+  text-decoration-color: rgba(185, 190, 172, 0.4);
+  color: var(--color-text-secondary);
+}
+
+.quest-journal-entry.is-sealed .entry-ink-margin {
+  background-color: rgba(159, 186, 135, 0.35);
+}
+
+/* --------------------------------------------------------------------------
+   State: Completing / Pending
+   -------------------------------------------------------------------------- */
+.quest-journal-entry.is-pending {
+  background-color: rgba(233, 138, 75, 0.05);
+}
+
+.quest-journal-entry.is-pending .entry-ink-margin {
+  box-shadow: 0 0 8px var(--color-ember);
+}
+
+/* --------------------------------------------------------------------------
+   State: Error & Inline Retry
+   -------------------------------------------------------------------------- */
+.quest-journal-entry.has-error {
+  border-bottom-color: rgba(240, 167, 157, 0.35);
+  background-color: rgba(240, 167, 157, 0.05);
+}
+
+.entry-error-alert {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  font-size: var(--text-xs);
+  color: var(--color-error);
+  margin-top: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.entry-error-icon {
+  font-size: var(--text-sm);
+  line-height: 1;
+}
+
+.entry-error-text {
+  font-family: var(--font-body);
+}
+
+.entry-retry-button {
+  background: none;
+  border: none;
+  color: var(--color-text-primary);
+  text-decoration: underline;
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
+  padding: var(--space-4) var(--space-8);
+  border-radius: var(--radius-btn);
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+}
+
+.entry-retry-button:hover {
+  color: var(--color-ember-core);
+}
+
+.entry-retry-button:focus-visible {
+  outline: 2px solid var(--color-focus);
+}
+
+/* Action Area & Controls Cluster */
+.entry-actions-cluster {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  flex-shrink: 0;
+}
+
+.entry-action-cell {
+  flex-shrink: 0;
+}
+
+/* Subtle Field Journal Edit Affordance (Quill) */
+.entry-edit-btn {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  padding: var(--space-8);
+  min-width: var(--min-touch-target);
+  min-height: var(--min-touch-target);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-btn);
+  transition: color 150ms ease, background-color 150ms ease, border-color 150ms ease;
+  font-family: var(--font-body);
+}
+
+.entry-edit-icon {
+  font-size: var(--text-base);
+  line-height: 1;
+  opacity: 0.75;
+  transition: opacity 150ms ease;
+}
+
+.entry-edit-btn:hover {
+  color: var(--color-text-primary);
+  background-color: rgba(240, 231, 211, 0.06);
+  border-color: rgba(185, 190, 172, 0.15);
+}
+
+.entry-edit-btn:hover .entry-edit-icon {
+  opacity: 1;
+}
+
+.entry-edit-btn:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 1px;
+}
+
+.entry-edit-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* --------------------------------------------------------------------------
+   Mobile Adjustments (<= 480px)
+   Maintain 44px touch targets without horizontal overflow
+   -------------------------------------------------------------------------- */
+@media (max-width: 480px) {
+  .quest-journal-entry {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-12);
+    padding: var(--space-16) var(--space-8);
+  }
+
+  .entry-actions-cluster {
+    width: 100%;
+    justify-content: space-between;
+    gap: var(--space-8);
+  }
+
+  .entry-action-cell {
+    flex: 1;
+  }
+
+  .entry-action-cell .btn {
+    width: 100%;
+  }
+}
+

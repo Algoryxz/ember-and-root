@@ -1,0 +1,211 @@
+/* ==========================================================================
+   Ember & Root — Quest Journal Container Styles
+   Owned by: Deeptiman (Experience / Frontend Lead)
+   Visual Direction: Illuminated Field Journal
+   Specification: docs/UI_UX_BRIEF.md
+   ========================================================================== */
+
+.quest-journal-section {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* --------------------------------------------------------------------------
+   Ruled Section Divider: TODAY ──────────────────────────────────────────
+   -------------------------------------------------------------------------- */
+.journal-section-divider {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+  margin-bottom: var(--space-16);
+}
+
+.journal-divider-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-12);
+}
+
+.journal-section-title {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  color: var(--color-text-primary);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 600;
+  margin: 0;
+}
+
+.journal-status-pill {
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
+  background: rgba(20, 23, 19, 0.7);
+  padding: var(--space-4) var(--space-12);
+  border-radius: var(--radius-btn);
+  border: 1px solid rgba(185, 190, 172, 0.12);
+}
+
+.journal-rule-line {
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    rgba(185, 190, 172, 0.3) 0%,
+    rgba(185, 190, 172, 0.15) 60%,
+    transparent 100%
+  );
+  width: 100%;
+}
+
+/* --------------------------------------------------------------------------
+   Journal Sheet & Entries List
+   -------------------------------------------------------------------------- */
+.journal-sheet {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--color-surface);
+  border: 1px solid rgba(185, 190, 172, 0.15);
+  border-radius: var(--radius-panel);
+  padding: var(--space-16) var(--space-24);
+  box-sizing: border-box;
+}
+
+.quest-journal-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+}
+
+/* Action row at bottom of sheet */
+.journal-actions-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-16);
+  padding-top: var(--space-16);
+  margin-top: var(--space-8);
+  flex-wrap: wrap;
+}
+
+.journal-subtle-hint {
+  font-family: var(--font-body);
+  font-style: italic;
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
+  opacity: 0.8;
+}
+
+/* --------------------------------------------------------------------------
+   State Cards: Loading, Error, Empty
+   -------------------------------------------------------------------------- */
+.journal-state-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-48) var(--space-24);
+  text-align: center;
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
+  border: 1px dashed rgba(185, 190, 172, 0.2);
+  box-sizing: border-box;
+}
+
+.journal-state-title {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-8);
+}
+
+.journal-state-text {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  max-width: 360px;
+  line-height: 1.5;
+  margin-bottom: var(--space-24);
+}
+
+/* Loading State */
+.journal-loading-state {
+  border-style: solid;
+  border-color: rgba(233, 138, 75, 0.2);
+}
+
+.journal-pulse-flame {
+  font-size: var(--text-3xl);
+  color: var(--color-ember);
+  margin-bottom: var(--space-12);
+  animation: pulse-waking 1.6s ease-in-out infinite;
+}
+
+@keyframes pulse-waking {
+  0%, 100% {
+    transform: scale(0.9);
+    opacity: 0.6;
+  }
+  50% {
+    transform: scale(1.15);
+    opacity: 1;
+    text-shadow: 0 0 12px var(--color-ember);
+  }
+}
+
+/* Error State */
+.journal-error-state {
+  border-color: rgba(240, 167, 157, 0.35);
+  background-color: rgba(240, 167, 157, 0.04);
+}
+
+.journal-error-icon {
+  font-size: var(--text-3xl);
+  color: var(--color-error);
+  margin-bottom: var(--space-12);
+}
+
+/* Empty State */
+.journal-empty-state {
+  border-color: rgba(185, 190, 172, 0.25);
+}
+
+.journal-empty-mark {
+  font-size: var(--text-2xl);
+  color: var(--color-ember-core);
+  margin-bottom: var(--space-12);
+  opacity: 0.7;
+}
+
+/* --------------------------------------------------------------------------
+   Mobile Adjustments
+   -------------------------------------------------------------------------- */
+@media (max-width: 600px) {
+  .journal-sheet {
+    padding: var(--space-12);
+  }
+
+  .journal-actions-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .journal-actions-row .btn {
+    width: 100%;
+  }
+
+  .journal-subtle-hint {
+    text-align: center;
+  }
+}
+
+/* Reduced Motion Override */
+@media (prefers-reduced-motion: reduce) {
+  .journal-pulse-flame {
+    animation: none !important;
+  }
+}

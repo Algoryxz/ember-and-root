@@ -1,4 +1,4 @@
-import type { AttributeId, GameSnapshot, MutationResult, Specialization } from '../../game/contracts.ts';
+import type { AttributeId, GameSnapshot, MutationResult, Specialization } from '../../game/contracts';
 
 /**
  * Authoritative Production Mutation Adapter for Root Trials & Specializations
