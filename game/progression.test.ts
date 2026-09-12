@@ -12,6 +12,7 @@ import {
   emberStateFromTodayCompletionCount,
   specializationAvailable,
   crestAvailable,
+  updateStreak,
   DAILY_XP_CAP,
 } from './progression.ts';
 
@@ -143,6 +144,36 @@ describe('Ember & Root — Progression Reference Math', () => {
         ),
         true
       );
+    });
+  });
+
+  describe('Streak Rules', () => {
+    it('sets streak to 1 on very first activity', () => {
+      const res = updateStreak(0, 0, null, '2026-09-12');
+      assert.strictEqual(res.currentStreak, 1);
+      assert.strictEqual(res.longestStreak, 1);
+      assert.strictEqual(res.emberRelit, false);
+    });
+
+    it('retains streak on same calendar date without incrementing', () => {
+      const res = updateStreak(3, 5, '2026-09-12', '2026-09-12');
+      assert.strictEqual(res.currentStreak, 3);
+      assert.strictEqual(res.longestStreak, 5);
+      assert.strictEqual(res.emberRelit, false);
+    });
+
+    it('increments streak on consecutive calendar date and updates longest', () => {
+      const res = updateStreak(3, 3, '2026-09-11', '2026-09-12');
+      assert.strictEqual(res.currentStreak, 4);
+      assert.strictEqual(res.longestStreak, 4);
+      assert.strictEqual(res.emberRelit, false);
+    });
+
+    it('resets current streak to 1 and flags emberRelit after missed date while preserving longest', () => {
+      const res = updateStreak(5, 10, '2026-09-09', '2026-09-12');
+      assert.strictEqual(res.currentStreak, 1);
+      assert.strictEqual(res.longestStreak, 10);
+      assert.strictEqual(res.emberRelit, true);
     });
   });
 

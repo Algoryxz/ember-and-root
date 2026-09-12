@@ -178,3 +178,60 @@ export function crestAvailable(
 
   return false;
 }
+
+export type StreakResult = {
+  currentStreak: number;
+  longestStreak: number;
+  emberRelit: boolean;
+};
+
+/**
+ * Pure reference streak calculation based on local calendar dates.
+ * - Same local date: streak unchanged.
+ * - Next consecutive calendar day: currentStreak increments by 1.
+ * - Missed day (gap >= 1 full day): currentStreak resets to 1, emberRelit is true.
+ * - Longest streak is preserved as max(previousLongest, currentStreak).
+ */
+export function updateStreak(
+  currentStreak: number,
+  longestStreak: number,
+  lastActivityDate: string | null,
+  currentLocalDate: string
+): StreakResult {
+  if (!lastActivityDate) {
+    const nextCurrent = 1;
+    return {
+      currentStreak: nextCurrent,
+      longestStreak: Math.max(longestStreak, nextCurrent),
+      emberRelit: false,
+    };
+  }
+
+  const lastDate = new Date(`${lastActivityDate}T00:00:00Z`);
+  const currDate = new Date(`${currentLocalDate}T00:00:00Z`);
+  const diffDays = Math.round((currDate.getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24));
+
+  if (diffDays === 0) {
+    return {
+      currentStreak,
+      longestStreak,
+      emberRelit: false,
+    };
+  } else if (diffDays === 1) {
+    const nextCurrent = currentStreak + 1;
+    return {
+      currentStreak: nextCurrent,
+      longestStreak: Math.max(longestStreak, nextCurrent),
+      emberRelit: false,
+    };
+  } else {
+    // Missed at least one local calendar day
+    const nextCurrent = 1;
+    return {
+      currentStreak: nextCurrent,
+      longestStreak: Math.max(longestStreak, nextCurrent),
+      emberRelit: true,
+    };
+  }
+}
+
