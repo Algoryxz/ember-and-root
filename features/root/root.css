@@ -1,4 +1,8 @@
-/* Root & Mind Branch Styling — Ember & Root Design System */
+/* ==========================================================================
+   Ember & Root — Root & Mind Branch Styling
+   Visual Direction: Illuminated Field Journal
+   Specification: docs/UI_UX_BRIEF.md
+   ========================================================================== */
 
 :root {
   --color-bg: #141713;
@@ -12,31 +16,137 @@
   --color-root-mature: #d9e3b2;
   --color-error: #f0a79d;
   --color-focus: #c4a96a;
-  --color-node-locked: #2a322a;
+  --color-node-locked: #192019;
   --color-border-locked: #3b463b;
+  --color-text-locked: #c8cebc;
+  --color-sub-locked: #9ea797;
 }
 
-/* Container */
+/* Outer Shell & Hero Header */
+.root-interactive-shell {
+  width: 100%;
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 0 var(--space-8);
+  box-sizing: border-box;
+}
+
+.root-hero-section {
+  text-align: center;
+  margin-bottom: var(--space-20);
+}
+
+.root-hero-title {
+  font-family: var(--font-display);
+  font-size: 1.75rem;
+  letter-spacing: 0.08em;
+  color: var(--color-text-primary);
+  margin: 0 0 var(--space-6) 0;
+  text-shadow: 0 0 20px rgba(159, 186, 135, 0.2);
+}
+
+.root-hero-subtitle {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  margin: 0;
+  max-width: 540px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* SVG Container & Folio Plate */
+.root-svg-container {
+  width: 100%;
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+/* Branch Folio Plate Container */
 .root-branch-container {
   position: relative;
   width: 100%;
-  max-width: 440px;
+  max-width: 760px;
   margin: 0 auto;
   background-color: var(--color-surface);
-  border: 1px solid rgba(159, 186, 135, 0.15);
-  border-radius: 12px;
-  padding: 16px;
+  border: 1px solid rgba(159, 186, 135, 0.2);
+  border-radius: var(--radius-panel);
+  padding: var(--space-24);
   box-sizing: border-box;
   color: var(--color-text-primary);
-  font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
+  font-family: var(--font-body);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.35), inset 0 0 0 1px rgba(240, 231, 211, 0.03);
 }
 
-/* SVG Scene */
+/* Branch Folio Header */
+.root-branch-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-8);
+  margin-bottom: var(--space-12);
+  border-bottom: 1px solid rgba(159, 186, 135, 0.18);
+  padding-bottom: var(--space-8);
+  box-sizing: border-box;
+}
+
+.root-branch-header-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.root-branch-header-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  color: var(--color-text-primary);
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  line-height: 1.2;
+}
+
+.root-branch-header-sub {
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
+  margin-top: 2px;
+}
+
+.root-view-toggle-btn {
+  background-color: var(--color-bg);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border-locked);
+  border-radius: var(--radius-btn);
+  padding: 6px 12px;
+  font-size: var(--text-xs);
+  font-family: var(--font-body);
+  cursor: pointer;
+  min-height: 38px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: background-color 150ms ease, border-color 150ms ease;
+}
+
+.root-view-toggle-btn:hover {
+  background-color: var(--color-surface-hover);
+  border-color: var(--color-text-secondary);
+}
+
+.root-view-toggle-btn:focus-visible {
+  outline: 2px solid var(--color-focus);
+}
+
+/* SVG Scene Canvas — 3:4 Aspect Ratio Lockstep */
 .root-svg-wrapper {
   position: relative;
   width: 100%;
-  height: 480px;
-  overflow: hidden;
+  max-width: 440px;
+  aspect-ratio: 3 / 4;
+  height: auto;
+  margin: 0 auto;
+  overflow: visible;
   user-select: none;
 }
 
@@ -80,7 +190,7 @@
   pointer-events: none;
 }
 
-/* Node Button */
+/* Node Button Primitive */
 .root-node-button {
   position: absolute;
   transform: translate(-50%, -50%);
@@ -101,6 +211,7 @@
   cursor: pointer;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
   transition: transform 0.2s ease, border-color 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease;
+  box-sizing: border-box;
 }
 
 .root-node-button:focus-visible {
@@ -110,14 +221,33 @@
 }
 
 /* Node State Variants */
+
+/* 1. Locked / Dormant (WCAG AA Compliant contrast without being invisible) */
 .root-node-button.state-locked {
   background-color: var(--color-node-locked);
   border-color: var(--color-border-locked);
-  color: var(--color-text-secondary);
-  opacity: 0.65;
+  color: var(--color-text-locked);
+  opacity: 1;
   cursor: not-allowed;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
+.root-node-button.state-locked .node-title {
+  color: var(--color-text-locked);
+  font-weight: 500;
+}
+
+.root-node-button.state-locked .node-subtitle {
+  color: var(--color-sub-locked);
+  opacity: 0.9;
+}
+
+.root-node-button.state-locked .node-indicator {
+  background-color: var(--color-border-locked);
+  box-shadow: none;
+}
+
+/* 2. Unlocked (Achieved node) */
 .root-node-button.state-unlocked {
   background-color: #1f2a1e;
   border-color: var(--color-root);
@@ -125,6 +255,7 @@
   box-shadow: 0 0 12px rgba(159, 186, 135, 0.25);
 }
 
+/* 3. Available (Choice ready) */
 .root-node-button.state-available {
   background-color: #2b2319;
   border-color: var(--color-ember);
@@ -139,6 +270,7 @@
   transform: translate(-50%, -50%) scale(1.05);
 }
 
+/* 4. Selected (Active branch) */
 .root-node-button.state-selected {
   background-color: #263323;
   border-color: var(--color-root-mature);
@@ -198,9 +330,63 @@
 
 .node-subtitle {
   font-size: 10px;
-  opacity: 0.8;
-  font-family: 'Fraunces', serif;
+  opacity: 0.85;
+  font-family: var(--font-display);
   font-style: italic;
+}
+
+/* Mobile Responsive Adjustments */
+@media (max-width: 640px) {
+  .root-branch-container {
+    padding: var(--space-16);
+  }
+  .root-svg-wrapper {
+    max-width: 360px;
+  }
+}
+
+@media (max-width: 420px) {
+  .root-branch-container {
+    padding: var(--space-12);
+  }
+  
+  .root-svg-wrapper {
+    max-width: 310px;
+  }
+
+  .root-node-button {
+    padding: 4px 8px;
+    gap: 4px;
+    font-size: 11px;
+  }
+  
+  .node-title {
+    font-size: 11px;
+    white-space: nowrap;
+  }
+  
+  .node-subtitle {
+    font-size: 9px;
+  }
+}
+
+@media (max-width: 340px) {
+  .root-branch-container {
+    padding: var(--space-8);
+  }
+
+  .root-svg-wrapper {
+    max-width: 270px;
+  }
+
+  .root-branch-header-title {
+    font-size: 1.1rem;
+  }
+
+  .root-view-toggle-btn {
+    padding: 4px 8px;
+    font-size: 11px;
+  }
 }
 
 /* Crest Reveal Banner Animation */

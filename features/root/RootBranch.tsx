@@ -8,6 +8,7 @@ import { RootNodeButton } from './RootNodeButton';
 import { RootList } from './RootList';
 import { SessionTrialPanel } from './SessionTrialPanel';
 import { MilestoneTrialPanel } from './MilestoneTrialPanel';
+import './root.css';
 
 export interface RootBranchProps {
   attribute: AttributeId;
@@ -158,28 +159,9 @@ export const RootBranch: React.FC<RootBranchProps> = ({
       aria-label={`${config.title}`}
     >
       {/* Header */}
-      <header
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          marginBottom: '12px',
-          borderBottom: `1px solid ${TOKENS.color.borderRootSubtle}`,
-          paddingBottom: '8px',
-        }}
-      >
-        <div>
-          <h2
-            style={{
-              margin: 0,
-              fontFamily: TOKENS.font.display,
-              fontSize: '20px',
-              color: TOKENS.color.textPrimary,
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-            }}
-          >
+      <header className="root-branch-header">
+        <div className="root-branch-header-info">
+          <h2 className="root-branch-header-title">
             <span
               style={{
                 width: '10px',
@@ -187,12 +169,13 @@ export const RootBranch: React.FC<RootBranchProps> = ({
                 borderRadius: '50%',
                 backgroundColor: config.accentColor,
                 display: 'inline-block',
+                flexShrink: 0,
               }}
               aria-hidden="true"
             />
             {config.title}
           </h2>
-          <span style={{ fontSize: '12px', color: TOKENS.color.textSecondary }}>
+          <span className="root-branch-header-sub">
             {config.subtitle} ({xp} XP)
           </span>
         </div>
@@ -201,16 +184,7 @@ export const RootBranch: React.FC<RootBranchProps> = ({
         <button
           type="button"
           onClick={() => setViewMode(viewMode === 'visual' ? 'list' : 'visual')}
-          style={{
-            backgroundColor: TOKENS.color.bg,
-            color: TOKENS.color.textPrimary,
-            border: `1px solid ${TOKENS.color.borderLocked}`,
-            borderRadius: TOKENS.radius.md,
-            padding: '6px 10px',
-            fontSize: '12px',
-            cursor: 'pointer',
-            minHeight: '36px',
-          }}
+          className="root-view-toggle-btn"
           aria-label={`Switch to ${viewMode === 'visual' ? 'Accessible List' : 'Visual SVG'} view for ${config.title}`}
         >
           {viewMode === 'visual' ? '📋 List View' : '🌿 Visual Tree'}

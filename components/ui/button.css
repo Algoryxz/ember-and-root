@@ -79,10 +79,11 @@
 }
 
 .btn-completion.is-completed {
-  background-color: transparent;
-  border-color: rgba(159, 186, 135, 0.4);
-  color: var(--color-root);
+  background-color: rgba(159, 186, 135, 0.12);
+  border-color: rgba(159, 186, 135, 0.45);
+  color: var(--color-root-mature);
   cursor: default;
+  letter-spacing: 0.02em;
 }
 
 /* Disabled & Pending States */

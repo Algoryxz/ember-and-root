@@ -121,7 +121,7 @@ export const MilestoneTrialPanel: React.FC<MilestoneTrialPanelProps> = ({
             marginBottom: '12px',
           }}
         >
-          <strong>Mutation Error:</strong> {error}
+          <strong>Error:</strong> {error}
         </div>
       )}
 

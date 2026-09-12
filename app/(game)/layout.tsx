@@ -23,7 +23,7 @@ export default async function GameLayout({
       <main
         id="main-content"
         tabIndex={-1}
-        className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 pt-6 pb-24 md:pb-12 focus:outline-none"
+        className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 pt-4 sm:pt-6 pb-[calc(5.5rem+env(safe-area-inset-bottom,16px))] md:pb-12 focus:outline-none"
       >
         {children}
       </main>

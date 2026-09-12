@@ -45,7 +45,7 @@ export const MindRootInteractiveView: React.FC = () => {
           Ember & Root — Mind Branch
         </h1>
         <p style={{ margin: 0, fontSize: '13px', color: TOKENS.color.textSecondary }}>
-          Workstream Lead: <strong>Akriti</strong> (Mobile 375px Verified)
+          The canopy of permanent becoming.
         </p>
       </header>
 

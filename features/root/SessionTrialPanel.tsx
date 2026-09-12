@@ -116,7 +116,7 @@ export const SessionTrialPanel: React.FC<SessionTrialPanelProps> = ({
             marginBottom: '12px',
           }}
         >
-          <strong>Mutation Error:</strong> {error}
+          <strong>Error:</strong> {error}
         </div>
       )}
 

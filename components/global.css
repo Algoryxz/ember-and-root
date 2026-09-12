@@ -1,4 +1,4 @@
-﻿@tailwind base;
+@tailwind base;
 @tailwind components;
 @tailwind utilities;
 
@@ -124,5 +124,19 @@ small, .text-secondary {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   8. Mobile Navigation Clearance
+   Guarantees app content can scroll completely clear of the fixed bottom nav
+   -------------------------------------------------------------------------- */
+#main-content {
+  padding-bottom: calc(6.5rem + env(safe-area-inset-bottom, 24px)) !important;
+}
+
+@media (min-width: 768px) {
+  #main-content {
+    padding-bottom: 3rem !important;
   }
 }

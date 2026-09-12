@@ -6,7 +6,7 @@
    ========================================================================== */
 
 .hearth-shell {
-  min-height: 100vh;
+  width: 100%;
   background-color: var(--color-bg);
   color: var(--color-text-primary);
   display: flex;
@@ -166,11 +166,11 @@
   max-width: 1040px;
   width: 100%;
   margin: 0 auto;
-  padding: var(--space-32) var(--space-24);
+  padding: var(--space-24) var(--space-24);
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  gap: var(--space-32);
+  gap: var(--space-24);
 }
 
 /* --------------------------------------------------------------------------
@@ -182,7 +182,7 @@
   flex-direction: column;
   align-items: center;
   text-align: center;
-  gap: var(--space-8);
+  gap: var(--space-4);
 }
 
 .hearth-hero-title {
@@ -204,13 +204,25 @@
 }
 
 /* --------------------------------------------------------------------------
-   The Hearth Stage: Ember Momentum & Root Becoming
+   The Hearth Stage: Illuminated Field Journal Folio Spread
+   Single cohesive spread uniting Ember Momentum & Root Becoming
    -------------------------------------------------------------------------- */
 .hearth-stage-duo {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: var(--space-24);
   align-items: stretch;
+  background-color: var(--color-surface);
+  border: 1px solid rgba(185, 190, 172, 0.16);
+  border-radius: var(--radius-panel);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.35);
+  overflow: hidden;
+  position: relative;
+}
+
+@media (min-width: 861px) {
+  .hearth-stage-duo > *:first-child {
+    border-right: 1px solid rgba(185, 190, 172, 0.12);
+  }
 }
 
 /* --------------------------------------------------------------------------
@@ -245,13 +257,16 @@
    Mobile Safe Area & Responsiveness (320px, 375px, 390px, 768px)
    -------------------------------------------------------------------------- */
 .mobile-safe-bottom {
-  height: max(var(--space-24), env(safe-area-inset-bottom, 16px));
+  height: max(var(--space-16), env(safe-area-inset-bottom, 16px));
 }
 
 @media (max-width: 860px) {
   .hearth-stage-duo {
     grid-template-columns: 1fr;
-    gap: var(--space-24);
+  }
+
+  .hearth-stage-duo > *:first-child {
+    border-bottom: 1px solid rgba(185, 190, 172, 0.12);
   }
 
   .hearth-header-inner {
@@ -266,26 +281,34 @@
   }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 640px) {
   .hearth-canvas {
-    padding: var(--space-16) var(--space-12);
-    gap: var(--space-24);
+    padding: var(--space-12) var(--space-8);
+    gap: var(--space-16);
   }
 
   .hearth-hero-title {
     font-size: var(--text-3xl);
+    letter-spacing: 0.05em;
   }
 
   .hearth-hero-subtitle {
     font-size: var(--text-sm);
   }
+}
 
-  .hearth-nav-list {
-    flex-wrap: wrap;
+@media (max-width: 380px) {
+  .hearth-canvas {
+    padding: var(--space-8) var(--space-4);
+    gap: var(--space-12);
   }
 
-  .hearth-qa-diagnostic {
-    font-size: 0.7rem;
-    text-align: center;
+  .hearth-hero-title {
+    font-size: 22px;
+    letter-spacing: 0.04em;
+  }
+
+  .hearth-hero-subtitle {
+    font-size: 13px;
   }
 }

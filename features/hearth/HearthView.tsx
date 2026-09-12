@@ -27,6 +27,7 @@ export interface HearthViewProps {
   initialSnapshot?: GameSnapshot;
   supabaseClient?: any;
   showShellNav?: boolean;
+  showDevTools?: boolean;
   onMutationSuccess?: (result: MutationResult) => void;
   onNavigateToRoot?: () => void;
   className?: string;
@@ -58,6 +59,7 @@ export const HearthView: React.FC<HearthViewProps> = ({
   initialSnapshot = DEMO_SNAPSHOT,
   supabaseClient = null,
   showShellNav = true,
+  showDevTools = false,
   onMutationSuccess,
   onNavigateToRoot,
   className = '',
@@ -300,17 +302,19 @@ export const HearthView: React.FC<HearthViewProps> = ({
           onOpenCreateDialog={() => setIsCreateDialogOpen(true)}
         />
 
-        {/* QA Diagnostic Tool (Subtle, for verifying failure & retry handling) */}
-        <aside className="hearth-qa-diagnostic" aria-label="Testing Controls">
-          <label className="qa-toggle-label">
-            <input
-              type="checkbox"
-              checked={simulateFailure}
-              onChange={(e) => setSimulateFailure(e.target.checked)}
-            />
-            <span>Simulate network interruption on next quest operation (tests inline retry)</span>
-          </label>
-        </aside>
+        {/* QA Diagnostic Tool (Gated strictly to non-production and explicit dev flag) */}
+        {process.env.NODE_ENV !== 'production' && showDevTools && (
+          <aside className="hearth-qa-diagnostic" aria-label="Testing Controls">
+            <label className="qa-toggle-label">
+              <input
+                type="checkbox"
+                checked={simulateFailure}
+                onChange={(e) => setSimulateFailure(e.target.checked)}
+              />
+              <span>Simulate network interruption on next quest operation (tests inline retry)</span>
+            </label>
+          </aside>
+        )}
       </main>
 
       {/* Mobile Safe Area Inset Spacer */}

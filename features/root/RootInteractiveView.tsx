@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { AttributeId, GameSnapshot, Specialization } from '../../game/contracts';
 import { RootSvg } from './RootSvg';
 import { TOKENS } from './tokens';
+import './root.css';
 import {
   chooseSpecializationAction,
   startTrialAction,
@@ -185,31 +186,13 @@ export const RootInteractiveView: React.FC<RootInteractiveViewProps> = ({
   };
 
   return (
-    <div
-      style={{
-        padding: '16px',
-        maxWidth: '480px',
-        margin: '0 auto',
-        boxSizing: 'border-box',
-        backgroundColor: TOKENS.color.bg,
-        minHeight: '100vh',
-        color: TOKENS.color.textPrimary,
-        fontFamily: TOKENS.font.ui,
-      }}
-    >
-      <header style={{ marginBottom: '16px', textAlign: 'center' }}>
-        <h1
-          style={{
-            fontFamily: TOKENS.font.display,
-            fontSize: '24px',
-            margin: '0 0 4px 0',
-            color: TOKENS.color.textPrimary,
-          }}
-        >
-          Ember & Root — Skill Tree & Trials
+    <div className="root-interactive-shell">
+      <header className="root-hero-section">
+        <h1 className="root-hero-title">
+          THE ROOT
         </h1>
-        <p style={{ margin: 0, fontSize: '13px', color: TOKENS.color.textSecondary }}>
-          Authoritative Mutation Wiring (Lead: <strong>Akriti</strong>)
+        <p className="root-hero-subtitle">
+          The canopy of permanent becoming. What you do becomes who you are.
         </p>
       </header>
 
@@ -227,7 +210,7 @@ export const RootInteractiveView: React.FC<RootInteractiveViewProps> = ({
             textAlign: 'center',
           }}
         >
-          ✨ {lastEvent} (Snapshot Revision: {snapshot.revision})
+          ✨ {lastEvent}
         </div>
       )}
 
