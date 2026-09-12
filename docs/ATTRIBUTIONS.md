@@ -56,6 +56,7 @@ Project-original skills (`ember-ui`, `reward-integrity`, `integration-guardian`,
 
 | Reference | Creator/source | Status in Ember & Root | What we borrow |
 |---|---|---|---|
+| Cinematic Hero V3 Concept | Algoryxz Creative Brief / Reference Artwork | **Adapted** | Full-viewport cinematic dark soil scene, hand and match ignition, living root network composition, Fraunces editorial overlay, and sequential loop storytelling. |
 | Spector | https://spector.framer.website/ | **Visual/motion inspiration only** | Scroll choreography, editorial typography, section rhythm, and integrated interaction polish. No site assets or copy are reused. |
 | Timeline | Aceternity UI — https://ui.aceternity.com/components/timeline | **Planned adaptation for Chronicle** | Sticky chronology + scroll-follow beam concept, reinterpreted as a living root/history line. |
 | Glass Button | Original interaction by Petr Knoll — https://codepen.io/Petr-Knoll/pen/QwWLZdx | **Interaction reference only** | Pressed-depth/tactile button construction. Ember & Root will not ship the glassmorphism visual treatment. |

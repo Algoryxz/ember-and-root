@@ -7,6 +7,7 @@ import { BRANCH_CONFIGS } from '../../features/root/config';
 import type { NodeState, RootNodeInfo } from '../../features/root/types';
 import type { AttributeId, BranchState } from '../../features/hearth/contracts';
 import { DEMO_SNAPSHOT } from '../../game/fixtures/snapshot';
+import { CinematicHero } from './CinematicHero';
 import './LandingView.css';
 
 const ATTRIBUTES: AttributeId[] = ['mind', 'body', 'will', 'craft'];
@@ -220,102 +221,16 @@ export function LandingView() {
 
   return (
     <div className="landing-shell">
-      {/* Accessible Skip Link */}
-      <a href="#hero-title" className="skip-link">
-        Skip to main content
-      </a>
-
-      {/* Top Navigation */}
-      <header className="landing-nav">
-        <div className="landing-nav-inner">
-          <Link href="/" className="landing-brand" aria-label="Ember & Root Home">
-            <div className="landing-brand-glyph" aria-hidden="true" />
-            <span className="landing-brand-title">Ember &amp; Root</span>
-          </Link>
-
-          <nav className="landing-nav-actions" aria-label="Account Navigation">
-            <Link href="/login" className="btn-nav-login">
-              Sign In
-            </Link>
-            <Link href="/signup" className="btn-nav-primary">
-              Begin Path
-            </Link>
-          </nav>
-        </div>
-      </header>
+      {/* 1. Full Viewport Cinematic Botanical Hero */}
+      <CinematicHero />
 
       {/* Main Landing Canvas */}
       <main className="landing-content">
         {/* ==================================================================
-            SECTION 1: Living Ember & Hero
-            ================================================================== */}
-        <section className="landing-hero" aria-labelledby="hero-title">
-          {/* Living Brazier Vessel with Animated Flame */}
-          <div className="landing-brazier" aria-hidden="true">
-            <div className="landing-brazier-halo" />
-            <svg
-              className="landing-flame-svg"
-              viewBox="0 0 100 100"
-              focusable="false"
-            >
-              <defs>
-                <radialGradient id="landingGlow" cx="50%" cy="65%" r="45%">
-                  <stop offset="0%" stopColor="var(--color-ember-core)" stopOpacity="0.8" />
-                  <stop offset="45%" stopColor="var(--color-ember)" stopOpacity="0.5" />
-                  <stop offset="100%" stopColor="transparent" stopOpacity="0" />
-                </radialGradient>
-                <linearGradient id="landingFlame" x1="50%" y1="90%" x2="50%" y2="10%">
-                  <stop offset="0%" stopColor="var(--color-ember)" />
-                  <stop offset="60%" stopColor="var(--color-ember-core)" />
-                  <stop offset="100%" stopColor="var(--color-ember-core)" stopOpacity="0.95" />
-                </linearGradient>
-                <radialGradient id="landingSpark" cx="50%" cy="55%" r="35%">
-                  <stop offset="0%" stopColor="var(--color-ember-core)" />
-                  <stop offset="40%" stopColor="var(--color-ember-core)" />
-                  <stop offset="100%" stopColor="var(--color-ember)" stopOpacity="0" />
-                </radialGradient>
-              </defs>
-
-              {/* Charcoal bed */}
-              <ellipse cx="50" cy="80" rx="36" ry="12" fill="rgba(20, 23, 19, 0.9)" />
-              {/* Radial glow */}
-              <circle cx="50" cy="62" r="32" fill="url(#landingGlow)" />
-              {/* Primary Flame Body */}
-              <path
-                d="M50 84 C34 84 28 72 32 58 C35 48 42 42 45 32 C47 38 51 40 50 30 C53 38 62 44 65 54 C70 66 66 84 50 84 Z"
-                fill="url(#landingFlame)"
-                className="landing-flame-path"
-              />
-              {/* Inner core */}
-              <circle cx="50" cy="60" r="10" fill="url(#landingSpark)" className="landing-spark-core" />
-            </svg>
-          </div>
-
-          <div className="landing-headline-wrap">
-            <span className="landing-kicker">A Living Personal Field Journal</span>
-            <h1 id="hero-title" className="landing-title">
-              What you do each day becomes something you can see grow.
-            </h1>
-            <p className="landing-subtitle">
-              A personal practice where real daily efforts kindle today’s flame and physically cultivate a permanent root.
-            </p>
-          </div>
-
-          <div className="landing-cta-group">
-            <Link href="/signup" className="btn-primary-cta">
-              Begin your path →
-            </Link>
-            <Link href="/login" className="btn-secondary-cta">
-              I already have a path
-            </Link>
-          </div>
-        </section>
-
-        {/* ==================================================================
             SECTION 2: The Causal Ritual Loop (Editorial Demonstration Folio)
             Replaces the 4-card grid with ONE authored causal experience
             ================================================================== */}
-        <section className="landing-loop-section" aria-labelledby="loop-title">
+        <section id="ritual-section" className="landing-loop-section" aria-labelledby="loop-title">
           <div className="section-heading-cluster">
             <div className="section-eyebrow">The Daily Rhythm</div>
             <h2 id="loop-title" className="section-title">
