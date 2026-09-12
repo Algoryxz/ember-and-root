@@ -9,6 +9,7 @@
 --   - EXECUTE revoked from PUBLIC, granted only to authenticated role
 --   - Idempotency hash computed deterministically from canonical inputs
 --   - Timestamps normalized to UTC before ISO-8601 serialization
+--   - Timezone validated against pg_catalog.pg_timezone_names on write
 -- ==============================================================================
 
 -- 1. Helper: Level from total XP
@@ -97,7 +98,7 @@ BEGIN
     RETURN NULL;
   END IF;
 
-  -- 3. Compute local date in user's saved IANA timezone
+  -- 3. Compute local date in user's saved IANA timezone (defensive UTC fallback)
   BEGIN
     v_current_local_date := (pg_catalog.now() AT TIME ZONE pg_catalog.coalesce(v_profile.timezone, 'UTC'))::date;
   EXCEPTION WHEN OTHERS THEN
@@ -253,7 +254,7 @@ REVOKE ALL ON FUNCTION public.get_game_snapshot() FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.get_game_snapshot() TO authenticated;
 
 -- 4. Public RPC: Update Profile Preferences & Timezone
--- Replaces direct client UPDATE on profiles with a narrow, validated mutation
+-- Validates timezone against pg_catalog.pg_timezone_names
 CREATE OR REPLACE FUNCTION public.update_profile_preferences(
   p_preferences jsonb DEFAULT NULL,
   p_timezone text DEFAULT NULL
@@ -272,9 +273,12 @@ BEGIN
     RAISE EXCEPTION 'Unauthorized: must be authenticated' USING ERRCODE = 'P0001';
   END IF;
 
+  -- Timezone validation against authoritative pg_timezone_names catalog
   IF p_timezone IS NOT NULL THEN
-    IF pg_catalog.char_length(pg_catalog.trim(p_timezone)) < 1 OR pg_catalog.char_length(p_timezone) > 64 THEN
-      RAISE EXCEPTION 'Invalid timezone string' USING ERRCODE = 'P0008';
+    IF NOT EXISTS (
+      SELECT 1 FROM pg_catalog.pg_timezone_names WHERE name = p_timezone
+    ) THEN
+      RAISE EXCEPTION 'Invalid timezone: %', p_timezone USING ERRCODE = 'P0008';
     END IF;
   END IF;
 
@@ -301,11 +305,12 @@ REVOKE ALL ON FUNCTION public.update_profile_preferences(jsonb, text) FROM PUBLI
 GRANT EXECUTE ON FUNCTION public.update_profile_preferences(jsonb, text) TO authenticated;
 
 -- 5. Public RPC: Atomic complete_quest
+-- Handles quest completion, XP, Sparks, branch XP, streak, Ember, level, and idempotency.
+-- Dedicated Trial operations handle Trial progression separately.
 CREATE OR REPLACE FUNCTION public.complete_quest(
   p_request_id uuid,
   p_quest_id uuid,
-  p_expected_occurrence text DEFAULT NULL,
-  p_trial_evidence jsonb DEFAULT '{}'::jsonb
+  p_expected_occurrence text DEFAULT NULL
 )
 RETURNS jsonb
 LANGUAGE plpgsql
@@ -365,8 +370,7 @@ BEGIN
   -- 3. Derive canonical payload fingerprint internally
   v_canonical_payload := pg_catalog.jsonb_build_object(
     'questId', p_quest_id,
-    'expectedOccurrence', pg_catalog.coalesce(p_expected_occurrence, ''),
-    'trialEvidence', pg_catalog.coalesce(p_trial_evidence, '{}'::jsonb)
+    'expectedOccurrence', pg_catalog.coalesce(p_expected_occurrence, '')
   );
   v_payload_hash := pg_catalog.encode(pg_catalog.sha256(v_canonical_payload::text::bytea), 'hex');
 
@@ -451,7 +455,7 @@ BEGIN
   -- 12. Calculate Sparks from awarded XP (integer division)
   v_sparks_awarded := v_awarded_xp / 5;
 
-  -- 13. Insert immutable completion snapshot
+  -- 13. Insert immutable completion snapshot (writes default '{}'::jsonb for trial_evidence)
   v_completion_id := pg_catalog.gen_random_uuid();
   INSERT INTO public.quest_completions (
     id,
@@ -478,7 +482,7 @@ BEGIN
     v_quest.effort,
     v_awarded_xp,
     v_sparks_awarded,
-    pg_catalog.coalesce(p_trial_evidence, '{}'::jsonb)
+    '{}'::jsonb
   );
 
   -- 14. Compute level progression
@@ -607,5 +611,5 @@ BEGIN
 END;
 $$;
 
-REVOKE ALL ON FUNCTION public.complete_quest(uuid, uuid, text, jsonb) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION public.complete_quest(uuid, uuid, text, jsonb) TO authenticated;
+REVOKE ALL ON FUNCTION public.complete_quest(uuid, uuid, text) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.complete_quest(uuid, uuid, text) TO authenticated;

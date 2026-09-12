@@ -103,11 +103,11 @@ describe('Ember & Root — Shared Contracts & Fixtures', () => {
   });
 
   describe('Idempotency Payload Normalization', () => {
-    it('normalizes null or undefined expectedOccurrence and trialEvidence', () => {
+    it('normalizes null or undefined expectedOccurrence', () => {
       const p1 = canonicalCompleteQuestPayload('q-1');
-      const p2 = canonicalCompleteQuestPayload('q-1', null, {});
+      const p2 = canonicalCompleteQuestPayload('q-1', null);
       assert.strictEqual(p1, p2);
-      assert.strictEqual(p1, JSON.stringify({ questId: 'q-1', expectedOccurrence: '', trialEvidence: {} }));
+      assert.strictEqual(p1, JSON.stringify({ questId: 'q-1', expectedOccurrence: '' }));
     });
   });
 

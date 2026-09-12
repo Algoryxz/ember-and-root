@@ -12,7 +12,6 @@ export type CompleteQuestParams = {
   requestId: string;
   questId: string;
   expectedOccurrence?: string | null;
-  trialEvidence?: Record<string, unknown>;
 };
 
 export type UpdateProfilePreferencesParams = {
@@ -36,7 +35,6 @@ export async function completeQuest(
     p_request_id: params.requestId,
     p_quest_id: params.questId,
     p_expected_occurrence: params.expectedOccurrence ?? null,
-    p_trial_evidence: params.trialEvidence ?? {},
   });
 
   if (error) {

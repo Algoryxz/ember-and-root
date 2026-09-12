@@ -13,6 +13,7 @@ import {
   specializationAvailable,
   crestAvailable,
   canonicalCompleteQuestPayload,
+  isValidIanaTimezone,
   updateStreak,
   DAILY_XP_CAP,
 } from './progression.ts';
@@ -142,20 +143,34 @@ describe('Ember & Root — Progression Reference Math', () => {
   });
 
   describe('Idempotency Payload Fingerprint', () => {
-    it('generates deterministic JSON string for identical inputs', () => {
-      const p1 = canonicalCompleteQuestPayload('q-123', '2026-09-12', { note: 'reflection' });
-      const p2 = canonicalCompleteQuestPayload('q-123', '2026-09-12', { note: 'reflection' });
+    it('generates deterministic JSON string from questId and expectedOccurrence', () => {
+      const p1 = canonicalCompleteQuestPayload('q-123', '2026-09-12');
+      const p2 = canonicalCompleteQuestPayload('q-123', '2026-09-12');
       assert.strictEqual(p1, p2);
+      assert.strictEqual(p1, JSON.stringify({ questId: 'q-123', expectedOccurrence: '2026-09-12' }));
     });
 
-    it('distinguishes different occurrences or evidence', () => {
+    it('distinguishes different occurrences', () => {
       const p1 = canonicalCompleteQuestPayload('q-123', '2026-09-12');
       const p2 = canonicalCompleteQuestPayload('q-123', '2026-09-13');
       assert.notStrictEqual(p1, p2);
+    });
+  });
 
-      const p3 = canonicalCompleteQuestPayload('q-123', '2026-09-12', { note: 'a' });
-      const p4 = canonicalCompleteQuestPayload('q-123', '2026-09-12', { note: 'b' });
-      assert.notStrictEqual(p3, p4);
+  describe('IANA Timezone Validation', () => {
+    it('accepts standard valid IANA timezone identifiers', () => {
+      assert.strictEqual(isValidIanaTimezone('UTC'), true);
+      assert.strictEqual(isValidIanaTimezone('Asia/Kolkata'), true);
+      assert.strictEqual(isValidIanaTimezone('America/New_York'), true);
+      assert.strictEqual(isValidIanaTimezone('Europe/London'), true);
+      assert.strictEqual(isValidIanaTimezone('Australia/Sydney'), true);
+    });
+
+    it('rejects invalid or non-existent timezone strings', () => {
+      assert.strictEqual(isValidIanaTimezone(''), false);
+      assert.strictEqual(isValidIanaTimezone('Invalid/Zone'), false);
+      assert.strictEqual(isValidIanaTimezone('NotATimezone'), false);
+      assert.strictEqual(isValidIanaTimezone('Mars/Olympus_Mons'), false);
     });
   });
 

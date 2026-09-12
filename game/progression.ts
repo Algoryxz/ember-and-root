@@ -163,17 +163,31 @@ export function crestAvailable(
 
 /**
  * Canonical payload serializer for completeQuest idempotency fingerprinting.
+ * Derives fingerprint strictly from questId and expectedOccurrence.
  */
 export function canonicalCompleteQuestPayload(
   questId: string,
-  expectedOccurrence: string | null = null,
-  trialEvidence: Record<string, unknown> = {}
+  expectedOccurrence: string | null = null
 ): string {
   return JSON.stringify({
     questId,
     expectedOccurrence: expectedOccurrence ?? '',
-    trialEvidence: trialEvidence ?? {},
   });
+}
+
+/**
+ * Validates whether a string is a recognized, valid IANA timezone identifier.
+ */
+export function isValidIanaTimezone(timezone: string): boolean {
+  if (!timezone || typeof timezone !== 'string' || timezone.trim().length === 0) {
+    return false;
+  }
+  try {
+    Intl.DateTimeFormat(undefined, { timeZone: timezone });
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 export type StreakResult = {
