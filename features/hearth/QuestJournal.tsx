@@ -6,6 +6,7 @@ import './QuestJournal.css';
 
 export interface QuestJournalProps {
   quests: (Quest | HearthQuest)[];
+  currentDateLabel?: string;
   completedQuestIds?: Set<string>;
   pendingQuestId: string | null;
   errorQuestMap: Record<string, string>;
@@ -21,19 +22,34 @@ export interface QuestJournalProps {
 }
 
 /**
+ * Format current date using product standard locale formatting (e.g., "12 SEPTEMBER")
+ * Never hardcodes a fixed date string.
+ */
+function formatCurrentDate(date = new Date()): string {
+  try {
+    const day = date.getDate();
+    const month = date.toLocaleDateString('en-US', { month: 'long' }).toUpperCase();
+    return `${day} ${month}`;
+  } catch {
+    return 'CURRENT DAY';
+  }
+}
+
+/**
  * QuestJournal — The daily practice folio surface
  * Owned by: Deeptiman (Experience / Frontend Lead)
  * Visual Direction: Botanical Field Journal Sequence
  * 
  * Invariants:
- * - Clear editorial sequence: TODAY date -> Numbered practices -> Physical seals
+ * - Clear editorial sequence: Dynamic TODAY date -> Numbered practices -> Physical seals
  * - Field journal themed Loading, Empty, and Error states
  * - Semantic HTML (<section>, <h2>, <ol>, <li>)
  * - Accessible keyboard navigation and visible focus
- * - 44px minimum target sizes
+ * - 44px minimum target sizes across all interactive items
  */
 export const QuestJournal: React.FC<QuestJournalProps> = ({
   quests,
+  currentDateLabel,
   completedQuestIds,
   pendingQuestId,
   errorQuestMap,
@@ -53,12 +69,14 @@ export const QuestJournal: React.FC<QuestJournalProps> = ({
   ).length;
   const remainingCount = quests.length - completedCount;
 
+  const todayLabel = currentDateLabel || `TODAY · ${formatCurrentDate()}`;
+
   return (
     <section className={`quest-journal-section ${className}`} aria-labelledby="today-heading">
       {/* Editorial Folio Header Cluster */}
       <div className="journal-header-cluster">
         <div className="journal-date-marker" aria-hidden="true">
-          TODAY · 12 SEPTEMBER
+          {todayLabel}
         </div>
         <div className="journal-title-row">
           <h2 id="today-heading" className="journal-title">

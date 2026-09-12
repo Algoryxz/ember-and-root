@@ -75,15 +75,15 @@
   text-decoration-color: rgba(185, 190, 172, 0.35);
 }
 
-/* Subtle Quill Edit Action */
+/* Field-journal quill edit action — Minimum 44x44px touch target */
 .entry-edit-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
-  min-width: 32px;
-  min-height: 32px;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
   background: transparent;
   border: none;
   color: var(--color-text-secondary);
@@ -110,7 +110,7 @@
 }
 
 .entry-edit-icon {
-  font-size: 0.95rem;
+  font-size: 1rem;
   line-height: 1;
 }
 
@@ -180,7 +180,7 @@
   border-bottom-style: solid;
 }
 
-/* Tactile Physical Seal Affordance */
+/* Tactile Physical Seal Affordance — Minimum 44x44px touch target */
 .entry-seal-affordance {
   flex-shrink: 0;
   align-self: center;
@@ -250,7 +250,7 @@
   cursor: wait;
 }
 
-/* Inline Error Alert */
+/* Inline Error Alert & Minimum 44x44px Retry Button */
 .entry-error-alert {
   display: flex;
   align-items: center;
@@ -266,16 +266,21 @@
 
 .entry-retry-button {
   margin-left: auto;
-  min-height: 32px;
-  padding: 0 var(--space-8);
+  min-height: 44px;
+  min-width: 64px;
+  padding: 0 var(--space-12);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   background: transparent;
   border: 1px solid var(--color-error);
   border-radius: var(--radius-btn);
   color: var(--color-error);
   font-family: var(--font-body);
   font-size: var(--text-xs);
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
+  transition: background 120ms ease;
 }
 
 .entry-retry-button:hover {
@@ -292,7 +297,9 @@
   .quest-journal-entry,
   .entry-title,
   .entry-seal-btn,
-  .entry-rule-line {
+  .entry-rule-line,
+  .entry-retry-button,
+  .entry-edit-btn {
     transition: none !important;
     transform: none !important;
   }
@@ -323,6 +330,6 @@
   }
 
   .entry-edit-btn {
-    opacity: 0.75;
+    opacity: 0.85;
   }
 }
