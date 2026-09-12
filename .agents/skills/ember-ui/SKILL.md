@@ -1,112 +1,99 @@
----
+﻿---
 name: ember-ui
-description: Implements or reviews Ember & Root frontend surfaces, responsive layouts, SVG Root presentation, accessibility, and purposeful motion while enforcing the illuminated field-journal visual language.
+description: Implements or reviews Ember & Root frontend surfaces, responsive layouts, SVG Root presentation, accessibility, purposeful motion, and browser visual inspection using Playwright MCP while enforcing the illuminated field-journal visual language.
 ---
 
 # Ember UI Skill
 
 ## Purpose
-
-Use this skill when implementing or reviewing any Ember & Root frontend surface: Hearth, Root, Satchel, Chronicle, dialogs, navigation, the Ember component, quest journal rows, or visual states. Also use it when adding responsive behavior, motion, or accessibility.
+Use this skill when implementing or reviewing any Ember & Root frontend surface: Hearth, Root, Satchel, Chronicle, dialogs, navigation, the Ember component, quest journal rows, or visual states. Also use it when adding responsive behavior, motion, accessibility, or conducting browser-based visual reviews via Playwright MCP.
 
 ---
 
-## Required Reading
+## Authority & Skill Precedence
+In this repository, guidance resolves in this strict order:
+1. `AGENTS.md`
+2. **Official product documents**:
+   - `docs/PRD.md`
+   - `docs/TRD.md`
+   - `docs/UI_UX_BRIEF.md`
+   - `docs/APP_FLOW.md`
+   - `docs/BACKEND_SCHEMA.md`
+   - `docs/CONTRACTS.md`
+3. **Project-specific skills**:
+   - `ember-ui`
+   - `reward-integrity`
+   - `integration-guardian`
+   - `ship-check`
+4. **Reusable external skills**:
+   - `frontend-design`
+   - `animate`
+   - `theme-factory`
 
-Before editing any frontend file, read:
+**If a reusable external skill conflicts with Ember & Root's design specification, EMBER & ROOT RULES WIN.**
 
-1. `docs/UI_UX_BRIEF.md` — frozen palette, typography, spacing, motion rules, anti-patterns
-2. `docs/APP_FLOW.md` — the exact trigger, server action, success, and failure for the flow you are implementing
-3. The relevant section of `docs/PRD.md` for the feature you are building
+### `ember-ui` + `frontend-design` Relationship
+- `frontend-design` answers: *"How do I avoid mediocre frontend design?"*
+- `ember-ui` answers: *"What must EMBER & ROOT specifically look and behave like?"*
+`frontend-design` should never invent a different product identity. The product identity is frozen: **"Illuminated field journal"**.
 
-Do not guess at visual direction. If the brief is silent on a case, ask Deeptiman before implementing.
+### Motion Relationship (`ember-ui` + `animate`)
+- `animate` provides general motion quality, curves, and GPU performance techniques.
+- `ember-ui` defines authoritative product choreography and motion budgets.
 
 ---
 
 ## Frozen Visual Invariants
-
 These cannot be changed without Deeptiman's explicit sign-off:
 
-| Invariant | Value |
-|-----------|-------|
-| Background | `#141713` |
-| Raised surface | `#1D231D` |
-| Primary text | `#F0E7D3` |
-| Secondary text | `#B9BEAC` |
-| Ember | `#E98A4B` |
-| Ember bright core | `#FFD38A` |
-| Root sage | `#9FBA87` |
-| Mature Root | `#D9E3B2` |
-| Error | `#F0A79D` |
-| Focus ring | pale-gold, 2px, 2px offset |
-| Headings | Fraunces |
-| UI/body | DM Sans |
+| Invariant | Value | Usage |
+|-----------|-------|-------|
+| Background | `#141713` | Deep charcoal canvas ground |
+| Raised surface | `#1D231D` | Journal sheet, card, drawer surface |
+| Primary text | `#F0E7D3` | Aged warm parchment |
+| Secondary text | `#B9BEAC` | Dried sage / muted labels |
+| Ember | `#E98A4B` | Living flame copper orange |
+| Ember bright core | `#FFD38A` | Incandescent hearth center |
+| Root sage | `#9FBA87` | Living sprout sage green |
+| Mature Root | `#D9E3B2` | Hardened root / amber stem |
+| Error | `#F0A79D` | Ash red error state |
+| Focus ring | pale-gold, 2px, 2px offset | Visible keyboard focus |
+| Headings | `Fraunces` | Display & headers |
+| UI / Body | `DM Sans` | Body, buttons, data |
 
 No other color values as design tokens. No other typefaces.
 
 ---
 
-## Implementation Workflow
+## Canonical Quest Motion Choreography
+Routine completion must remain fast. Do not turn every routine action into a cinematic.
 
-Follow these steps in order. Do not skip ahead to animation before state is correct.
-
-1. **Identify the confirmed server state** that this UI surface consumes. Find the `GameSnapshot` fields or `MutationResult` event fields that drive this component's rendering.
-
-2. **Reuse existing tokens and primitives.** Do not create a parallel visual system. Import CSS custom properties from `components/tokens.css`.
-
-3. **Implement semantic HTML first.**
-   - Use `<button>` for actions, not `<div>` with `onClick`.
-   - Use `<input>` with persistent visible labels.
-   - Use landmark regions: `<main>`, `<nav>`, `<section>`, `<aside>`.
-   - Use list markup for quest lists.
-
-4. **Make the static mobile layout work at ~375px** before adding any animation. Verify no horizontal overflow, no hidden rows, no overlap.
-
-5. **Add desktop composition.** Test at 1280px and 1440px. Verify the ~40%/~60% Hearth split, no enterprise sidebar.
-
-6. **Add motion effects** only after the state transition logic is correct:
-   - Use CSS transitions for micro-animations (press states, row transitions).
-   - Use Motion for React for multi-step sequences (reward choreography).
-   - Use SVG stroke-dashoffset or opacity for Root path reveal.
-   - Consult `docs/UI_UX_BRIEF.md` § "Motion Choreography" for exact timings.
-
-7. **Implement `prefers-reduced-motion` equivalent** for every animation added.
-   ```css
-   @media (prefers-reduced-motion: reduce) {
-     /* swap travel/draw effects for immediate state change */
-   }
-   ```
-
-8. **Verify accessibility:**
-   - Tab through every interactive element in the component.
-   - Verify focus ring visible at each stop.
-   - Verify focus restores to trigger after dialog closes.
-   - Verify decorative SVG has `aria-hidden="true"`.
-   - Verify interactive SVG nodes are `<button>` elements.
-   - Verify `aria-live="polite"` region announces reward after quest completion.
-   - Verify 200% zoom: no content clipped.
-   - Verify 44×44px minimum touch target for all interactive elements.
-
-9. **Do not add dependencies.** New packages require Susmita's approval.
+1. **User activates "Complete quest"**
+2. **Control enters pending state** (instant button disable, subtle in-flight state)
+3. **Server confirms authoritative mutation** (`MutationResult` received)
+4. **Ember reacts** (hearth scale pulse 200–400ms)
+5. **Light travels toward relevant Root branch** (400–700ms single ray; skipped in reduced-motion)
+6. **Branch progress advances** (authored path reveal stroke-dashoffset)
+7. **If threshold crossed**: *"A path is ready"* notice appears
+8. **User intentionally opens specialization choice** (user-driven modal, not automated ambush)
+9. **Selected Root fork reveals** (600–900ms path illumination)
+10. **Trial becomes available**
 
 ---
 
 ## Root Visual Rules
-
 These rules apply specifically to the Root surface (owned by Akriti):
-
 - All SVG paths are authored and fixed. **Do not compute, randomize, or morph path geometry.**
 - Decorative SVG: `aria-hidden="true"`.
 - Interactive nodes (fork choice, crest claim): `<button>` elements absolutely positioned over known SVG coordinates.
 - Desktop: fixed SVG viewBox, all four branches visible, no zoom/pan.
 - Mobile: four labeled attribute tab buttons, one branch readable at a time, no drag/pinch/zoom required.
 - Root List: accessible linear view equivalent must be present for each branch.
-- State reveals use `stroke-dashoffset` drawing or opacity on authored overlays. **No SVG morph engine.**
+- State reveals use `stroke-dashoffset` drawing or opacity on authored overlays. **No SVG morph engine, Three.js, Rive, Lottie, or GSAP.**
 
 ---
 
 ## Quest Journal Rules
-
 - Quests are rows in a journal, not floating cards.
 - Each row shows: title, attribute indicator, effort badge, completion control.
 - The completion control is an explicit "Complete quest" button (not a small checkbox).
@@ -118,7 +105,6 @@ These rules apply specifically to the Root surface (owned by Akriti):
 ---
 
 ## Ember Component Rules
-
 - Has four distinct visual states: resting, kindled, steady, bright.
 - Each state has a reduced-motion equivalent (immediate visual change, no oscillation).
 - Ember animation must pause when `document.visibilityState === 'hidden'`.
@@ -138,15 +124,77 @@ These rules apply specifically to the Root surface (owned by Akriti):
 | Specialization fork reveal | 600–900ms | Immediate state change, short fade |
 | Crest terminal ornament | 400ms + 8 motes (300–500ms each) | Immediate, no motes |
 
-Never queue multiple completion sequences simultaneously.
+Never queue multiple completion sequences simultaneously. No animation callback writes to the database.
+
+---
+
+## Playwright MCP Design Review Workflow
+Whenever Playwright MCP is active, follow this visual verification loop:
+
+```
+IMPLEMENT
+   ↓
+OPEN REAL PAGE
+   ↓
+SCREENSHOT
+   ↓
+REVIEW
+   ↓
+FIX
+   ↓
+SCREENSHOT AGAIN
+```
+
+### Required Visual Review Viewports
+Test across all 4 mandatory viewport dimensions:
+1. **Desktop**: `1440 × 900`
+2. **Tablet**: `768 × 1024`
+3. **Phone**: `390 × 844`
+4. **Small phone**: `320 × 700`
+
+Also verify:
+- **200% zoom**: layout must not break, clip essential text, or hide controls.
+- **Keyboard-only navigation**: all actions reachable via Tab/Enter/Space; visible pale-gold focus rings.
+- **`prefers-reduced-motion`**: transitions fall back to immediate state changes.
+
+### Playwright Visual Review Prompt
+Use this exact review mindset when analyzing browser screenshots:
+
+> "Open the current implementation in a real browser.
+> 
+> Inspect at:
+> 1440px
+> 768px
+> 390px
+> 320px
+> 
+> For every viewport evaluate:
+> - hierarchy
+> - spacing
+> - typography
+> - alignment
+> - clipping
+> - overflow
+> - navigation
+> - touch targets
+> - focus states
+> - readability
+> - Root legibility
+> - Ember prominence
+> - journal aesthetic
+> - generic SaaS patterns
+> - responsive transitions
+> 
+> Do not praise the page.
+> List visible defects first.
+> Then fix the highest-impact visual defects.
+> Re-render and inspect again.
+> Do not alter product behavior simply to make the screenshot prettier."
 
 ---
 
 ## Anti-Patterns — Hard Stops
-
-If you find yourself writing any of the following, stop and reconsider:
-
-- A `<div>` or `<span>` with an `onClick` handler (use `<button>`)
+- A `<div>` or `<span>` with an `onClick` handler (use semantic `<button>`)
 - A color value not in the frozen palette
 - A font family other than Fraunces or DM Sans
 - Glassmorphism, drop-shadow card grids, blue/purple gradients
@@ -155,18 +203,4 @@ If you find yourself writing any of the following, stop and reconsider:
 - A hover-only interaction (inaccessible on touch)
 - A drag or pinch-only Root interaction
 - Toast spam for routine success
-- A loading spinner in the center of the page for an inline action
 - Decorative text baked into a raster image
-
----
-
-## Acceptance Output
-
-When you complete a frontend task using this skill, report:
-
-1. **Files changed** (with brief description of each change)
-2. **Desktop check** (describe composition at ~1280px; screenshot if possible)
-3. **Mobile check** (describe layout at ~375px; screenshot if possible)
-4. **Keyboard/focus check** (tab order, focus visibility, dialog focus return)
-5. **Reduced-motion behavior** (what changes when `prefers-reduced-motion: reduce`)
-6. **Any deviation from the frozen design rules** (and who approved it)
