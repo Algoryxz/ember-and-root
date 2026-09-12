@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import type { AttributeId, BranchState } from './contracts';
 import { BranchSvgRenderer } from '../root/svg/BranchSvgRenderer';
 import { BRANCH_CONFIGS } from '../root/config';
@@ -8,6 +8,7 @@ import './HearthRootPreview.css';
 export interface HearthRootPreviewProps {
   branches: Record<AttributeId, BranchState>;
   highlightAttribute?: AttributeId | null;
+  hoverAttribute?: AttributeId | null;
   onNavigateToRoot?: () => void;
   className?: string;
 }
@@ -20,6 +21,20 @@ const ATTRIBUTE_LABELS: Record<AttributeId, string> = {
   will: 'Will',
   craft: 'Craft',
 };
+
+interface AnatomicalMarker {
+  key: string;
+  name: string;
+  thresholdXp: number;
+  description: string;
+}
+
+const ANATOMICAL_MARKERS: AnatomicalMarker[] = [
+  { key: 'seed', name: 'Dormant Seed', thresholdXp: 0, description: 'Slumbering soil awaiting intention.' },
+  { key: 'sprout', name: 'Origin Sprout', thresholdXp: 1, description: 'First declared effort takes root.' },
+  { key: 'fork', name: 'Specialization Fork', thresholdXp: 80, description: 'Branches divide into distinct disciplines.' },
+  { key: 'crest', name: 'Mastery Crest', thresholdXp: 160, description: 'Proven endurance crowns the living branch.' },
+];
 
 function getMilestoneNotice(branch: BranchState): { text: string; isReady: boolean } {
   if (branch.xp === 0) {
@@ -145,27 +160,29 @@ function deriveCanonicalBranchNodes(attribute: AttributeId, branch: BranchState)
 }
 
 /**
- * HearthRootPreview — Compact Root Specimen Cutting
+ * HearthRootPreview — Living Root Specimen Plate
  * Owned by: Deeptiman (Experience / Frontend Lead)
  * Visual Direction: Contemporary Botanical Field Folio
  * 
- * EXPERIENCE V2 REFACTOR:
- * Replaces the 4-card dashboard progress-bar grid with ONE authored compact specimen cutting.
- * Consumes Akriti's canonical BranchSvgRenderer for authoritative visual anatomy.
- * Preserves RewardSequence DOM anchor points:
- *   - .root-preview-container
- *   - .branch-name-label.branch-{attr}
- *   - .root-branch-card.is-highlighted (aliased to specimen active leaf)
+ * Invariants:
+ * - Consumes Akriti's canonical BranchSvgRenderer for authoritative visual anatomy.
+ * - ZERO independent or invented Root geometry.
+ * - Subtle Quest -> Root resonance on quest hover/focus (presentation only).
+ * - Progression states rendered as quiet specimen anatomical markers (no 4 SaaS cards).
+ * - Preserves RewardSequence DOM anchor points:
+ *     .root-preview-container
+ *     .branch-name-label.branch-{attr}
+ *     .root-branch-card.is-highlighted
  */
 export const HearthRootPreview: React.FC<HearthRootPreviewProps> = ({
   branches,
   highlightAttribute = null,
+  hoverAttribute = null,
   onNavigateToRoot,
   className = '',
 }) => {
-  // Determine initially inspected cutting: prefer the active highlight attribute or the highest XP branch
+  // Determine initially inspected cutting: prefer highest XP branch
   const getMostActiveAttribute = (): AttributeId => {
-    if (highlightAttribute) return highlightAttribute;
     let maxAttr: AttributeId = 'mind';
     let maxXp = -1;
     for (const attr of ATTRIBUTES) {
@@ -180,15 +197,19 @@ export const HearthRootPreview: React.FC<HearthRootPreviewProps> = ({
 
   const [selectedAttribute, setSelectedAttribute] = useState<AttributeId>(getMostActiveAttribute());
 
-  // If external highlight changes due to a sealed quest, focus that cutting immediately
-  React.useEffect(() => {
+  // If external highlight changes from completed quest, focus that cutting
+  useEffect(() => {
     if (highlightAttribute) {
       setSelectedAttribute(highlightAttribute);
     }
   }, [highlightAttribute]);
 
-  const activeBranch: BranchState = branches[selectedAttribute] || {
-    attribute: selectedAttribute,
+  // Displayed cutting responds to quest hover for instant visual feedback, returning to selected
+  const displayedAttribute = hoverAttribute || highlightAttribute || selectedAttribute;
+  const isResonating = Boolean(hoverAttribute && hoverAttribute === displayedAttribute);
+
+  const activeBranch: BranchState = branches[displayedAttribute] || {
+    attribute: displayedAttribute,
     xp: 0,
     specialization: null,
     selectedAt: null,
@@ -200,20 +221,25 @@ export const HearthRootPreview: React.FC<HearthRootPreviewProps> = ({
     crestClaimed: false,
   };
 
-  const activeConfig = BRANCH_CONFIGS[selectedAttribute];
   const activeMilestone = getMilestoneNotice(activeBranch);
-  const canonicalNodes = deriveCanonicalBranchNodes(selectedAttribute, activeBranch);
-  const isHighlighted = highlightAttribute === selectedAttribute;
+  const canonicalNodes = deriveCanonicalBranchNodes(displayedAttribute, activeBranch);
+  const isHighlighted = highlightAttribute === displayedAttribute;
+
+  // Determine active anatomical marker for quiet marginal annotation
+  const currentStageIndex =
+    activeBranch.xp >= 160 ? 3 : activeBranch.xp >= 80 ? 2 : activeBranch.xp >= 1 ? 1 : 0;
 
   return (
-    <section
-      className={`root-preview-container ${className}`}
+    <aside
+      className={`root-preview-container ${className} ${isResonating ? 'has-quest-resonance' : ''}`}
       aria-labelledby="root-specimen-heading"
     >
-      {/* Specimen Folio Header */}
+      {/* Specimen Folio Plate Header */}
       <div className="root-specimen-header">
-        <div className="root-specimen-title-group">
-          <span className="root-specimen-label">Botanical Specimen · Folio Cutting</span>
+        <div className="root-specimen-folio-meta">
+          <span className="specimen-folio-tag" aria-hidden="true">
+            PLATE IV · LIVING SPECIMEN CUTTING
+          </span>
           <h3 id="root-specimen-heading" className="root-specimen-title">
             The Living Root
           </h3>
@@ -223,43 +249,66 @@ export const HearthRootPreview: React.FC<HearthRootPreviewProps> = ({
             type="button"
             className="root-specimen-link-btn"
             onClick={onNavigateToRoot}
-            aria-label="Inspect complete Root specimen"
+            aria-label="Inspect complete Root organism"
           >
             Full Organism →
           </button>
         ) : (
-          <a href="/root" className="root-specimen-link" aria-label="Inspect complete Root specimen">
+          <a href="/root" className="root-specimen-link" aria-label="Inspect complete Root organism">
             Full Organism →
           </a>
         )}
       </div>
 
-      {/* Specimen Cutting Showcase: One Canonical SVG Organism Cutting */}
-      <div className={`root-specimen-stage ${isHighlighted ? 'is-highlighted' : ''}`}>
+      {/* Specimen Plate Frame */}
+      <div
+        className={`root-specimen-plate ${isHighlighted ? 'is-highlighted' : ''} ${
+          isResonating ? 'is-resonating' : ''
+        }`}
+      >
+        {/* Authoritative SVG Cutting from Akriti */}
         <div className="root-specimen-visual" aria-hidden="true">
           <BranchSvgRenderer
-            attribute={selectedAttribute}
+            attribute={displayedAttribute}
             nodes={canonicalNodes}
             selectedSpecialization={activeBranch.specialization}
           />
         </div>
 
-        {/* Marginal Field Annotation Overlay */}
+        {/* Marginal Anatomical Progression Rail */}
+        <div className="specimen-anatomy-rail" aria-label="Botanical progression markers">
+          <div className="anatomy-rail-line" aria-hidden="true" />
+          {ANATOMICAL_MARKERS.map((marker, idx) => {
+            const isReached = idx <= currentStageIndex;
+            const isCurrent = idx === currentStageIndex;
+
+            return (
+              <div
+                key={marker.key}
+                className={`anatomy-marker-item ${isReached ? 'is-reached' : ''} ${
+                  isCurrent ? 'is-current' : ''
+                }`}
+              >
+                <span className="marker-dot" aria-hidden="true">
+                  {isCurrent ? '●' : isReached ? '○' : '·'}
+                </span>
+                <div className="marker-text-cluster">
+                  <span className="marker-name">{marker.name}</span>
+                  <span className="marker-threshold">{marker.thresholdXp} XP</span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Marginal Specimen Status Annotation */}
         <div className="root-specimen-annotation">
           <div className="specimen-annotation-badge">
-            <span className={`branch-name-label branch-${selectedAttribute}`}>
-              {ATTRIBUTE_LABELS[selectedAttribute]}
+            <span className={`branch-name-label branch-${displayedAttribute}`}>
+              {ATTRIBUTE_LABELS[displayedAttribute]} Branch
             </span>
             <span className="specimen-xp-value">{activeBranch.xp} XP</span>
           </div>
-
-          <p className="specimen-growth-state">
-            {activeBranch.xp === 0
-              ? 'Dormant seed tissue. First declared effort awakens its filament.'
-              : activeBranch.specialization
-              ? `Limb committed to the ${activeBranch.specialization} discipline.`
-              : 'Primary stem active. Nearing prospective specialization fork.'}
-          </p>
 
           <div className={`specimen-milestone-indicator ${activeMilestone.isReady ? 'is-ready' : ''}`}>
             <span>{activeMilestone.text}</span>
@@ -267,7 +316,7 @@ export const HearthRootPreview: React.FC<HearthRootPreviewProps> = ({
         </div>
       </div>
 
-      {/* Restrained Specimen Filaments Index (Replaces the 4 SaaS cards with quiet botanical annotations) */}
+      {/* Restrained Specimen Filaments Index (Mind, Body, Will, Craft) */}
       <div className="root-filaments-index" role="tablist" aria-label="Root branch cuttings">
         {ATTRIBUTES.map((attr) => {
           const branch = branches[attr] || {
@@ -283,8 +332,9 @@ export const HearthRootPreview: React.FC<HearthRootPreviewProps> = ({
             crestClaimed: false,
           };
 
-          const isSelected = selectedAttribute === attr;
+          const isSelected = displayedAttribute === attr;
           const isBranchHighlighted = highlightAttribute === attr;
+          const isAttrResonating = hoverAttribute === attr;
 
           return (
             <button
@@ -294,7 +344,7 @@ export const HearthRootPreview: React.FC<HearthRootPreviewProps> = ({
               aria-selected={isSelected}
               className={`root-filament-chip root-branch-card ${isSelected ? 'is-selected' : ''} ${
                 isBranchHighlighted ? 'is-highlighted' : ''
-              }`}
+              } ${isAttrResonating ? 'is-resonating' : ''}`}
               onClick={() => setSelectedAttribute(attr)}
               aria-label={`Inspect ${ATTRIBUTE_LABELS[attr]} cutting (${branch.xp} XP)`}
             >
@@ -305,6 +355,6 @@ export const HearthRootPreview: React.FC<HearthRootPreviewProps> = ({
           );
         })}
       </div>
-    </section>
+    </aside>
   );
 };

@@ -1,247 +1,269 @@
 /* ==========================================================================
-   Ember & Root — Hearth Root Advancement Preview Styles
+   HearthRootPreview — Living Root Specimen Plate
    Owned by: Deeptiman (Experience / Frontend Lead)
-   Visual Direction: Contemporary Botanical Field Folio
-   Specification: docs/EXPERIENCE_V2.md & docs/EXECUTION_PROMPTS_V2.md
+   Visual Direction: Contemporary Botanical Field Folio (Not a SaaS Card)
    ========================================================================== */
 
 .root-preview-container {
-  display: flex;
-  flex-direction: column;
-  padding: var(--space-20);
-  box-sizing: border-box;
-  background: transparent;
-  min-width: 0;
   position: relative;
+  width: 100%;
 }
 
-/* --------------------------------------------------------------------------
-   Specimen Folio Header
-   -------------------------------------------------------------------------- */
+@media (min-width: 1024px) {
+  .root-preview-container {
+    position: sticky;
+    top: var(--space-24);
+  }
+}
+
+/* Specimen Folio Header */
 .root-specimen-header {
   display: flex;
-  align-items: flex-start;
+  align-items: baseline;
   justify-content: space-between;
-  gap: var(--space-12);
-  margin-bottom: var(--space-12);
-  border-bottom: 1px solid rgba(185, 190, 172, 0.14);
-  padding-bottom: var(--space-8);
   flex-wrap: wrap;
+  gap: var(--space-8);
+  margin-bottom: var(--space-12);
 }
 
-.root-specimen-title-group {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
-}
-
-.root-specimen-label {
+.specimen-folio-tag {
   font-family: var(--font-body);
   font-size: var(--text-xs);
-  color: var(--color-text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  color: var(--color-root);
+  opacity: 0.85;
 }
 
 .root-specimen-title {
   font-family: var(--font-display);
   font-size: var(--text-2xl);
+  font-weight: 500;
   color: var(--color-text-primary);
-  margin: 0;
-  line-height: 1.2;
+  margin: var(--space-4) 0 0 0;
+  letter-spacing: -0.01em;
 }
 
-.root-specimen-link,
-.root-specimen-link-btn {
+.root-specimen-link-btn,
+.root-specimen-link {
   font-family: var(--font-body);
   font-size: var(--text-xs);
-  color: var(--color-root-mature);
-  text-decoration: none;
   font-weight: 500;
-  padding: var(--space-8) var(--space-12);
-  border-radius: var(--radius-btn);
-  background: rgba(159, 186, 135, 0.05);
-  border: 1px solid rgba(159, 186, 135, 0.2);
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  background: transparent;
+  border: none;
+  border-bottom: 1px dashed rgba(185, 190, 172, 0.35);
+  padding: 0 0 2px 0;
   cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  min-height: var(--min-touch-target);
-  transition: color 150ms ease, background-color 150ms ease, border-color 150ms ease;
-  white-space: nowrap;
-  flex-shrink: 0;
+  letter-spacing: 0.04em;
+  transition: color 120ms ease, border-color 120ms ease;
 }
 
-.root-specimen-link:hover,
-.root-specimen-link-btn:hover {
-  color: var(--color-text-primary);
-  background-color: rgba(159, 186, 135, 0.14);
-  border-color: rgba(159, 186, 135, 0.35);
+.root-specimen-link-btn:hover,
+.root-specimen-link:hover {
+  color: var(--color-root-mature);
+  border-bottom-color: var(--color-root-mature);
 }
 
-.root-specimen-link:focus-visible,
-.root-specimen-link-btn:focus-visible {
+.root-specimen-link-btn:focus-visible,
+.root-specimen-link:focus-visible {
   outline: 2px solid var(--color-focus);
-  outline-offset: 1px;
+  outline-offset: 2px;
 }
 
-/* --------------------------------------------------------------------------
-   Specimen Cutting Showcase (Single Canonical Visual Organism)
-   -------------------------------------------------------------------------- */
-.root-specimen-stage {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-16);
-  padding: var(--space-12);
-  background: rgba(20, 23, 19, 0.45);
-  border: 1px solid rgba(185, 190, 172, 0.1);
-  border-radius: var(--radius-card);
+/* Specimen Plate Frame */
+.root-specimen-plate {
   position: relative;
-  min-height: 190px;
-  box-sizing: border-box;
-  transition: border-color 200ms ease, background-color 200ms ease;
+  background: rgba(29, 35, 29, 0.5);
+  border: 1px solid rgba(159, 186, 135, 0.2);
+  border-radius: var(--radius-panel);
+  padding: var(--space-16);
+  overflow: hidden;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
 }
 
-.root-specimen-stage.is-highlighted {
-  border-color: var(--color-root-mature);
-  background: rgba(159, 186, 135, 0.08);
+.root-specimen-plate.is-resonating {
+  border-color: rgba(159, 186, 135, 0.55);
+  box-shadow: 0 0 24px rgba(159, 186, 135, 0.12);
 }
 
-/* Scaled rendering of the canonical 360x480 SVG */
+.root-specimen-plate.is-highlighted {
+  border-color: var(--color-ember);
+  box-shadow: 0 0 28px rgba(233, 138, 75, 0.25);
+}
+
+/* Botanical SVG Canvas */
 .root-specimen-visual {
-  width: 140px;
-  height: 180px;
-  flex-shrink: 0;
+  position: relative;
+  width: 100%;
+  height: 310px;
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
-  position: relative;
 }
 
-.root-specimen-visual .root-svg {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.4));
+.root-specimen-visual svg {
+  max-height: 100%;
+  width: auto;
 }
 
-/* Field Annotation Column */
-.root-specimen-annotation {
-  flex: 1;
+/* Marginal Anatomical Progression Rail */
+.specimen-anatomy-rail {
+  position: absolute;
+  top: var(--space-16);
+  right: var(--space-16);
   display: flex;
   flex-direction: column;
   gap: var(--space-8);
-  min-width: 0;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.anatomy-marker-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  font-family: var(--font-body);
+  font-size: 0.6875rem;
+  color: var(--color-text-secondary);
+  opacity: 0.35;
+  transition: opacity 120ms ease, color 120ms ease;
+}
+
+.anatomy-marker-item.is-reached {
+  opacity: 0.7;
+  color: var(--color-text-primary);
+}
+
+.anatomy-marker-item.is-current {
+  opacity: 1;
+  color: var(--color-root-mature);
+  font-weight: 600;
+}
+
+.marker-dot {
+  font-size: 0.625rem;
+  line-height: 1;
+}
+
+.marker-text-cluster {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-4);
+}
+
+.marker-name {
+  letter-spacing: 0.03em;
+}
+
+.marker-threshold {
+  opacity: 0.7;
+  font-size: 0.625rem;
+}
+
+/* Marginal Annotation */
+.root-specimen-annotation {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-8);
+  margin-top: var(--space-12);
+  padding-top: var(--space-12);
+  border-top: 1px dashed rgba(185, 190, 172, 0.16);
 }
 
 .specimen-annotation-badge {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  align-items: baseline;
   gap: var(--space-8);
 }
 
-.specimen-annotation-badge .branch-name-label {
-  font-family: var(--font-body);
-  font-size: var(--text-base);
-  font-weight: 600;
-  text-transform: capitalize;
-}
-
-.branch-name-label.branch-mind {
-  color: var(--color-root-mature);
-}
-
-.branch-name-label.branch-body {
-  color: var(--color-ember);
-}
-
-.branch-name-label.branch-will {
-  color: var(--color-focus);
-}
-
-.branch-name-label.branch-craft {
-  color: var(--color-root);
-}
-
-.specimen-xp-value {
+.branch-name-label {
   font-family: var(--font-display);
   font-size: var(--text-base);
-  font-weight: 600;
+  font-weight: 500;
   color: var(--color-text-primary);
 }
 
-.specimen-growth-state {
+.branch-name-label.branch-mind { color: var(--color-root-mature); }
+.branch-name-label.branch-body { color: var(--color-ember); }
+.branch-name-label.branch-will { color: var(--color-ember-core); }
+.branch-name-label.branch-craft { color: var(--color-root); }
+
+.specimen-xp-value {
   font-family: var(--font-body);
   font-size: var(--text-xs);
+  font-weight: 600;
   color: var(--color-text-secondary);
-  line-height: 1.45;
-  margin: 0;
+  letter-spacing: 0.05em;
 }
 
 .specimen-milestone-indicator {
   font-family: var(--font-body);
   font-size: var(--text-xs);
   color: var(--color-text-secondary);
-  border-top: 1px dashed rgba(185, 190, 172, 0.15);
-  padding-top: var(--space-6);
-  margin-top: var(--space-4);
+  opacity: 0.85;
 }
 
 .specimen-milestone-indicator.is-ready {
   color: var(--color-ember-core);
-  font-weight: 500;
+  font-weight: 600;
 }
 
-/* --------------------------------------------------------------------------
-   Restrained Filaments Index
-   Botanical specimen tabs replacing equal-weight rectangular SaaS cards
-   -------------------------------------------------------------------------- */
+/* Filaments Index Tabs */
 .root-filaments-index {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(4, 1fr);
   gap: var(--space-8);
   margin-top: var(--space-12);
 }
 
 .root-filament-chip {
-  background: transparent;
-  border: 1px solid rgba(185, 190, 172, 0.12);
-  border-radius: var(--radius-btn);
-  padding: var(--space-6) var(--space-8);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: var(--space-4);
-  cursor: pointer;
-  min-height: var(--min-touch-target);
-  transition: all 150ms ease;
+  padding: var(--space-8) var(--space-4);
+  min-height: 48px;
+  background: rgba(29, 35, 29, 0.4);
+  border: 1px solid rgba(185, 190, 172, 0.16);
+  border-radius: var(--radius-btn);
   color: var(--color-text-secondary);
-  box-sizing: border-box;
+  cursor: pointer;
+  transition: all 120ms ease;
 }
 
 .root-filament-chip:hover {
-  background: rgba(240, 231, 211, 0.04);
-  border-color: rgba(185, 190, 172, 0.25);
+  border-color: rgba(159, 186, 135, 0.4);
+  background: rgba(159, 186, 135, 0.08);
   color: var(--color-text-primary);
 }
 
 .root-filament-chip.is-selected {
-  background: rgba(159, 186, 135, 0.08);
-  border-color: var(--color-root-mature);
+  border-color: var(--color-root);
+  background: rgba(159, 186, 135, 0.14);
   color: var(--color-text-primary);
+}
+
+.root-filament-chip.is-resonating {
+  border-color: var(--color-root-mature);
+  background: rgba(217, 227, 178, 0.12);
+  color: var(--color-root-mature);
+  box-shadow: 0 0 12px rgba(217, 227, 178, 0.22);
 }
 
 .root-filament-chip.is-highlighted {
   border-color: var(--color-ember);
-  box-shadow: 0 0 8px rgba(233, 138, 75, 0.3);
+  background: rgba(233, 138, 75, 0.15);
+  color: var(--color-ember-core);
 }
 
 .root-filament-chip:focus-visible {
   outline: 2px solid var(--color-focus);
-  outline-offset: 1px;
+  outline-offset: 2px;
 }
 
 .filament-dot {
@@ -250,62 +272,33 @@
   border-radius: var(--radius-circle);
 }
 
-.filament-dot.branch-mind {
-  background-color: var(--color-root);
-}
-
-.filament-dot.branch-body {
-  background-color: var(--color-ember);
-}
-
-.filament-dot.branch-will {
-  background-color: var(--color-focus);
-}
-
-.filament-dot.branch-craft {
-  background-color: var(--color-root-mature);
-}
-
-.root-filament-chip .branch-name-label {
-  font-size: var(--text-xs);
-  font-weight: 500;
-  line-height: 1;
-}
+.filament-dot.branch-mind { background: var(--color-root-mature); }
+.filament-dot.branch-body { background: var(--color-ember); }
+.filament-dot.branch-will { background: var(--color-ember-core); }
+.filament-dot.branch-craft { background: var(--color-root); }
 
 .filament-xp-value {
-  font-family: var(--font-display);
-  font-size: var(--text-xs);
-  color: var(--color-text-secondary);
-  line-height: 1;
+  font-family: var(--font-body);
+  font-size: 0.6875rem;
+  opacity: 0.75;
 }
 
-.root-filament-chip.is-selected .filament-xp-value {
-  color: var(--color-text-primary);
-  font-weight: 600;
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  .root-specimen-plate,
+  .root-filament-chip {
+    transition: none !important;
+  }
 }
 
-/* --------------------------------------------------------------------------
-   Mobile Viewport Refinements (320px - 480px)
-   -------------------------------------------------------------------------- */
-@media (max-width: 480px) {
-  .root-specimen-stage {
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    gap: var(--space-8);
+/* Tablet & Mobile Adjustments */
+@media (max-width: 1023px) {
+  .root-preview-container {
+    position: static;
+    margin-top: var(--space-24);
   }
 
   .root-specimen-visual {
-    width: 120px;
-    height: 150px;
-  }
-
-  .specimen-annotation-badge {
-    justify-content: center;
-    gap: var(--space-12);
-  }
-
-  .root-filaments-index {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    height: 260px;
   }
 }
