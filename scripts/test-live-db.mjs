@@ -16,9 +16,82 @@
  * 12. Unauthenticated caller rejection
  */
 
-const SUPABASE_URL = process.env.SUPABASE_URL || 'http://127.0.0.1:54321';
-const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0';
-const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU';
+import fs from 'node:fs';
+import path from 'node:path';
+import { execSync } from 'node:child_process';
+
+// ── Environment Configuration ──────────────────────────────────────────
+// Attempt to read from .env.local or .env if present
+function loadEnvFile(filePath) {
+  try {
+    if (!fs.existsSync(filePath)) return;
+    const content = fs.readFileSync(filePath, 'utf8');
+    for (const line of content.split('\n')) {
+      const trimmed = line.trim();
+      if (!trimmed || trimmed.startsWith('#')) continue;
+      const eqIdx = trimmed.indexOf('=');
+      if (eqIdx === -1) continue;
+      const key = trimmed.slice(0, eqIdx).trim();
+      let val = trimmed.slice(eqIdx + 1).trim();
+      if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) {
+        val = val.slice(1, -1);
+      }
+      if (!process.env[key]) {
+        process.env[key] = val;
+      }
+    }
+  } catch {
+    // Ignore error reading env file
+  }
+}
+
+loadEnvFile(path.resolve('.env.local'));
+loadEnvFile(path.resolve('.env'));
+
+// If running against local Supabase and keys are still unset, attempt discovery via CLI
+if (!process.env.SUPABASE_SERVICE_ROLE_KEY || (!process.env.SUPABASE_ANON_KEY && !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)) {
+  try {
+    const statusOut = execSync('npx supabase status -o env', {
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'ignore'],
+      timeout: 10000
+    });
+    for (const line of statusOut.split('\n')) {
+      const trimmed = line.trim();
+      if (trimmed.startsWith('SERVICE_ROLE_KEY=')) {
+        const val = trimmed.slice('SERVICE_ROLE_KEY='.length).replace(/^["']|["']$/g, '');
+        if (!process.env.SUPABASE_SERVICE_ROLE_KEY) process.env.SUPABASE_SERVICE_ROLE_KEY = val;
+      }
+      if (trimmed.startsWith('ANON_KEY=')) {
+        const val = trimmed.slice('ANON_KEY='.length).replace(/^["']|["']$/g, '');
+        if (!process.env.SUPABASE_ANON_KEY) process.env.SUPABASE_ANON_KEY = val;
+      }
+      if (trimmed.startsWith('API_URL=')) {
+        const val = trimmed.slice('API_URL='.length).replace(/^["']|["']$/g, '');
+        if (!process.env.SUPABASE_URL) process.env.SUPABASE_URL = val;
+      }
+    }
+  } catch {
+    // Local CLI not active or not installed; handled by fail-fast checks below
+  }
+}
+
+const SUPABASE_URL = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || 'http://127.0.0.1:54321';
+const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+if (!SUPABASE_ANON_KEY) {
+  console.error('\n❌ ERROR: SUPABASE_ANON_KEY (or NEXT_PUBLIC_SUPABASE_ANON_KEY) is required to run the validation suite.');
+  console.error('Please configure it via environment variable or in .env.local.\n');
+  process.exit(1);
+}
+
+if (!SUPABASE_SERVICE_ROLE_KEY) {
+  console.error('\n❌ ERROR: SUPABASE_SERVICE_ROLE_KEY is required to run the validation suite.');
+  console.error('The validation harness requires service-role credentials to create test fixtures, bypass RLS for assertions, and tear down test users.');
+  console.error('Please configure it via SUPABASE_SERVICE_ROLE_KEY in your environment or .env.local.\n');
+  process.exit(1);
+}
 
 const results = [];
 

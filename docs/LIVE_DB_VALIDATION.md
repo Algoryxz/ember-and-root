@@ -270,7 +270,7 @@ The live test suite was executed by [`scripts/test-live-db.mjs`](file:///C:/User
 
 ## 5. Security & Invariant Confirmation
 
-1. **Service Role Keys & Passwords:** Zero leaked or committed credentials. The test harness relies strictly on client session tokens.
+1. **Service Role Credentials:** No hosted/project service-role credentials are committed. The validation harness requires credentials through environment variables.
 2. **Row-Level Security:** RLS policies were verified using actual cross-user requests and confirmed uncompromised across profiles, quests, branches, trials, and trial progress events.
 3. **Daily XP Cap:** 140 XP per local day was verified with exact boundary and partial award arithmetic.
 4. **Authoritative Root Progression:** Specialization eligibility (80 XP), trial configuration, distinct day counting, milestone length, and crest availability (160 XP + completed + unclaimed) are enforced strictly on PostgreSQL.
