@@ -1,0 +1,167 @@
+/* ==========================================================================
+   Ember & Root — Quest Journal Row Styles
+   Owned by: Deeptiman (Experience / Frontend Lead)
+   Visual Direction: Illuminated Field Journal
+   Specification: docs/UI_UX_BRIEF.md
+   ========================================================================== */
+
+.quest-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-16);
+  padding: var(--space-16);
+  background-color: rgba(29, 35, 29, 0.65);
+  border: 1px solid rgba(185, 190, 172, 0.12);
+  border-radius: var(--radius-card);
+  transition: border-color 150ms ease, background-color 150ms ease;
+  box-sizing: border-box;
+  position: relative;
+}
+
+.quest-row:hover {
+  background-color: rgba(29, 35, 29, 0.85);
+  border-color: rgba(185, 190, 172, 0.22);
+}
+
+.quest-row.is-completed {
+  opacity: 0.72;
+  border-color: rgba(159, 186, 135, 0.25);
+  background-color: rgba(20, 23, 19, 0.45);
+}
+
+.quest-row.is-pending {
+  border-color: rgba(233, 138, 75, 0.35);
+}
+
+.quest-row.has-error {
+  border-color: var(--color-error);
+}
+
+/* Journal Main Content */
+.quest-main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+  flex: 1;
+  min-width: 0;
+}
+
+.quest-title {
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  font-weight: 500;
+  color: var(--color-text-primary);
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.quest-row.is-completed .quest-title {
+  text-decoration: line-through;
+  text-decoration-color: rgba(185, 190, 172, 0.4);
+  color: var(--color-text-secondary);
+}
+
+/* Metadata Chips & Badges */
+.quest-metadata {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-8);
+}
+
+.quest-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--text-xs);
+  padding: 2px 8px;
+  border-radius: var(--radius-btn);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  text-transform: capitalize;
+}
+
+/* Attribute Specific Tones */
+.quest-attr-mind {
+  background-color: rgba(159, 186, 135, 0.15);
+  color: var(--color-root-mature);
+  border: 1px solid rgba(159, 186, 135, 0.3);
+}
+
+.quest-attr-body {
+  background-color: rgba(233, 138, 75, 0.15);
+  color: var(--color-ember);
+  border: 1px solid rgba(233, 138, 75, 0.3);
+}
+
+.quest-attr-will {
+  background-color: rgba(196, 169, 106, 0.15);
+  color: var(--color-focus);
+  border: 1px solid rgba(196, 169, 106, 0.3);
+}
+
+.quest-attr-craft {
+  background-color: rgba(217, 227, 178, 0.15);
+  color: var(--color-root);
+  border: 1px solid rgba(217, 227, 178, 0.3);
+}
+
+/* Effort Badge */
+.quest-effort-badge {
+  color: var(--color-text-secondary);
+  border: 1px solid rgba(185, 190, 172, 0.2);
+  background: transparent;
+}
+
+/* Cadence Badge */
+.quest-cadence-badge {
+  color: var(--color-text-secondary);
+  font-size: var(--text-xs);
+}
+
+/* Error Notice Area */
+.quest-error-notice {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  font-size: var(--text-xs);
+  color: var(--color-error);
+  margin-top: var(--space-4);
+}
+
+.quest-retry-btn {
+  background: none;
+  border: none;
+  color: var(--color-text-primary);
+  text-decoration: underline;
+  cursor: pointer;
+  font-size: var(--text-xs);
+  padding: 2px 4px;
+}
+
+.quest-retry-btn:hover {
+  color: var(--color-ember);
+}
+
+/* Action Container */
+.quest-action-area {
+  flex-shrink: 0;
+}
+
+/* Mobile adjustments */
+@media (max-width: 600px) {
+  .quest-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-12);
+  }
+
+  .quest-action-area {
+    width: 100%;
+  }
+
+  .quest-action-area .btn {
+    width: 100%;
+  }
+}

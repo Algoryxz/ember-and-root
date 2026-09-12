@@ -1,0 +1,81 @@
+/* ==========================================================================
+   Ember & Root — Quest Journal Container Styles
+   Owned by: Deeptiman (Experience / Frontend Lead)
+   Visual Direction: Illuminated Field Journal
+   ========================================================================== */
+
+.quest-journal-container {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--color-surface);
+  border: 1px solid rgba(185, 190, 172, 0.15);
+  border-radius: var(--radius-panel);
+  padding: var(--space-24);
+  box-sizing: border-box;
+}
+
+.quest-journal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-16);
+  border-bottom: 1px solid rgba(185, 190, 172, 0.12);
+  padding-bottom: var(--space-12);
+}
+
+.quest-journal-heading {
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
+  color: var(--color-text-primary);
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+}
+
+.quest-count-badge {
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
+  background: rgba(20, 23, 19, 0.6);
+  padding: 2px 8px;
+  border-radius: var(--radius-btn);
+  border: 1px solid rgba(185, 190, 172, 0.1);
+}
+
+.quest-journal-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-12);
+  margin: 0;
+  padding: 0;
+}
+
+/* Empty State */
+.quest-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-48) var(--space-16);
+  text-align: center;
+  border: 1px dashed rgba(185, 190, 172, 0.2);
+  border-radius: var(--radius-card);
+  background: rgba(20, 23, 19, 0.3);
+}
+
+.quest-empty-title {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-8);
+}
+
+.quest-empty-subtitle {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  max-width: 320px;
+  margin-bottom: var(--space-24);
+  line-height: 1.5;
+}

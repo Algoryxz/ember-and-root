@@ -1,0 +1,126 @@
+/* ==========================================================================
+   Ember & Root — Quest Create Dialog Styles
+   Owned by: Deeptiman (Experience / Frontend Lead)
+   Visual Direction: Illuminated Field Journal
+   ========================================================================== */
+
+.dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(10, 12, 10, 0.75);
+  backdrop-filter: blur(4px);
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-16);
+  box-sizing: border-box;
+}
+
+.dialog-window {
+  background-color: var(--color-surface);
+  border: 1px solid rgba(185, 190, 172, 0.25);
+  border-radius: var(--radius-dialog);
+  width: 100%;
+  max-width: 480px;
+  padding: var(--space-24);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
+  box-sizing: border-box;
+  animation: dialog-enter 180ms ease;
+}
+
+.dialog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-16);
+  border-bottom: 1px solid rgba(185, 190, 172, 0.12);
+  padding-bottom: var(--space-8);
+}
+
+.dialog-title {
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
+  color: var(--color-text-primary);
+}
+
+.dialog-close-btn {
+  background: none;
+  border: none;
+  color: var(--color-text-secondary);
+  font-size: var(--text-lg);
+  cursor: pointer;
+  padding: var(--space-4);
+  line-height: 1;
+  border-radius: var(--radius-btn);
+}
+
+.dialog-close-btn:hover {
+  color: var(--color-text-primary);
+}
+
+.quest-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-16);
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.form-label {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+
+.form-input,
+.form-select {
+  padding: var(--space-8) var(--space-12);
+  background-color: var(--color-bg);
+  border: 1px solid rgba(185, 190, 172, 0.25);
+  border-radius: var(--radius-btn);
+  color: var(--color-text-primary);
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  box-sizing: border-box;
+}
+
+.form-input:focus,
+.form-select:focus {
+  border-color: var(--color-focus);
+  outline: 2px solid var(--color-focus);
+  outline-offset: 1px;
+}
+
+.dialog-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-12);
+  margin-top: var(--space-8);
+}
+
+@keyframes dialog-enter {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@media (max-width: 600px) {
+  .dialog-window {
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    max-width: 100%;
+    margin-top: auto;
+  }
+}

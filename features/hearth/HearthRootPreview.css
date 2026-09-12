@@ -1,0 +1,138 @@
+/* ==========================================================================
+   Ember & Root — Compact Root Preview Styles
+   Owned by: Deeptiman (Experience / Frontend Lead)
+   Visual Direction: Illuminated Field Journal
+   ========================================================================== */
+
+.root-preview-container {
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-24);
+  background-color: var(--color-surface);
+  border: 1px solid rgba(185, 190, 172, 0.15);
+  border-radius: var(--radius-panel);
+  box-sizing: border-box;
+}
+
+.root-preview-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: var(--space-12);
+  border-bottom: 1px solid rgba(185, 190, 172, 0.12);
+  padding-bottom: var(--space-8);
+}
+
+.root-preview-title {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  color: var(--color-text-primary);
+  letter-spacing: -0.01em;
+}
+
+.root-preview-subtitle {
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
+  color: var(--color-root);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+}
+
+.root-motto {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-16);
+}
+
+.root-branches-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-12);
+}
+
+.root-branch-row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.root-branch-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: var(--text-sm);
+}
+
+.root-branch-name {
+  font-family: var(--font-body);
+  font-weight: 500;
+  color: var(--color-text-primary);
+  text-transform: capitalize;
+}
+
+.root-branch-xp {
+  font-family: var(--font-body);
+  color: var(--color-text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Progress track */
+.root-progress-track {
+  height: 6px;
+  background-color: rgba(20, 23, 19, 0.85);
+  border-radius: var(--radius-btn);
+  overflow: hidden;
+  border: 1px solid rgba(185, 190, 172, 0.1);
+  position: relative;
+}
+
+.root-progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--color-root) 0%, var(--color-root-mature) 100%);
+  border-radius: var(--radius-btn);
+  transition: width 400ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.root-branch-milestone {
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  margin-top: 2px;
+}
+
+.root-branch-milestone.is-ready {
+  color: var(--color-ember);
+  font-weight: 600;
+}
+
+/* Flash animation when XP advances */
+.root-advance-flash {
+  animation: root-bar-flash 500ms ease;
+}
+
+@keyframes root-bar-flash {
+  0% {
+    filter: brightness(1);
+  }
+  50% {
+    filter: brightness(1.6);
+    box-shadow: 0 0 8px var(--color-root);
+  }
+  100% {
+    filter: brightness(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .root-progress-bar {
+    transition: none !important;
+  }
+  .root-advance-flash {
+    animation: none !important;
+  }
+}
