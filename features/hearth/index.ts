@@ -12,6 +12,9 @@ export { RewardSequence } from './RewardSequence';
 export type { RewardSequenceProps } from './RewardSequence';
 export { QuestCreateDialog } from './QuestCreateDialog';
 export type { QuestCreateDialogProps } from './QuestCreateDialog';
-export { completeQuestAction, createQuestAction } from './hearthAdapter';
-export type { CreateQuestParams, SupabaseClientLike } from './hearthAdapter';
+export { QuestEditDialog } from './QuestEditDialog';
+export type { QuestEditDialogProps } from './QuestEditDialog';
+export { completeQuestAction, createQuestAction, updateQuestAction } from './hearthAdapter';
+export type { CreateQuestParams, UpdateQuestParams, SupabaseClientLike } from './hearthAdapter';
 export * from './contracts';
+

@@ -9,6 +9,7 @@ export interface QuestRowProps {
   isPending?: boolean;
   errorMessage?: string | null;
   onComplete: (questId: string) => void;
+  onEdit?: (quest: Quest | HearthQuest) => void;
   onRetry?: (questId: string) => void;
 }
 
@@ -21,6 +22,7 @@ export interface QuestRowProps {
  * - Clear states: idle, focused, completing/pending, confirmed, error, retry
  * - Semantic HTML <li> with accessible labels
  * - Min 44px interaction targets
+ * - Subtle field-journal edit action (quill affordance) without SaaS clutter
  * - NO local progression or XP calculation
  */
 export const QuestRow: React.FC<QuestRowProps> = ({
@@ -29,6 +31,7 @@ export const QuestRow: React.FC<QuestRowProps> = ({
   isPending = false,
   errorMessage = null,
   onComplete,
+  onEdit,
   onRetry,
 }) => {
   const { id, title, attribute, effort, cadence } = quest;
@@ -46,6 +49,13 @@ export const QuestRow: React.FC<QuestRowProps> = ({
   const handleAction = () => {
     if (!isCompleted && !isPending) {
       onComplete(id);
+    }
+  };
+
+  const handleEdit = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onEdit && !isPending) {
+      onEdit(quest);
     }
   };
 
@@ -93,22 +103,39 @@ export const QuestRow: React.FC<QuestRowProps> = ({
         )}
       </div>
 
-      <div className="entry-action-cell">
-        <Button
-          variant="completion"
-          pending={isPending}
-          completed={isCompleted}
-          pendingText="Sealing..."
-          onClick={handleAction}
-          aria-label={
-            isCompleted
-              ? `Quest already sealed: ${title}`
-              : `Seal quest: ${title}`
-          }
-        >
-          {isCompleted ? 'Sealed ✓' : 'Seal quest'}
-        </Button>
+      <div className="entry-actions-cluster">
+        {/* Subtle field-journal edit affordance (quill icon) */}
+        {onEdit && (
+          <button
+            type="button"
+            className="entry-edit-btn"
+            onClick={handleEdit}
+            disabled={isPending}
+            aria-label={`Edit quest: ${title}`}
+            title="Edit quest"
+          >
+            <span className="entry-edit-icon" aria-hidden="true">✎</span>
+          </button>
+        )}
+
+        <div className="entry-action-cell">
+          <Button
+            variant="completion"
+            pending={isPending}
+            completed={isCompleted}
+            pendingText="Sealing..."
+            onClick={handleAction}
+            aria-label={
+              isCompleted
+                ? `Quest already sealed: ${title}`
+                : `Seal quest: ${title}`
+            }
+          >
+            {isCompleted ? 'Sealed ✓' : 'Seal quest'}
+          </Button>
+        </div>
       </div>
     </li>
   );
 };
+

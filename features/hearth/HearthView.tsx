@@ -3,20 +3,25 @@ import {
   DEMO_SNAPSHOT,
   completeQuestAction,
   createQuestAction,
+  updateQuestAction,
   type AttributeId,
   type CreateQuestParams,
+  type UpdateQuestParams,
   type GameSnapshot,
   type HearthQuest,
   type MutationEvent,
   type MutationResult,
+  type Quest,
   type SupabaseClientLike,
 } from './contracts';
 import { EmberDisplay } from './EmberDisplay';
 import { HearthRootPreview } from './HearthRootPreview';
 import { QuestJournal } from './QuestJournal';
 import { QuestCreateDialog } from './QuestCreateDialog';
+import { QuestEditDialog } from './QuestEditDialog';
 import { RewardSequence } from './RewardSequence';
 import './HearthView.css';
+
 
 export interface HearthViewProps {
   initialSnapshot?: GameSnapshot;
@@ -72,8 +77,9 @@ export const HearthView: React.FC<HearthViewProps> = ({
   const [isEmberRelit, setIsEmberRelit] = useState<boolean>(false);
   const [showPathReadyNotice, setShowPathReadyNotice] = useState<boolean>(false);
 
-  // Dialog state
+  // Dialog states
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState<boolean>(false);
+  const [editingQuest, setEditingQuest] = useState<Quest | HearthQuest | null>(null);
 
   // Failure simulation toggle (for QA and manual verification of retry behavior)
   const [simulateFailure, setSimulateFailure] = useState<boolean>(false);
@@ -155,6 +161,28 @@ export const HearthView: React.FC<HearthViewProps> = ({
     );
 
     // Apply authoritative snapshot from server mutation
+    setSnapshot(result.snapshot);
+    if (onMutationSuccess) onMutationSuccess(result);
+  };
+
+  // --------------------------------------------------------------------------
+  // Authoritative Quest Update / Revision Flow
+  // --------------------------------------------------------------------------
+  const handleUpdateQuest = async (
+    questId: string,
+    updates: UpdateQuestParams
+  ) => {
+    // Invoke authoritative updateQuestAction via thin Hearth adapter
+    const result = await updateQuestAction(
+      snapshot,
+      questId,
+      updates,
+      supabaseClient,
+      undefined,
+      simulateFailure
+    );
+
+    // Apply authoritative snapshot from server mutation (NO local math)
     setSnapshot(result.snapshot);
     if (onMutationSuccess) onMutationSuccess(result);
   };
@@ -263,6 +291,7 @@ export const HearthView: React.FC<HearthViewProps> = ({
           pendingQuestId={pendingQuestId}
           errorQuestMap={errorQuestMap}
           onCompleteQuest={handleCompleteQuest}
+          onEditQuest={(q) => setEditingQuest(q)}
           onRetryQuest={handleRetryQuest}
           onOpenCreateDialog={() => setIsCreateDialogOpen(true)}
         />
@@ -275,7 +304,7 @@ export const HearthView: React.FC<HearthViewProps> = ({
               checked={simulateFailure}
               onChange={(e) => setSimulateFailure(e.target.checked)}
             />
-            <span>Simulate network interruption on next quest completion (tests inline retry)</span>
+            <span>Simulate network interruption on next quest operation (tests inline retry)</span>
           </label>
         </aside>
       </main>
@@ -288,6 +317,14 @@ export const HearthView: React.FC<HearthViewProps> = ({
         isOpen={isCreateDialogOpen}
         onClose={() => setIsCreateDialogOpen(false)}
         onCreateQuest={handleCreateQuest}
+      />
+
+      {/* Revise Quest Modal */}
+      <QuestEditDialog
+        isOpen={Boolean(editingQuest)}
+        quest={editingQuest}
+        onClose={() => setEditingQuest(null)}
+        onUpdateQuest={handleUpdateQuest}
       />
     </div>
   );

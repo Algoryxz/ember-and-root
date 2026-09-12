@@ -12,6 +12,7 @@ export interface QuestJournalProps {
   isLoading?: boolean;
   generalError?: string | null;
   onCompleteQuest: (questId: string) => void;
+  onEditQuest?: (quest: Quest | HearthQuest) => void;
   onRetryQuest?: (questId: string) => void;
   onRetryGeneral?: () => void;
   onOpenCreateDialog?: () => void;
@@ -37,6 +38,7 @@ export const QuestJournal: React.FC<QuestJournalProps> = ({
   isLoading = false,
   generalError = null,
   onCompleteQuest,
+  onEditQuest,
   onRetryQuest,
   onRetryGeneral,
   onOpenCreateDialog,
@@ -117,11 +119,13 @@ export const QuestJournal: React.FC<QuestJournalProps> = ({
                   isPending={pendingQuestId === quest.id}
                   errorMessage={errorQuestMap[quest.id] || null}
                   onComplete={onCompleteQuest}
+                  onEdit={onEditQuest}
                   onRetry={onRetryQuest}
                 />
               );
             })}
           </ul>
+
 
           {/* Action Footer: + Add a quest */}
           {onOpenCreateDialog && (

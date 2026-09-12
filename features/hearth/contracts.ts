@@ -410,7 +410,10 @@ export function simulateServerCompletion(
 export {
   completeQuestAction,
   createQuestAction,
+  updateQuestAction,
   type CreateQuestParams,
+  type UpdateQuestParams,
   type SupabaseClientLike,
 } from './hearthAdapter';
+
 

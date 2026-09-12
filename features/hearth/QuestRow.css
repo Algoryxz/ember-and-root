@@ -215,9 +215,60 @@
   outline: 2px solid var(--color-focus);
 }
 
-/* Action Area */
+/* Action Area & Controls Cluster */
+.entry-actions-cluster {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  flex-shrink: 0;
+}
+
 .entry-action-cell {
   flex-shrink: 0;
+}
+
+/* Subtle Field Journal Edit Affordance (Quill) */
+.entry-edit-btn {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  padding: var(--space-8);
+  min-width: var(--min-touch-target);
+  min-height: var(--min-touch-target);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-btn);
+  transition: color 150ms ease, background-color 150ms ease, border-color 150ms ease;
+  font-family: var(--font-body);
+}
+
+.entry-edit-icon {
+  font-size: var(--text-base);
+  line-height: 1;
+  opacity: 0.75;
+  transition: opacity 150ms ease;
+}
+
+.entry-edit-btn:hover {
+  color: var(--color-text-primary);
+  background-color: rgba(240, 231, 211, 0.06);
+  border-color: rgba(185, 190, 172, 0.15);
+}
+
+.entry-edit-btn:hover .entry-edit-icon {
+  opacity: 1;
+}
+
+.entry-edit-btn:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 1px;
+}
+
+.entry-edit-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 
 /* --------------------------------------------------------------------------
@@ -232,11 +283,18 @@
     padding: var(--space-16) var(--space-8);
   }
 
-  .entry-action-cell {
+  .entry-actions-cluster {
     width: 100%;
+    justify-content: space-between;
+    gap: var(--space-8);
+  }
+
+  .entry-action-cell {
+    flex: 1;
   }
 
   .entry-action-cell .btn {
     width: 100%;
   }
 }
+
