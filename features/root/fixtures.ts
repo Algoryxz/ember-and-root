@@ -1,4 +1,4 @@
-import { BranchState, RootTreeState } from './types';
+import type { BranchState, RootTreeState } from './types.ts';
 
 /**
  * Legacy Mind fixtures adapting to canonical BranchState
@@ -35,8 +35,8 @@ export const AVAILABLE_MIND_STATE: BranchState = {
 
 export const SCHOLAR_MIND_STATE: BranchState = {
   attribute: 'mind',
-  xp: 90,
-  mindXP: 90,
+  xp: 160,
+  mindXP: 160,
   specialization: 'scholar',
   selectedSpecialization: 'scholar',
   selectedAt: new Date().toISOString(),
@@ -50,8 +50,8 @@ export const SCHOLAR_MIND_STATE: BranchState = {
 
 export const EXPLORER_MIND_STATE: BranchState = {
   attribute: 'mind',
-  xp: 90,
-  mindXP: 90,
+  xp: 160,
+  mindXP: 160,
   specialization: 'explorer',
   selectedSpecialization: 'explorer',
   selectedAt: new Date().toISOString(),

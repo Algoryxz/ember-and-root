@@ -1,14 +1,13 @@
 import React, { useState } from 'react';
-import { AttributeId, BranchState, Specialization, TrialState } from '../../game/contracts';
-import { NodeState, RootNodeInfo } from './types';
+import { AttributeId, BranchState, NodeState, RootNodeInfo, Specialization, TrialState } from './types';
 import { BRANCH_CONFIGS } from './config';
 import { TRIAL_CONFIGS } from './trialConfig';
+import { TOKENS } from './tokens';
 import { BranchSvgRenderer } from './svg/BranchSvgRenderer';
 import { RootNodeButton } from './RootNodeButton';
 import { RootList } from './RootList';
 import { SessionTrialPanel } from './SessionTrialPanel';
 import { MilestoneTrialPanel } from './MilestoneTrialPanel';
-import './root.css';
 
 export interface RootBranchProps {
   attribute: AttributeId;
@@ -72,7 +71,8 @@ export const RootBranch: React.FC<RootBranchProps> = ({
     spec2State = 'available';
   }
 
-  const isCrestAvailable = crestAvailable || (state.trialComplete && !crestClaimed);
+  // Authoritative branch value - DO NOT derive crest eligibility in UI
+  const isCrestAvailable = crestAvailable;
 
   const spec1CrestState: NodeState =
     activeSpec === spec1.id
@@ -80,7 +80,9 @@ export const RootBranch: React.FC<RootBranchProps> = ({
         ? 'selected'
         : isCrestAvailable
         ? 'available'
-        : 'unlocked'
+        : state.trialComplete
+        ? 'unlocked'
+        : 'locked'
       : 'locked';
 
   const spec2CrestState: NodeState =
@@ -89,7 +91,9 @@ export const RootBranch: React.FC<RootBranchProps> = ({
         ? 'selected'
         : isCrestAvailable
         ? 'available'
-        : 'unlocked'
+        : state.trialComplete
+        ? 'unlocked'
+        : 'locked'
       : 'locked';
 
   // Node definitions with coordinates matching SVG viewBox 360x480
@@ -160,7 +164,7 @@ export const RootBranch: React.FC<RootBranchProps> = ({
           alignItems: 'center',
           justifyContent: 'space-between',
           marginBottom: '12px',
-          borderBottom: '1px solid rgba(159, 186, 135, 0.15)',
+          borderBottom: `1px solid ${TOKENS.color.borderRootSubtle}`,
           paddingBottom: '8px',
         }}
       >
@@ -168,9 +172,9 @@ export const RootBranch: React.FC<RootBranchProps> = ({
           <h2
             style={{
               margin: 0,
-              fontFamily: 'Fraunces, serif',
+              fontFamily: TOKENS.font.display,
               fontSize: '20px',
-              color: '#F0E7D3',
+              color: TOKENS.color.textPrimary,
               display: 'flex',
               alignItems: 'center',
               gap: '8px',
@@ -188,7 +192,7 @@ export const RootBranch: React.FC<RootBranchProps> = ({
             />
             {config.title}
           </h2>
-          <span style={{ fontSize: '12px', color: '#B9BEAC' }}>
+          <span style={{ fontSize: '12px', color: TOKENS.color.textSecondary }}>
             {config.subtitle} ({xp} XP)
           </span>
         </div>
@@ -198,10 +202,10 @@ export const RootBranch: React.FC<RootBranchProps> = ({
           type="button"
           onClick={() => setViewMode(viewMode === 'visual' ? 'list' : 'visual')}
           style={{
-            backgroundColor: '#141713',
-            color: '#F0E7D3',
-            border: '1px solid #3B463B',
-            borderRadius: '6px',
+            backgroundColor: TOKENS.color.bg,
+            color: TOKENS.color.textPrimary,
+            border: `1px solid ${TOKENS.color.borderLocked}`,
+            borderRadius: TOKENS.radius.md,
             padding: '6px 10px',
             fontSize: '12px',
             cursor: 'pointer',
@@ -219,12 +223,12 @@ export const RootBranch: React.FC<RootBranchProps> = ({
           role="status"
           aria-live="polite"
           style={{
-            backgroundColor: '#2B2319',
-            border: '1px solid #E98A4B',
-            borderRadius: '8px',
+            backgroundColor: TOKENS.color.nodeLocked,
+            border: `1px solid ${TOKENS.color.ember}`,
+            borderRadius: TOKENS.radius.lg,
             padding: '10px 14px',
             marginBottom: '12px',
-            color: '#FFD38A',
+            color: TOKENS.color.emberCore,
             fontSize: '13px',
             lineHeight: '1.4',
             display: 'flex',
@@ -237,7 +241,7 @@ export const RootBranch: React.FC<RootBranchProps> = ({
           </span>
           <div>
             <strong>A Path is Ready!</strong>
-            <div style={{ fontSize: '12px', color: '#F0E7D3' }}>
+            <div style={{ fontSize: '12px', color: TOKENS.color.textPrimary }}>
               Select {spec1.label} or {spec2.label} below to commit your {attribute} specialization.
             </div>
           </div>
@@ -248,12 +252,12 @@ export const RootBranch: React.FC<RootBranchProps> = ({
       {activeSpec && (
         <div
           style={{
-            backgroundColor: '#1F2A1E',
+            backgroundColor: TOKENS.color.surfaceHover,
             border: `1px solid ${config.accentColor}`,
-            borderRadius: '8px',
+            borderRadius: TOKENS.radius.lg,
             padding: '8px 12px',
             marginBottom: '12px',
-            color: '#D9E3B2',
+            color: TOKENS.color.rootMature,
             fontSize: '12px',
             display: 'flex',
             alignItems: 'center',
@@ -264,7 +268,7 @@ export const RootBranch: React.FC<RootBranchProps> = ({
             <span aria-hidden="true">🌱</span>
             <span>
               Specialization:{' '}
-              <strong style={{ textTransform: 'capitalize', color: '#F0E7D3' }}>
+              <strong style={{ textTransform: 'capitalize', color: TOKENS.color.textPrimary }}>
                 {activeSpec}
               </strong>
             </span>
@@ -273,10 +277,10 @@ export const RootBranch: React.FC<RootBranchProps> = ({
             <span
               style={{
                 fontSize: '11px',
-                backgroundColor: '#E98A4B',
-                color: '#141713',
+                backgroundColor: TOKENS.color.ember,
+                color: TOKENS.color.bg,
                 padding: '2px 6px',
-                borderRadius: '4px',
+                borderRadius: TOKENS.radius.sm,
                 fontWeight: 600,
               }}
             >

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { MindBranch } from './MindBranch';
 import { MindBranchState, SpecializationId } from './types';
+import { TOKENS } from './tokens';
 import {
   INITIAL_MIND_STATE,
   AVAILABLE_MIND_STATE,
@@ -26,24 +27,24 @@ export const MindRootInteractiveView: React.FC = () => {
         maxWidth: '480px',
         margin: '0 auto',
         boxSizing: 'border-box',
-        backgroundColor: '#141713',
+        backgroundColor: TOKENS.color.bg,
         minHeight: '100vh',
-        color: '#F0E7D3',
-        fontFamily: 'DM Sans, sans-serif',
+        color: TOKENS.color.textPrimary,
+        fontFamily: TOKENS.font.ui,
       }}
     >
       <header style={{ marginBottom: '16px', textAlign: 'center' }}>
         <h1
           style={{
-            fontFamily: 'Fraunces, serif',
+            fontFamily: TOKENS.font.display,
             fontSize: '24px',
             margin: '0 0 4px 0',
-            color: '#F0E7D3',
+            color: TOKENS.color.textPrimary,
           }}
         >
           Ember & Root — Mind Branch
         </h1>
-        <p style={{ margin: 0, fontSize: '13px', color: '#B9BEAC' }}>
+        <p style={{ margin: 0, fontSize: '13px', color: TOKENS.color.textSecondary }}>
           Workstream Lead: <strong>Akriti</strong> (Mobile 375px Verified)
         </p>
       </header>
@@ -51,14 +52,14 @@ export const MindRootInteractiveView: React.FC = () => {
       {/* Fixture State Controls Bar */}
       <div
         style={{
-          backgroundColor: '#1D231D',
-          border: '1px solid #2B352B',
-          borderRadius: '8px',
+          backgroundColor: TOKENS.color.surface,
+          border: `1px solid ${TOKENS.color.borderDefault}`,
+          borderRadius: TOKENS.radius.lg,
           padding: '12px',
           marginBottom: '16px',
         }}
       >
-        <div style={{ fontSize: '12px', fontWeight: 600, color: '#B9BEAC', marginBottom: '8px' }}>
+        <div style={{ fontSize: '12px', fontWeight: 600, color: TOKENS.color.textSecondary, marginBottom: '8px' }}>
           TEST FIXTURE STATES:
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
@@ -68,11 +69,11 @@ export const MindRootInteractiveView: React.FC = () => {
             style={{
               padding: '8px 10px',
               fontSize: '12px',
-              borderRadius: '6px',
-              border: '1px solid #3B463B',
+              borderRadius: TOKENS.radius.md,
+              border: `1px solid ${TOKENS.color.borderLocked}`,
               backgroundColor:
-                currentState.xp === 70 ? '#263323' : '#141713',
-              color: '#F0E7D3',
+                currentState.xp === 70 ? TOKENS.color.surfaceHover : TOKENS.color.bg,
+              color: TOKENS.color.textPrimary,
               cursor: 'pointer',
             }}
           >
@@ -85,11 +86,11 @@ export const MindRootInteractiveView: React.FC = () => {
             style={{
               padding: '8px 10px',
               fontSize: '12px',
-              borderRadius: '6px',
-              border: '1px solid #E98A4B',
+              borderRadius: TOKENS.radius.md,
+              border: `1px solid ${TOKENS.color.ember}`,
               backgroundColor:
-                currentState.specializationAvailable ? '#382B1D' : '#141713',
-              color: '#FFD38A',
+                currentState.specializationAvailable ? TOKENS.color.nodeLocked : TOKENS.color.bg,
+              color: TOKENS.color.emberCore,
               cursor: 'pointer',
             }}
           >
@@ -102,13 +103,13 @@ export const MindRootInteractiveView: React.FC = () => {
             style={{
               padding: '8px 10px',
               fontSize: '12px',
-              borderRadius: '6px',
-              border: '1px solid #9FBA87',
+              borderRadius: TOKENS.radius.md,
+              border: `1px solid ${TOKENS.color.root}`,
               backgroundColor:
                 currentState.selectedSpecialization === 'scholar'
-                  ? '#263323'
-                  : '#141713',
-              color: '#D9E3B2',
+                  ? TOKENS.color.surfaceHover
+                  : TOKENS.color.bg,
+              color: TOKENS.color.rootMature,
               cursor: 'pointer',
             }}
           >
@@ -121,13 +122,13 @@ export const MindRootInteractiveView: React.FC = () => {
             style={{
               padding: '8px 10px',
               fontSize: '12px',
-              borderRadius: '6px',
-              border: '1px solid #9FBA87',
+              borderRadius: TOKENS.radius.md,
+              border: `1px solid ${TOKENS.color.root}`,
               backgroundColor:
                 currentState.selectedSpecialization === 'explorer'
-                  ? '#263323'
-                  : '#141713',
-              color: '#D9E3B2',
+                  ? TOKENS.color.surfaceHover
+                  : TOKENS.color.bg,
+              color: TOKENS.color.rootMature,
               cursor: 'pointer',
             }}
           >

@@ -1,6 +1,7 @@
 import React from 'react';
 import { AttributeId } from './types';
 import { BRANCH_CONFIGS } from './config';
+import { TOKENS } from './tokens';
 
 export interface RootTabsProps {
   selectedAttribute: AttributeId;
@@ -21,10 +22,10 @@ export const RootTabs: React.FC<RootTabsProps> = ({
         gridTemplateColumns: 'repeat(4, 1fr)',
         gap: '6px',
         marginBottom: '16px',
-        backgroundColor: '#1D231D',
+        backgroundColor: TOKENS.color.surface,
         padding: '6px',
-        borderRadius: '10px',
-        border: '1px solid #2B352B',
+        borderRadius: TOKENS.radius.xl,
+        border: `1px solid ${TOKENS.color.borderDefault}`,
       }}
     >
       {ATTRIBUTES.map((attr) => {
@@ -39,11 +40,11 @@ export const RootTabs: React.FC<RootTabsProps> = ({
             style={{
               minHeight: '44px',
               padding: '8px 4px',
-              borderRadius: '6px',
+              borderRadius: TOKENS.radius.md,
               border: isSelected ? `1px solid ${config.accentColor}` : '1px solid transparent',
-              backgroundColor: isSelected ? '#141713' : 'transparent',
-              color: isSelected ? config.accentColor : '#B9BEAC',
-              fontFamily: 'DM Sans, sans-serif',
+              backgroundColor: isSelected ? TOKENS.color.bg : 'transparent',
+              color: isSelected ? config.accentColor : TOKENS.color.textSecondary,
+              fontFamily: TOKENS.font.ui,
               fontSize: '13px',
               fontWeight: isSelected ? 600 : 500,
               cursor: 'pointer',

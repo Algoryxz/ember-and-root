@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { AttributeId, BranchState, Specialization, TrialState } from '../../game/contracts';
 import { TRIAL_CONFIGS } from './trialConfig';
+import { TOKENS } from './tokens';
 
 export interface MilestoneTrialPanelProps {
   attribute: AttributeId;
@@ -30,10 +31,11 @@ export const MilestoneTrialPanel: React.FC<MilestoneTrialPanelProps> = ({
   const config = TRIAL_CONFIGS[specialization];
   const [inputText, setInputText] = useState<string>(trial?.milestoneText || '');
 
-  const isStarted = branch.trialStarted || !!trial;
-  const isComplete = branch.trialComplete || !!trial?.milestoneText;
-  const isCrestAvailable = branch.crestAvailable || (isComplete && !branch.crestClaimed && !trial?.claimedAt);
-  const isCrestClaimed = branch.crestClaimed || !!trial?.claimedAt;
+  // Authoritative branch values - DO NOT derive crest eligibility in UI
+  const isStarted = branch.trialStarted;
+  const isComplete = branch.trialComplete;
+  const isCrestAvailable = branch.crestAvailable;
+  const isCrestClaimed = branch.crestClaimed;
 
   const handleSubmitMilestone = (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,13 +48,13 @@ export const MilestoneTrialPanel: React.FC<MilestoneTrialPanelProps> = ({
     <article
       className={`trial-panel milestone-trial-panel ${className}`}
       style={{
-        backgroundColor: '#1D231D',
-        border: '1px solid rgba(255, 211, 138, 0.3)',
-        borderRadius: '10px',
+        backgroundColor: TOKENS.color.surface,
+        border: `1px solid ${TOKENS.color.borderEmberCoreSubtle}`,
+        borderRadius: TOKENS.radius.xl,
         padding: '16px',
         marginTop: '16px',
-        color: '#F0E7D3',
-        fontFamily: 'DM Sans, sans-serif',
+        color: TOKENS.color.textPrimary,
+        fontFamily: TOKENS.font.ui,
         opacity: isPending ? 0.8 : 1,
       }}
       aria-label={`${config.title} Panel`}
@@ -63,9 +65,9 @@ export const MilestoneTrialPanel: React.FC<MilestoneTrialPanelProps> = ({
           <h3
             style={{
               margin: 0,
-              fontFamily: 'Fraunces, serif',
+              fontFamily: TOKENS.font.display,
               fontSize: '18px',
-              color: '#FFD38A',
+              color: TOKENS.color.emberCore,
             }}
           >
             {config.title}
@@ -74,17 +76,33 @@ export const MilestoneTrialPanel: React.FC<MilestoneTrialPanelProps> = ({
             style={{
               fontSize: '11px',
               padding: '2px 8px',
-              borderRadius: '4px',
+              borderRadius: TOKENS.radius.sm,
               fontWeight: 600,
               textTransform: 'uppercase',
-              backgroundColor: isCrestClaimed ? '#9FBA87' : isCrestAvailable ? '#E98A4B' : isStarted ? '#3B463B' : '#222822',
-              color: isCrestClaimed || isCrestAvailable ? '#141713' : '#B9BEAC',
+              backgroundColor: isCrestClaimed
+                ? TOKENS.color.root
+                : isCrestAvailable
+                ? TOKENS.color.ember
+                : isComplete
+                ? TOKENS.color.surfaceHover
+                : isStarted
+                ? TOKENS.color.borderLocked
+                : TOKENS.color.nodeLocked,
+              color: isCrestClaimed || isCrestAvailable ? TOKENS.color.bg : TOKENS.color.textSecondary,
             }}
           >
-            {isCrestClaimed ? 'Crest Claimed' : isCrestAvailable ? 'Crest Ready' : isStarted ? 'In Progress' : 'Not Started'}
+            {isCrestClaimed
+              ? 'Crest Claimed'
+              : isCrestAvailable
+              ? 'Crest Ready'
+              : isComplete
+              ? 'Trial Complete'
+              : isStarted
+              ? 'In Progress'
+              : 'Not Started'}
           </span>
         </div>
-        <p style={{ margin: '4px 0 0 0', fontSize: '13px', color: '#B9BEAC' }}>
+        <p style={{ margin: '4px 0 0 0', fontSize: '13px', color: TOKENS.color.textSecondary }}>
           {config.description}
         </p>
       </header>
@@ -95,10 +113,10 @@ export const MilestoneTrialPanel: React.FC<MilestoneTrialPanelProps> = ({
           role="alert"
           style={{
             padding: '8px 12px',
-            backgroundColor: '#2B1A1A',
-            border: '1px solid #F0A79D',
-            borderRadius: '6px',
-            color: '#F0A79D',
+            backgroundColor: TOKENS.color.errorBg,
+            border: `1px solid ${TOKENS.color.error}`,
+            borderRadius: TOKENS.radius.md,
+            color: TOKENS.color.error,
             fontSize: '12px',
             marginBottom: '12px',
           }}
@@ -117,10 +135,10 @@ export const MilestoneTrialPanel: React.FC<MilestoneTrialPanelProps> = ({
             style={{
               width: '100%',
               minHeight: '44px',
-              backgroundColor: isPending ? '#3B463B' : '#FFD38A',
-              color: isPending ? '#B9BEAC' : '#141713',
+              backgroundColor: isPending ? TOKENS.color.borderLocked : TOKENS.color.emberCore,
+              color: isPending ? TOKENS.color.textSecondary : TOKENS.color.bg,
               border: 'none',
-              borderRadius: '6px',
+              borderRadius: TOKENS.radius.md,
               fontSize: '14px',
               fontWeight: 600,
               cursor: isPending ? 'not-allowed' : 'pointer',
@@ -140,7 +158,7 @@ export const MilestoneTrialPanel: React.FC<MilestoneTrialPanelProps> = ({
             <form onSubmit={handleSubmitMilestone} style={{ marginBottom: '12px' }}>
               <label
                 htmlFor={`milestone-input-${attribute}`}
-                style={{ display: 'block', fontSize: '12px', color: '#B9BEAC', marginBottom: '6px' }}
+                style={{ display: 'block', fontSize: '12px', color: TOKENS.color.textSecondary, marginBottom: '6px' }}
               >
                 {config.evidencePrompt}
               </label>
@@ -154,10 +172,10 @@ export const MilestoneTrialPanel: React.FC<MilestoneTrialPanelProps> = ({
                 style={{
                   width: '100%',
                   padding: '10px',
-                  backgroundColor: '#141713',
-                  border: '1px solid #3B463B',
-                  borderRadius: '6px',
-                  color: '#F0E7D3',
+                  backgroundColor: TOKENS.color.bg,
+                  border: `1px solid ${TOKENS.color.borderLocked}`,
+                  borderRadius: TOKENS.radius.md,
+                  color: TOKENS.color.textPrimary,
                   fontSize: '13px',
                   boxSizing: 'border-box',
                   marginBottom: '8px',
@@ -170,10 +188,10 @@ export const MilestoneTrialPanel: React.FC<MilestoneTrialPanelProps> = ({
                 style={{
                   width: '100%',
                   minHeight: '44px',
-                  backgroundColor: inputText.trim() && !isPending ? '#E98A4B' : '#2A322A',
-                  color: inputText.trim() && !isPending ? '#141713' : '#B9BEAC',
+                  backgroundColor: inputText.trim() && !isPending ? TOKENS.color.ember : TOKENS.color.nodeLocked,
+                  color: inputText.trim() && !isPending ? TOKENS.color.bg : TOKENS.color.textSecondary,
                   border: 'none',
-                  borderRadius: '6px',
+                  borderRadius: TOKENS.radius.md,
                   fontSize: '13px',
                   fontWeight: 600,
                   cursor: inputText.trim() && !isPending ? 'pointer' : 'not-allowed',
@@ -186,13 +204,13 @@ export const MilestoneTrialPanel: React.FC<MilestoneTrialPanelProps> = ({
             <div
               style={{
                 padding: '12px',
-                backgroundColor: '#141713',
-                border: '1px stroke #3B463B',
-                borderRadius: '6px',
+                backgroundColor: TOKENS.color.bg,
+                border: `1px solid ${TOKENS.color.borderLocked}`,
+                borderRadius: TOKENS.radius.md,
                 marginBottom: '12px',
               }}
             >
-              <div style={{ fontSize: '11px', color: '#B9BEAC', marginBottom: '4px' }}>
+              <div style={{ fontSize: '11px', color: TOKENS.color.textSecondary, marginBottom: '4px' }}>
                 Declared Milestone:
               </div>
               <blockquote
@@ -200,8 +218,8 @@ export const MilestoneTrialPanel: React.FC<MilestoneTrialPanelProps> = ({
                   margin: 0,
                   fontSize: '13px',
                   fontStyle: 'italic',
-                  color: '#F0E7D3',
-                  fontFamily: 'Fraunces, serif',
+                  color: TOKENS.color.textPrimary,
+                  fontFamily: TOKENS.font.display,
                 }}
               >
                 "{trial?.milestoneText || inputText}"
@@ -209,7 +227,25 @@ export const MilestoneTrialPanel: React.FC<MilestoneTrialPanelProps> = ({
             </div>
           )}
 
-          {/* Claim Crest Button */}
+          {/* Trial Complete awaiting 160 Branch XP */}
+          {isComplete && !isCrestAvailable && !isCrestClaimed && (
+            <div
+              style={{
+                padding: '10px 12px',
+                backgroundColor: TOKENS.color.surfaceHover,
+                border: `1px solid ${TOKENS.color.borderLocked}`,
+                borderRadius: TOKENS.radius.md,
+                fontSize: '12px',
+                color: TOKENS.color.textSecondary,
+                marginBottom: '8px',
+                textAlign: 'center',
+              }}
+            >
+              📜 Trial completed! Reach 160 Branch XP to unlock Crest claim (Current: {branch.xp}/160 XP).
+            </div>
+          )}
+
+          {/* Authoritative Claim Crest Button */}
           {isCrestAvailable && (
             <button
               type="button"
@@ -218,10 +254,10 @@ export const MilestoneTrialPanel: React.FC<MilestoneTrialPanelProps> = ({
               style={{
                 width: '100%',
                 minHeight: '44px',
-                backgroundColor: isPending ? '#3B463B' : '#9FBA87',
-                color: isPending ? '#B9BEAC' : '#141713',
+                backgroundColor: isPending ? TOKENS.color.borderLocked : TOKENS.color.root,
+                color: isPending ? TOKENS.color.textSecondary : TOKENS.color.bg,
                 border: 'none',
-                borderRadius: '6px',
+                borderRadius: TOKENS.radius.md,
                 fontSize: '14px',
                 fontWeight: 700,
                 cursor: isPending ? 'not-allowed' : 'pointer',
@@ -237,10 +273,10 @@ export const MilestoneTrialPanel: React.FC<MilestoneTrialPanelProps> = ({
             <div
               style={{
                 padding: '10px',
-                backgroundColor: '#263323',
-                border: '1px solid #9FBA87',
-                borderRadius: '6px',
-                color: '#D9E3B2',
+                backgroundColor: TOKENS.color.surfaceHover,
+                border: `1px solid ${TOKENS.color.root}`,
+                borderRadius: TOKENS.radius.md,
+                color: TOKENS.color.rootMature,
                 fontSize: '13px',
                 textAlign: 'center',
                 fontWeight: 600,
