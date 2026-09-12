@@ -5,8 +5,8 @@ import type {
   MutationResult,
   Specialization,
   TrialState,
-} from '../../game/contracts';
-import { TRIAL_CONFIGS } from './trialConfig';
+} from '../../game/contracts.ts';
+import { TRIAL_CONFIGS } from './trialConfig.ts';
 
 /**
  * Fixture & Mock Mutation Adapters for Visual Preview and Tests
