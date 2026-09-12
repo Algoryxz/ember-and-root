@@ -1,4 +1,4 @@
-﻿---
+---
 name: ember-ui
 description: Implements or reviews Ember & Root frontend surfaces, responsive layouts, SVG Root presentation, accessibility, and purposeful motion while enforcing the illuminated field-journal visual language.
 ---
@@ -6,127 +6,167 @@ description: Implements or reviews Ember & Root frontend surfaces, responsive la
 # Ember UI Skill
 
 ## Purpose
-Implement and review Ember & Root frontend surfaces, responsive layouts, SVG Root presentation, accessibility, and purposeful motion while strictly enforcing the illuminated field-journal visual language.
 
-## Skill Precedence
-Agents must resolve guidance in this strict order:
-1. `AGENTS.md`
-2. Ember & Root docs:
-   - `docs/PRD.md`
-   - `docs/TRD.md`
-   - `docs/UI_UX_BRIEF.md`
-   - `docs/BACKEND_SCHEMA.md`
-   - `docs/CONTRACTS.md`
-3. Project-specific skills:
-   - `ember-ui`
-   - `reward-integrity`
-   - `ship-check`
-4. Generic reusable design/frontend skills
-
-**If a generic skill conflicts with Ember & Root's design specification, EMBER & ROOT RULES WIN.**
+Use this skill when implementing or reviewing any Ember & Root frontend surface: Hearth, Root, Satchel, Chronicle, dialogs, navigation, the Ember component, quest journal rows, or visual states. Also use it when adding responsive behavior, motion, or accessibility.
 
 ---
 
-## Product Visual Identity
-**"Illuminated field journal"**
+## Required Reading
 
-### Forbidden Outputs (Do NOT output):
-- generic SaaS dashboards
-- shadcn-default visual appearance
-- random floating cards
-- glassmorphism everywhere
-- blue/purple AI gradients
-- enterprise sidebars
-- generic admin tables as main UI
-- arbitrary colors
+Before editing any frontend file, read:
 
-### Authoritative Palette:
-- **Background**: `#141713` (rich charcoal ground)
-- **Raised**: `#1D231D` (deep slate/parchment surface)
-- **Text**: `#F0E7D3` (aged warm parchment)
-- **Secondary**: `#B9BEAC` (dried sage / muted detail)
-- **Ember**: `#E98A4B` (glowing copper/orange flame)
-- **Ember core**: `#FFD38A` (incandescent hearth yellow)
-- **Root**: `#9FBA87` (living sprout green)
-- **Mature root**: `#D9E3B2` (hardened root / amber-tinted green)
-- **Error**: `#F0A79D` (subtle ash red)
+1. `docs/UI_UX_BRIEF.md` — frozen palette, typography, spacing, motion rules, anti-patterns
+2. `docs/APP_FLOW.md` — the exact trigger, server action, success, and failure for the flow you are implementing
+3. The relevant section of `docs/PRD.md` for the feature you are building
 
-### Authoritative Typography:
-- **Headings / Display**: Fraunces
-- **UI / Body**: DM Sans
+Do not guess at visual direction. If the brief is silent on a case, ask Deeptiman before implementing.
 
 ---
 
-## Ember UI Checklist
-Every UI implementation and code review must check:
+## Frozen Visual Invariants
 
-### VISUAL
-- [ ] follows palette (`#141713`, `#1D231D`, `#F0E7D3`, `#B9BEAC`, `#E98A4B`, `#FFD38A`, `#9FBA87`, `#D9E3B2`, `#F0A79D`)
-- [ ] follows typography (Fraunces headings, DM Sans UI/body)
-- [ ] no random colors
-- [ ] no generic dashboard appearance
-- [ ] journal-like surfaces where appropriate
-- [ ] Ember + Root remain visual focal points
+These cannot be changed without Deeptiman's explicit sign-off:
 
-### RESPONSIVE
-- [ ] ~1440px desktop
-- [ ] ~768px tablet
-- [ ] ~375px phone
-- [ ] ~320px minimum phone
-- [ ] 200% zoom does not break flow
+| Invariant | Value |
+|-----------|-------|
+| Background | `#141713` |
+| Raised surface | `#1D231D` |
+| Primary text | `#F0E7D3` |
+| Secondary text | `#B9BEAC` |
+| Ember | `#E98A4B` |
+| Ember bright core | `#FFD38A` |
+| Root sage | `#9FBA87` |
+| Mature Root | `#D9E3B2` |
+| Error | `#F0A79D` |
+| Focus ring | pale-gold, 2px, 2px offset |
+| Headings | Fraunces |
+| UI/body | DM Sans |
 
-### ACCESSIBILITY
-- [ ] semantic HTML
-- [ ] visible focus
-- [ ] keyboard usable
-- [ ] reduced motion supported
-- [ ] touch targets adequate (>=44x44px)
-- [ ] labels are not color-only
-- [ ] screen reader equivalents for visual progression
-
-### MOTION
-- [ ] motion communicates state
-- [ ] no decorative animation blocks interaction
-- [ ] ordinary completion remains fast
-- [ ] milestone animations feel special
-- [ ] reduced-motion equivalent exists
+No other color values as design tokens. No other typefaces.
 
 ---
 
-## Root Rules
-The Root tree visualization must use:
-**fixed authored SVG geometry + state-controlled path reveal**
+## Implementation Workflow
 
-### Never use:
-- procedural graph layout
-- force graphs
-- free pan/zoom
-- giant graph packages
-- SVG morph engines
-- Three.js
-- Rive
-- Lottie
-- GSAP unless explicitly approved by technical ownership
+Follow these steps in order. Do not skip ahead to animation before state is correct.
 
-### Interaction & Accessibility:
-- SVG may be decorative (`aria-hidden="true"`).
-- Interactive Root nodes must be accessible HTML controls positioned over or around the SVG.
-- Provide a semantic list fallback for the Root progression.
-- Mobile must not require drag, hover, pinch, or zoom.
+1. **Identify the confirmed server state** that this UI surface consumes. Find the `GameSnapshot` fields or `MutationResult` event fields that drive this component's rendering.
+
+2. **Reuse existing tokens and primitives.** Do not create a parallel visual system. Import CSS custom properties from `components/tokens.css`.
+
+3. **Implement semantic HTML first.**
+   - Use `<button>` for actions, not `<div>` with `onClick`.
+   - Use `<input>` with persistent visible labels.
+   - Use landmark regions: `<main>`, `<nav>`, `<section>`, `<aside>`.
+   - Use list markup for quest lists.
+
+4. **Make the static mobile layout work at ~375px** before adding any animation. Verify no horizontal overflow, no hidden rows, no overlap.
+
+5. **Add desktop composition.** Test at 1280px and 1440px. Verify the ~40%/~60% Hearth split, no enterprise sidebar.
+
+6. **Add motion effects** only after the state transition logic is correct:
+   - Use CSS transitions for micro-animations (press states, row transitions).
+   - Use Motion for React for multi-step sequences (reward choreography).
+   - Use SVG stroke-dashoffset or opacity for Root path reveal.
+   - Consult `docs/UI_UX_BRIEF.md` § "Motion Choreography" for exact timings.
+
+7. **Implement `prefers-reduced-motion` equivalent** for every animation added.
+   ```css
+   @media (prefers-reduced-motion: reduce) {
+     /* swap travel/draw effects for immediate state change */
+   }
+   ```
+
+8. **Verify accessibility:**
+   - Tab through every interactive element in the component.
+   - Verify focus ring visible at each stop.
+   - Verify focus restores to trigger after dialog closes.
+   - Verify decorative SVG has `aria-hidden="true"`.
+   - Verify interactive SVG nodes are `<button>` elements.
+   - Verify `aria-live="polite"` region announces reward after quest completion.
+   - Verify 200% zoom: no content clipped.
+   - Verify 44×44px minimum touch target for all interactive elements.
+
+9. **Do not add dependencies.** New packages require Susmita's approval.
+
+---
+
+## Root Visual Rules
+
+These rules apply specifically to the Root surface (owned by Akriti):
+
+- All SVG paths are authored and fixed. **Do not compute, randomize, or morph path geometry.**
+- Decorative SVG: `aria-hidden="true"`.
+- Interactive nodes (fork choice, crest claim): `<button>` elements absolutely positioned over known SVG coordinates.
+- Desktop: fixed SVG viewBox, all four branches visible, no zoom/pan.
+- Mobile: four labeled attribute tab buttons, one branch readable at a time, no drag/pinch/zoom required.
+- Root List: accessible linear view equivalent must be present for each branch.
+- State reveals use `stroke-dashoffset` drawing or opacity on authored overlays. **No SVG morph engine.**
+
+---
+
+## Quest Journal Rules
+
+- Quests are rows in a journal, not floating cards.
+- Each row shows: title, attribute indicator, effort badge, completion control.
+- The completion control is an explicit "Complete quest" button (not a small checkbox).
+- Minimum 44×44px touch target.
+- Pending state: button disabled, row visually indicates in-flight.
+- Completed state: row transitions in-place (no removal during the session; refresh reflects DB state).
+- Error state: inline message on the row with a retry affordance.
+
+---
+
+## Ember Component Rules
+
+- Has four distinct visual states: resting, kindled, steady, bright.
+- Each state has a reduced-motion equivalent (immediate visual change, no oscillation).
+- Ember animation must pause when `document.visibilityState === 'hidden'`.
+- Ember Relights animation plays before the standard completion response when `event.emberRelit === true`.
 
 ---
 
 ## Motion Budget
-- Routine completion: press → pending state → confirmed server response → one XP travel → Root illumination.
-- Major thresholds: specialization choice and crest reveal may receive celebratory spectacle.
-- Never queue toast spam or multiple simultaneous motion effects.
-- No animation callback writes to the database.
+
+| Moment | Duration | Reduced-motion |
+|--------|----------|----------------|
+| Press/seal response | 80–120ms | Immediate |
+| Pending row state | Duration of server call | Loading indicator only |
+| Ember warmth/scale response | 200–400ms | Immediate state change |
+| XP light travel | 400–700ms | Skip entirely |
+| Root preview illumination | 300–500ms | Immediate highlight |
+| Specialization fork reveal | 600–900ms | Immediate state change, short fade |
+| Crest terminal ornament | 400ms + 8 motes (300–500ms each) | Immediate, no motes |
+
+Never queue multiple completion sequences simultaneously.
+
+---
+
+## Anti-Patterns — Hard Stops
+
+If you find yourself writing any of the following, stop and reconsider:
+
+- A `<div>` or `<span>` with an `onClick` handler (use `<button>`)
+- A color value not in the frozen palette
+- A font family other than Fraunces or DM Sans
+- Glassmorphism, drop-shadow card grids, blue/purple gradients
+- An enterprise sidebar navigation
+- An animation without a reduced-motion equivalent
+- A hover-only interaction (inaccessible on touch)
+- A drag or pinch-only Root interaction
+- Toast spam for routine success
+- A loading spinner in the center of the page for an inline action
+- Decorative text baked into a raster image
+
+---
 
 ## Acceptance Output
-When submitting UI changes, report:
-1. Files changed
-2. Desktop check (~1440px)
-3. Mobile check (~375px and ~320px)
-4. Keyboard/focus check
-5. Reduced-motion behavior
-6. Any deviation from frozen design rules
+
+When you complete a frontend task using this skill, report:
+
+1. **Files changed** (with brief description of each change)
+2. **Desktop check** (describe composition at ~1280px; screenshot if possible)
+3. **Mobile check** (describe layout at ~375px; screenshot if possible)
+4. **Keyboard/focus check** (tab order, focus visibility, dialog focus return)
+5. **Reduced-motion behavior** (what changes when `prefers-reduced-motion: reduce`)
+6. **Any deviation from the frozen design rules** (and who approved it)
