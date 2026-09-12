@@ -1,4 +1,4 @@
-import { Specialization, TrialKind } from '../../game/contracts';
+import type { Specialization, TrialKind } from '../../game/contracts.ts';
 
 export interface TrialConfigInfo {
   specialization: Specialization;

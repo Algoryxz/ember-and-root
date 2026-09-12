@@ -1,381 +1,174 @@
-import { AttributeId, BranchState, GameSnapshot, MutationResult, Specialization, TrialState } from '../../game/contracts';
-import { TRIAL_CONFIGS } from './trialConfig';
+import type { AttributeId, GameSnapshot, MutationResult, Specialization } from '../../game/contracts.ts';
 
 /**
- * Authoritative Mutation Helper & Fallback Adapter for Root Trials & Specializations
+ * Authoritative Production Mutation Adapter for Root Trials & Specializations
  *
- * Implements the integration layer for:
- * 1. `chooseSpecialization` (RPC `choose_specialization`)
- * 2. `startTrial` (RPC `start_trial`)
- * 3. `completeQuest` with evidence (RPC `complete_quest`)
- * 4. `claimTrial` (RPC `claim_trial`)
+ * Calls PostgreSQL / Supabase RPC functions:
+ * 1. `chooseSpecializationAction` -> RPC `choose_specialization`
+ * 2. `startTrialAction` -> RPC `start_trial`
+ * 3. `progressSessionTrialAction` -> Dedicated Trial RPC `progress_trial`
+ * 4. `recordMilestoneAction` -> Dedicated Trial RPC `record_trial_milestone`
+ * 5. `claimCrestAction` -> RPC `claim_trial`
  *
- * If a Supabase client is passed and connected, calls the PostgreSQL RPC.
- * Otherwise, executes a clean local state update returning an authoritative MutationResult.
+ * NOTE:
+ * - Silent local fallbacks are prohibited in production mutation actions.
+ * - If an RPC fails, it surfaces the error and does NOT mutate GameSnapshot locally.
+ * - complete_quest is strictly for quest completion and NO LONGER accepts p_trial_evidence.
+ * - All actions accept an optional `requestId` so retry flows preserve mutation identity for idempotency.
+ * - For local visual mock and preview simulations, see `trialFixtureAdapter.ts`.
  */
 
+export interface SupabaseRpcClient {
+  rpc: (fn: string, params?: Record<string, unknown>) => Promise<{ data: any; error: any }>;
+}
+
+function getRpcClient(client?: any): SupabaseRpcClient {
+  if (!client || typeof client.rpc !== 'function') {
+    throw new Error(
+      'An authoritative database client (Supabase) is required for production mutations. Use trialFixtureAdapter for dev/mock previews.'
+    );
+  }
+  return client as SupabaseRpcClient;
+}
+
+function resolveRequestId(requestId?: string, prefix: string = 'req'): string {
+  if (requestId && requestId.trim().length > 0) {
+    return requestId.trim();
+  }
+  return typeof crypto !== 'undefined' && crypto.randomUUID
+    ? crypto.randomUUID()
+    : `${prefix}-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+}
+
 export async function chooseSpecializationAction(
-  snapshot: GameSnapshot,
+  _snapshot: GameSnapshot,
   attribute: AttributeId,
   specialization: Specialization,
-  supabaseClient?: any
+  supabaseClient?: any,
+  requestId?: string
 ): Promise<MutationResult> {
-  const requestId = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `req-spec-${Date.now()}`;
+  const client = getRpcClient(supabaseClient);
+  const reqId = resolveRequestId(requestId, 'req-spec');
 
-  if (supabaseClient && typeof supabaseClient.rpc === 'function') {
-    const { data, error } = await supabaseClient.rpc('choose_specialization', {
-      p_request_id: requestId,
-      p_attribute: attribute,
-      p_specialization: specialization,
-    });
+  const { data, error } = await client.rpc('choose_specialization', {
+    p_request_id: reqId,
+    p_attribute: attribute,
+    p_specialization: specialization,
+  });
 
-    if (!error && data) {
-      return data as MutationResult;
-    }
+  if (error) {
+    throw new Error(`choose_specialization failed: ${error.message || JSON.stringify(error)}`);
   }
 
-  // Local fallback snapshot calculation
-  const existingBranch = snapshot.branches[attribute];
-  const updatedBranch: BranchState = {
-    ...existingBranch,
-    specialization,
-    specializationAvailable: false,
-    selectedAt: new Date().toISOString(),
-  };
+  if (!data) {
+    throw new Error('choose_specialization returned empty data');
+  }
 
-  const updatedSnapshot: GameSnapshot = {
-    ...snapshot,
-    revision: snapshot.revision + 1,
-    branches: {
-      ...snapshot.branches,
-      [attribute]: updatedBranch,
-    },
-  };
-
-  return {
-    revision: updatedSnapshot.revision,
-    event: {
-      id: `evt-${requestId}`,
-      kind: 'specialization_chosen',
-      attribute,
-      specialization,
-    },
-    snapshot: updatedSnapshot,
-  };
+  return data as MutationResult;
 }
 
 export async function startTrialAction(
-  snapshot: GameSnapshot,
+  _snapshot: GameSnapshot,
   attribute: AttributeId,
   specialization: Specialization,
-  supabaseClient?: any
+  supabaseClient?: any,
+  requestId?: string
 ): Promise<MutationResult> {
-  const requestId = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `req-start-${Date.now()}`;
-  const config = TRIAL_CONFIGS[specialization];
-  const now = new Date().toISOString();
+  const client = getRpcClient(supabaseClient);
+  const reqId = resolveRequestId(requestId, 'req-start');
 
-  if (supabaseClient && typeof supabaseClient.rpc === 'function') {
-    const { data, error } = await supabaseClient.rpc('start_trial', {
-      p_request_id: requestId,
-      p_attribute: attribute,
-      p_specialization: specialization,
-    });
+  const { data, error } = await client.rpc('start_trial', {
+    p_request_id: reqId,
+    p_attribute: attribute,
+    p_specialization: specialization,
+  });
 
-    if (!error && data) {
-      return data as MutationResult;
-    }
+  if (error) {
+    throw new Error(`start_trial failed: ${error.message || JSON.stringify(error)}`);
   }
 
-  // Local fallback snapshot calculation
-  const newTrial: TrialState = {
-    id: `trial-${attribute}-${specialization}-${Date.now()}`,
-    attribute,
-    specialization,
-    startedAt: now,
-    kind: config.kind,
-    requiredDays: config.kind === 'distinct_days' ? (config.requiredDays ?? 5) : undefined,
-    distinctDaysCompleted: config.kind === 'distinct_days' ? 0 : undefined,
-    milestoneText: undefined,
-    completedAt: null,
-    claimedAt: null,
-  };
+  if (!data) {
+    throw new Error('start_trial returned empty data');
+  }
 
-  const existingBranch = snapshot.branches[attribute];
-  const updatedBranch: BranchState = {
-    ...existingBranch,
-    trialStarted: true,
-    trialComplete: false,
-    crestAvailable: false,
-    crestClaimed: false,
-  };
-
-  const updatedSnapshot: GameSnapshot = {
-    ...snapshot,
-    revision: snapshot.revision + 1,
-    branches: {
-      ...snapshot.branches,
-      [attribute]: updatedBranch,
-    },
-    trials: {
-      ...snapshot.trials,
-      [attribute]: newTrial,
-    },
-  };
-
-  return {
-    revision: updatedSnapshot.revision,
-    event: {
-      id: `evt-${requestId}`,
-      kind: 'trial_started',
-      attribute,
-      specialization,
-    },
-    snapshot: updatedSnapshot,
-  };
+  return data as MutationResult;
 }
 
 export async function progressSessionTrialAction(
-  snapshot: GameSnapshot,
+  _snapshot: GameSnapshot,
   attribute: AttributeId,
-  supabaseClient?: any
+  supabaseClient?: any,
+  requestId?: string
 ): Promise<MutationResult> {
-  const requestId = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `req-prog-${Date.now()}`;
-  const trial = snapshot.trials[attribute];
-  if (!trial || trial.kind !== 'distinct_days') {
-    return { revision: snapshot.revision, event: { id: `evt-${requestId}`, kind: 'quest_completed' }, snapshot };
+  const client = getRpcClient(supabaseClient);
+  const reqId = resolveRequestId(requestId, 'req-prog');
+
+  // Dedicated Trial mutation — complete_quest NO LONGER accepts p_trial_evidence
+  const { data, error } = await client.rpc('progress_trial', {
+    p_request_id: reqId,
+    p_attribute: attribute,
+  });
+
+  if (error) {
+    throw new Error(`progress_trial failed: ${error.message || JSON.stringify(error)}`);
   }
 
-  const currentCount = trial.distinctDaysCompleted ?? 0;
-  const targetDays = trial.requiredDays ?? 5;
-  const newCount = Math.min(targetDays, currentCount + 1);
-  const isComplete = newCount >= targetDays;
-
-  if (supabaseClient && typeof supabaseClient.rpc === 'function') {
-    const { data, error } = await supabaseClient.rpc('complete_quest', {
-      p_request_id: requestId,
-      p_trial_evidence: { attribute, sessionCompleted: true },
-    });
-
-    if (!error && data) {
-      return data as MutationResult;
-    }
+  if (!data) {
+    throw new Error('progress_trial returned empty data');
   }
 
-  // Local fallback snapshot calculation
-  const updatedTrial: TrialState = {
-    ...trial,
-    distinctDaysCompleted: newCount,
-    completedAt: isComplete ? new Date().toISOString() : (trial.completedAt ?? null),
-  };
-
-  const existingBranch = snapshot.branches[attribute];
-  const updatedBranch: BranchState = {
-    ...existingBranch,
-    trialComplete: isComplete,
-    crestAvailable: isComplete && trial.claimedAt === null,
-  };
-
-  const updatedSnapshot: GameSnapshot = {
-    ...snapshot,
-    revision: snapshot.revision + 1,
-    branches: {
-      ...snapshot.branches,
-      [attribute]: updatedBranch,
-    },
-    trials: {
-      ...snapshot.trials,
-      [attribute]: updatedTrial,
-    },
-  };
-
-  return {
-    revision: updatedSnapshot.revision,
-    event: {
-      id: `evt-${requestId}`,
-      kind: 'quest_completed',
-      attribute,
-      crestAvailable: isComplete,
-    },
-    snapshot: updatedSnapshot,
-  };
+  return data as MutationResult;
 }
 
 export async function recordMilestoneAction(
-  snapshot: GameSnapshot,
+  _snapshot: GameSnapshot,
   attribute: AttributeId,
   milestoneText: string,
-  supabaseClient?: any
+  supabaseClient?: any,
+  requestId?: string
 ): Promise<MutationResult> {
-  const requestId = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `req-ms-${Date.now()}`;
-  const trial = snapshot.trials[attribute];
-  if (!trial || trial.kind !== 'milestone_reflection') {
-    return { revision: snapshot.revision, event: { id: `evt-${requestId}`, kind: 'quest_completed' }, snapshot };
+  const client = getRpcClient(supabaseClient);
+  const reqId = resolveRequestId(requestId, 'req-ms');
+
+  // Dedicated Trial mutation — complete_quest NO LONGER accepts p_trial_evidence
+  const { data, error } = await client.rpc('record_trial_milestone', {
+    p_request_id: reqId,
+    p_attribute: attribute,
+    p_milestone_text: milestoneText,
+  });
+
+  if (error) {
+    throw new Error(`record_trial_milestone failed: ${error.message || JSON.stringify(error)}`);
   }
 
-  if (supabaseClient && typeof supabaseClient.rpc === 'function') {
-    const { data, error } = await supabaseClient.rpc('complete_quest', {
-      p_request_id: requestId,
-      p_trial_evidence: { attribute, milestoneText },
-    });
-
-    if (!error && data) {
-      return data as MutationResult;
-    }
+  if (!data) {
+    throw new Error('record_trial_milestone returned empty data');
   }
 
-  // Local fallback snapshot calculation
-  const updatedTrial: TrialState = {
-    ...trial,
-    milestoneText,
-    completedAt: trial.completedAt ?? new Date().toISOString(),
-  };
-
-  const existingBranch = snapshot.branches[attribute];
-  const updatedBranch: BranchState = {
-    ...existingBranch,
-    trialComplete: true,
-    crestAvailable: trial.claimedAt === null,
-  };
-
-  const updatedSnapshot: GameSnapshot = {
-    ...snapshot,
-    revision: snapshot.revision + 1,
-    branches: {
-      ...snapshot.branches,
-      [attribute]: updatedBranch,
-    },
-    trials: {
-      ...snapshot.trials,
-      [attribute]: updatedTrial,
-    },
-  };
-
-  return {
-    revision: updatedSnapshot.revision,
-    event: {
-      id: `evt-${requestId}`,
-      kind: 'quest_completed',
-      attribute,
-      crestAvailable: true,
-    },
-    snapshot: updatedSnapshot,
-  };
+  return data as MutationResult;
 }
 
 export async function claimCrestAction(
-  snapshot: GameSnapshot,
+  _snapshot: GameSnapshot,
   attribute: AttributeId,
-  supabaseClient?: any
+  supabaseClient?: any,
+  requestId?: string
 ): Promise<MutationResult> {
-  const requestId = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `req-claim-${Date.now()}`;
-  const trial = snapshot.trials[attribute];
-  if (!trial) {
-    return { revision: snapshot.revision, event: { id: `evt-${requestId}`, kind: 'trial_claimed' }, snapshot };
+  const client = getRpcClient(supabaseClient);
+  const reqId = resolveRequestId(requestId, 'req-claim');
+
+  const { data, error } = await client.rpc('claim_trial', {
+    p_request_id: reqId,
+    p_attribute: attribute,
+  });
+
+  if (error) {
+    throw new Error(`claim_trial failed: ${error.message || JSON.stringify(error)}`);
   }
 
-  if (supabaseClient && typeof supabaseClient.rpc === 'function') {
-    const { data, error } = await supabaseClient.rpc('claim_trial', {
-      p_request_id: requestId,
-      p_attribute: attribute,
-    });
-
-    if (!error && data) {
-      return data as MutationResult;
-    }
+  if (!data) {
+    throw new Error('claim_trial returned empty data');
   }
 
-  // Local fallback snapshot calculation
-  const now = new Date().toISOString();
-  const updatedTrial: TrialState = {
-    ...trial,
-    claimedAt: now,
-  };
-
-  const existingBranch = snapshot.branches[attribute];
-  const updatedBranch: BranchState = {
-    ...existingBranch,
-    crestAvailable: false,
-    crestClaimed: true,
-  };
-
-  const updatedSnapshot: GameSnapshot = {
-    ...snapshot,
-    revision: snapshot.revision + 1,
-    branches: {
-      ...snapshot.branches,
-      [attribute]: updatedBranch,
-    },
-    trials: {
-      ...snapshot.trials,
-      [attribute]: updatedTrial,
-    },
-  };
-
-  return {
-    revision: updatedSnapshot.revision,
-    event: {
-      id: `evt-${requestId}`,
-      kind: 'trial_claimed',
-      attribute,
-      specialization: trial.specialization,
-    },
-    snapshot: updatedSnapshot,
-  };
-}
-
-// Synchronous legacy aliases for backwards compatibility with test harnesses
-export function startTrialAdapter(snapshot: GameSnapshot, attribute: AttributeId, specialization: Specialization): GameSnapshot {
-  const config = TRIAL_CONFIGS[specialization];
-  const now = new Date().toISOString();
-  const newTrial: TrialState = {
-    id: `trial-${attribute}-${specialization}-${Date.now()}`,
-    attribute,
-    specialization,
-    startedAt: now,
-    kind: config.kind,
-    requiredDays: config.kind === 'distinct_days' ? (config.requiredDays ?? 5) : undefined,
-    distinctDaysCompleted: config.kind === 'distinct_days' ? 0 : undefined,
-    milestoneText: undefined,
-    completedAt: null,
-    claimedAt: null,
-  };
-  return {
-    ...snapshot,
-    branches: { ...snapshot.branches, [attribute]: { ...snapshot.branches[attribute], trialStarted: true, trialComplete: false, crestAvailable: false, crestClaimed: false } },
-    trials: { ...snapshot.trials, [attribute]: newTrial },
-  };
-}
-
-export function progressTrialSessionAdapter(snapshot: GameSnapshot, attribute: AttributeId): GameSnapshot {
-  const trial = snapshot.trials[attribute];
-  if (!trial || trial.kind !== 'distinct_days') return snapshot;
-  const currentCount = trial.distinctDaysCompleted ?? 0;
-  const targetDays = trial.requiredDays ?? 5;
-  const newCount = Math.min(targetDays, currentCount + 1);
-  const isComplete = newCount >= targetDays;
-  return {
-    ...snapshot,
-    branches: { ...snapshot.branches, [attribute]: { ...snapshot.branches[attribute], trialComplete: isComplete, crestAvailable: isComplete && trial.claimedAt === null } },
-    trials: { ...snapshot.trials, [attribute]: { ...trial, distinctDaysCompleted: newCount } },
-  };
-}
-
-export function recordMilestoneAdapter(snapshot: GameSnapshot, attribute: AttributeId, milestoneText: string): GameSnapshot {
-  const trial = snapshot.trials[attribute];
-  if (!trial || trial.kind !== 'milestone_reflection') return snapshot;
-  return {
-    ...snapshot,
-    branches: { ...snapshot.branches, [attribute]: { ...snapshot.branches[attribute], trialComplete: true, crestAvailable: trial.claimedAt === null } },
-    trials: { ...snapshot.trials, [attribute]: { ...trial, milestoneText } },
-  };
-}
-
-export function claimTrialCrestAdapter(snapshot: GameSnapshot, attribute: AttributeId): GameSnapshot {
-  const trial = snapshot.trials[attribute];
-  if (!trial) return snapshot;
-  return {
-    ...snapshot,
-    branches: { ...snapshot.branches, [attribute]: { ...snapshot.branches[attribute], crestAvailable: false, crestClaimed: true } },
-    trials: { ...snapshot.trials, [attribute]: { ...trial, claimedAt: new Date().toISOString() } },
-  };
+  return data as MutationResult;
 }

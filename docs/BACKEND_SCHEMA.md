@@ -137,11 +137,25 @@ One active Trial per (user, attribute) pair in this release.
 | `user_id` | `uuid` | `NOT NULL REFERENCES auth.users(id)` | |
 | `attribute` | `text` | `NOT NULL CHECK (attribute IN ('mind','body','will','craft'))` | |
 | `specialization` | `text` | `NOT NULL` | Must match valid specialization |
+| `kind` | `text` | `NOT NULL CHECK (kind IN ('distinct_days', 'milestone_reflection'))` | Evaluator type |
 | `started_at` | `timestamptz` | `NOT NULL DEFAULT now()` | Evidence must be after this timestamp |
-| `done_condition` | `text` | `NULL` | Stores milestone/reflection text for Courage/Builder Trials |
+| `required_days` | `integer` | `NULL` | Required days for distinct_days trial |
+| `distinct_days_completed` | `integer` | `NOT NULL DEFAULT 0` | Days completed for distinct_days trial |
+| `milestone_text` | `text` | `NULL` | Declared milestone text for milestone_reflection trial |
+| `completed_at` | `timestamptz` | `NULL` | Non-null when trial objective is completed |
 | `claimed_at` | `timestamptz` | `NULL` | Non-null means Trial claimed and Crest awarded |
 
 **Unique constraint:** `UNIQUE (user_id, attribute)` — one Trial per attribute per user in this release.
+
+**Kind constraint:**
+- `distinct_days`: `required_days > 0 AND milestone_text IS NULL`
+- `milestone_reflection`: `required_days IS NULL AND distinct_days_completed = 0`
+
+**Semantics:**
+- `trialStarted`: trial row exists
+- `trialComplete`: `completed_at IS NOT NULL`
+- `crestAvailable`: `branches.xp >= 160 AND completed_at IS NOT NULL AND claimed_at IS NULL`
+- `crestClaimed`: `claimed_at IS NOT NULL`
 
 **RLS:** Owner reads allowed. Mutations via RPC only.
 
@@ -242,7 +256,9 @@ The following are computed at read time from the tables above. Never store them 
 | Ember intensity / state | `quest_completions` count for current local day |
 | Sprout availability | `branches.xp > 0` |
 | Specialization availability | `branches.xp >= 80 AND selected_specialization IS NULL` |
-| Crest availability | `branches.xp >= 160 AND trials.claimed_at IS NOT NULL` |
+| Trial complete | `trials.completed_at IS NOT NULL` |
+| Crest availability | `branches.xp >= 160 AND trials.completed_at IS NOT NULL AND trials.claimed_at IS NULL` |
+| Crest claimed | `trials.claimed_at IS NOT NULL` |
 | Trial session count (distinct-day) | Count of distinct `local_date` values in `quest_completions` WHERE `completed_at > trials.started_at` |
 | Achievement state | Derived from `quest_completions`, `branches`, `profiles` |
 
@@ -308,6 +324,19 @@ All return a `MutationResult` JSON object unless noted.
 | `updatePreferences` | Update `profiles.preferences` JSONB |
 | `getGameSnapshot` | Return full `GameSnapshot` for the current user |
 
+### Authoritative Quest Occurrence Derivation (`get_game_snapshot`)
+
+When assembling `GameSnapshot.quests` (typed as `HearthQuest[]`), the database computes the occurrence completion state server-side for each active quest (`deleted_at IS NULL`):
+
+- **Cadence `once`**:
+  - `currentOccurrenceKey = 'once'`
+  - `completedForCurrentOccurrence = EXISTS(SELECT 1 FROM quest_completions WHERE user_id = auth.uid() AND quest_id = q.id AND occurrence_key = 'once')`
+- **Cadence `daily`**:
+  - `currentOccurrenceKey = to_char((now() AT TIME ZONE coalesce(profile.timezone, 'UTC'))::date, 'YYYY-MM-DD')`
+  - `completedForCurrentOccurrence = EXISTS(SELECT 1 FROM quest_completions WHERE user_id = auth.uid() AND quest_id = q.id AND occurrence_key = to_char((now() AT TIME ZONE coalesce(profile.timezone, 'UTC'))::date, 'YYYY-MM-DD'))`
+
+This ensures that upon page load, refresh, or mutation replay, Hearth consumes server-authoritative occurrence completion truth without local date recalculations or client-side completion sets.
+
 ---
 
 ## `completeQuest` Transaction (Canonical)
@@ -318,7 +347,7 @@ Must execute in a single PostgreSQL transaction under a per-user profile row loc
 BEGIN;
 SELECT ... FROM profiles WHERE user_id = auth.uid() FOR UPDATE;
 
-1. Check mutation_receipts(user_id, request_id) → replay or continue
+1. Derive canonical payload hash from (questId, expectedOccurrence) and check mutation_receipts(user_id, request_id) → replay or continue (reject if payload mismatch)
 2. Derive current_local_date using AT TIME ZONE profiles.timezone
 3. Verify quest ownership: quests.user_id = auth.uid()
 4. Verify quest not deleted: quests.deleted_at IS NULL
@@ -326,7 +355,7 @@ SELECT ... FROM profiles WHERE user_id = auth.uid() FOR UPDATE;
 6. Compute daily_xp_awarded (SUM of today's xp_awarded)
 7. Compute awarded_xp = LEAST(base_xp, GREATEST(0, 140 - daily_xp_awarded))
 8. Compute sparks_awarded = awarded_xp / 5
-9. INSERT INTO quest_completions (immutable row)
+9. INSERT INTO quest_completions (immutable row with trial_evidence = '{}'::jsonb)
 10. UPDATE profiles SET total_xp += awarded_xp, sparks_balance += sparks_awarded
 11. INSERT INTO branches (user_id, attribute, xp = awarded_xp)
     ON CONFLICT (user_id, attribute) DO UPDATE SET xp = branches.xp + awarded_xp

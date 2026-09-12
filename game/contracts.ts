@@ -65,6 +65,13 @@ export type Quest = {
   updatedAt: string;
 };
 
+// ── HearthQuest ─────────────────────────────────────────────────────────────
+
+export interface HearthQuest extends Quest {
+  currentOccurrenceKey: string;
+  completedForCurrentOccurrence: boolean;
+}
+
 // ── QuestCompletion ──────────────────────────────────────────────────────────
 
 export type QuestCompletion = {
@@ -166,7 +173,7 @@ export type GameSnapshot = {
   inventory: InventoryState;
 
   // Quest list (today's active quests for Hearth; omit from other contexts)
-  quests?: Quest[];
+  quests?: HearthQuest[];
 };
 
 // ── MutationResult ───────────────────────────────────────────────────────────

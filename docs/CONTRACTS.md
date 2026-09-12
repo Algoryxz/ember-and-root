@@ -80,6 +80,21 @@ export type Quest = {
 
 ---
 
+## HearthQuest
+
+The view-model representation of a Quest returned in `GameSnapshot.quests` for Hearth. Extends the persisted `Quest` with authoritative occurrence-level completion state computed server-side.
+
+```typescript
+export interface HearthQuest extends Quest {
+  currentOccurrenceKey: string;
+  completedForCurrentOccurrence: boolean;
+}
+```
+
+> **Hearth Integration Rule:** Hearth displays quest completion status strictly from `quest.completedForCurrentOccurrence`. Frontend components must NOT maintain completion truth in a local Set, localStorage, or through optimistic client date calculations. Pending visual animations may be local; completion truth is authoritative server state.
+
+---
+
 ## QuestCompletion
 
 ```typescript
@@ -113,12 +128,12 @@ export type BranchState = {
   selectedAt: string | null;    // ISO datetime string when specialization was chosen
 
   // Derived fields (computed server-side and included in snapshot)
-  sproutAvailable: boolean;     // xp > 0
+  sproutAvailable: boolean;          // xp > 0
   specializationAvailable: boolean;  // xp >= 80 && specialization === null
-  crestAvailable: boolean;      // xp >= 160 && trialComplete
-  trialStarted: boolean;
-  trialComplete: boolean;
-  crestClaimed: boolean;
+  crestAvailable: boolean;           // xp >= 160 && trialComplete && !crestClaimed
+  trialStarted: boolean;             // trial row exists
+  trialComplete: boolean;            // trial.completedAt !== null
+  crestClaimed: boolean;             // trial.claimedAt !== null
 };
 ```
 
@@ -143,7 +158,8 @@ export type TrialState = {
   // For milestone_reflection trials
   milestoneText?: string;   // Player-declared milestone
 
-  claimedAt: string | null; // non-null when claimed
+  completedAt: string | null; // ISO datetime string when trial objective completed
+  claimedAt: string | null;   // ISO datetime string when claimed and crest awarded
 };
 ```
 
@@ -201,7 +217,7 @@ export type GameSnapshot = {
   inventory: InventoryState;
 
   // Quest list (today's active quests for Hearth; omit from other contexts)
-  quests?: Quest[];
+  quests?: HearthQuest[];
 };
 ```
 
