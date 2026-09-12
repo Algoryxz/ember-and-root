@@ -2,10 +2,11 @@ import React, { useState } from 'react';
 import { AttributeId, GameSnapshot, Specialization } from '../../game/contracts';
 import { RootSvg } from './RootSvg';
 import {
-  startTrialAdapter,
-  progressTrialSessionAdapter,
-  recordMilestoneAdapter,
-  claimTrialCrestAdapter,
+  chooseSpecializationAction,
+  startTrialAction,
+  progressSessionTrialAction,
+  recordMilestoneAction,
+  claimCrestAction,
 } from './trialAdapter';
 import {
   INITIAL_TREE_STATE,
@@ -30,34 +31,83 @@ export const RootInteractiveView: React.FC = () => {
     inventory: { items: [] },
   });
 
-  const handleSelectSpecialization = (attribute: AttributeId, spec: Specialization): void => {
-    setSnapshot((prev) => ({
-      ...prev,
-      branches: {
-        ...prev.branches,
-        [attribute]: {
-          ...prev.branches[attribute],
-          specialization: spec,
-          specializationAvailable: false,
-        },
-      },
-    }));
+  const [isPending, setIsPending] = useState<boolean>(false);
+  const [mutationError, setMutationError] = useState<string | null>(null);
+  const [lastEvent, setLastEvent] = useState<string | null>(null);
+
+  const handleSelectSpecialization = async (attribute: AttributeId, spec: Specialization): Promise<void> => {
+    if (isPending) return;
+    setIsPending(true);
+    setMutationError(null);
+    try {
+      const result = await chooseSpecializationAction(snapshot, attribute, spec);
+      setSnapshot(result.snapshot);
+      setLastEvent(`Event: ${result.event.kind} (${attribute} -> ${spec})`);
+    } catch (err: any) {
+      setMutationError(err.message || 'Failed to select specialization');
+    } finally {
+      setIsPending(false);
+    }
   };
 
-  const handleStartTrial = (attribute: AttributeId, spec: Specialization): void => {
-    setSnapshot((prev) => startTrialAdapter(prev, attribute, spec));
+  const handleStartTrial = async (attribute: AttributeId, spec: Specialization): Promise<void> => {
+    if (isPending) return;
+    setIsPending(true);
+    setMutationError(null);
+    try {
+      const result = await startTrialAction(snapshot, attribute, spec);
+      setSnapshot(result.snapshot);
+      setLastEvent(`Event: ${result.event.kind} (${attribute} Trial Started)`);
+    } catch (err: any) {
+      setMutationError(err.message || 'Failed to start trial');
+    } finally {
+      setIsPending(false);
+    }
   };
 
-  const handleProgressSession = (attribute: AttributeId): void => {
-    setSnapshot((prev) => progressTrialSessionAdapter(prev, attribute));
+  const handleProgressSession = async (attribute: AttributeId): Promise<void> => {
+    if (isPending) return;
+    setIsPending(true);
+    setMutationError(null);
+    try {
+      const result = await progressSessionTrialAction(snapshot, attribute);
+      setSnapshot(result.snapshot);
+      setLastEvent(`Event: ${result.event.kind} (Evidence recorded for ${attribute})`);
+    } catch (err: any) {
+      setMutationError(err.message || 'Failed to progress session');
+    } finally {
+      setIsPending(false);
+    }
   };
 
-  const handleRecordMilestone = (attribute: AttributeId, milestoneText: string): void => {
-    setSnapshot((prev) => recordMilestoneAdapter(prev, attribute, milestoneText));
+  const handleRecordMilestone = async (attribute: AttributeId, milestoneText: string): Promise<void> => {
+    if (isPending) return;
+    setIsPending(true);
+    setMutationError(null);
+    try {
+      const result = await recordMilestoneAction(snapshot, attribute, milestoneText);
+      setSnapshot(result.snapshot);
+      setLastEvent(`Event: ${result.event.kind} (Milestone declared for ${attribute})`);
+    } catch (err: any) {
+      setMutationError(err.message || 'Failed to record milestone');
+    } finally {
+      setIsPending(false);
+    }
   };
 
-  const handleClaimCrest = (attribute: AttributeId): void => {
-    setSnapshot((prev) => claimTrialCrestAdapter(prev, attribute));
+  const handleClaimCrest = async (attribute: AttributeId): Promise<void> => {
+    if (isPending) return;
+    setIsPending(true);
+    setMutationError(null);
+    try {
+      const result = await claimCrestAction(snapshot, attribute);
+      setSnapshot(result.snapshot);
+      setLastEvent(`Event: ${result.event.kind} (${attribute} Crest Claimed!)`);
+    } catch (err: any) {
+      setMutationError(err.message || 'Failed to claim crest');
+    } finally {
+      setIsPending(false);
+    }
   };
 
   return (
@@ -85,9 +135,27 @@ export const RootInteractiveView: React.FC = () => {
           Ember & Root — Skill Tree & Trials
         </h1>
         <p style={{ margin: 0, fontSize: '13px', color: '#B9BEAC' }}>
-          Mind · Body · Will · Craft (Lead: <strong>Akriti</strong>)
+          Authoritative Mutation Wiring (Lead: <strong>Akriti</strong>)
         </p>
       </header>
+
+      {/* Mutation Status & Event Banner */}
+      {lastEvent && (
+        <div
+          style={{
+            padding: '8px 12px',
+            backgroundColor: '#1F2A1E',
+            border: '1px solid #9FBA87',
+            borderRadius: '6px',
+            color: '#D9E3B2',
+            fontSize: '12px',
+            marginBottom: '12px',
+            textAlign: 'center',
+          }}
+        >
+          ✨ {lastEvent} (Snapshot Revision: {snapshot.revision})
+        </div>
+      )}
 
       {/* Fixture Preset Bar */}
       <div
@@ -105,13 +173,16 @@ export const RootInteractiveView: React.FC = () => {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px' }}>
           <button
             type="button"
-            onClick={() =>
+            disabled={isPending}
+            onClick={() => {
               setSnapshot((prev) => ({
                 ...prev,
+                revision: prev.revision + 1,
                 branches: INITIAL_TREE_STATE.branches,
                 trials: {},
-              }))
-            }
+              }));
+              setLastEvent('Loaded Initial State (70 XP)');
+            }}
             style={{
               padding: '8px 4px',
               fontSize: '11px',
@@ -119,7 +190,7 @@ export const RootInteractiveView: React.FC = () => {
               border: '1px solid #3B463B',
               backgroundColor: '#141713',
               color: '#F0E7D3',
-              cursor: 'pointer',
+              cursor: isPending ? 'not-allowed' : 'pointer',
             }}
           >
             1. Initial (70 XP)
@@ -127,13 +198,16 @@ export const RootInteractiveView: React.FC = () => {
 
           <button
             type="button"
-            onClick={() =>
+            disabled={isPending}
+            onClick={() => {
               setSnapshot((prev) => ({
                 ...prev,
+                revision: prev.revision + 1,
                 branches: SPEC_READY_TREE_STATE.branches,
                 trials: {},
-              }))
-            }
+              }));
+              setLastEvent('Loaded Spec Ready State (90 XP)');
+            }}
             style={{
               padding: '8px 4px',
               fontSize: '11px',
@@ -141,7 +215,7 @@ export const RootInteractiveView: React.FC = () => {
               border: '1px solid #E98A4B',
               backgroundColor: '#382B1D',
               color: '#FFD38A',
-              cursor: 'pointer',
+              cursor: isPending ? 'not-allowed' : 'pointer',
             }}
           >
             2. Spec Ready (90 XP)
@@ -149,12 +223,15 @@ export const RootInteractiveView: React.FC = () => {
 
           <button
             type="button"
-            onClick={() =>
+            disabled={isPending}
+            onClick={() => {
               setSnapshot((prev) => ({
                 ...prev,
+                revision: prev.revision + 1,
                 branches: SPECIALIZED_TREE_STATE.branches,
-              }))
-            }
+              }));
+              setLastEvent('Loaded All Specialized State');
+            }}
             style={{
               padding: '8px 4px',
               fontSize: '11px',
@@ -162,7 +239,7 @@ export const RootInteractiveView: React.FC = () => {
               border: '1px solid #9FBA87',
               backgroundColor: '#263323',
               color: '#D9E3B2',
-              cursor: 'pointer',
+              cursor: isPending ? 'not-allowed' : 'pointer',
             }}
           >
             3. All Specialized
@@ -173,6 +250,8 @@ export const RootInteractiveView: React.FC = () => {
       {/* Main Root Component */}
       <RootSvg
         snapshot={snapshot}
+        isPending={isPending}
+        error={mutationError}
         onSelectSpecialization={handleSelectSpecialization}
         onStartTrial={handleStartTrial}
         onProgressSession={handleProgressSession}

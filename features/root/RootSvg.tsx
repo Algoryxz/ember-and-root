@@ -10,6 +10,8 @@ export interface RootSvgProps {
   treeState?: RootTreeState;
   mindState?: BranchState;
   selectedAttribute?: AttributeId;
+  isPending?: boolean;
+  error?: string | null;
   onSelectSpecialization?: (attribute: AttributeId, spec: Specialization) => void;
   onStartTrial?: (attribute: AttributeId, spec: Specialization) => void;
   onProgressSession?: (attribute: AttributeId) => void;
@@ -23,6 +25,8 @@ export const RootSvg: React.FC<RootSvgProps> = ({
   treeState,
   mindState,
   selectedAttribute: initialAttribute = 'mind',
+  isPending = false,
+  error = null,
   onSelectSpecialization,
   onStartTrial,
   onProgressSession,
@@ -63,6 +67,8 @@ export const RootSvg: React.FC<RootSvgProps> = ({
         attribute={selectedAttribute}
         state={currentBranchState}
         trial={currentTrial}
+        isPending={isPending}
+        error={error}
         onSelectSpecialization={onSelectSpecialization}
         onStartTrial={onStartTrial}
         onProgressSession={onProgressSession}

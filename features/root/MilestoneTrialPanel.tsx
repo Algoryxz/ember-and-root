@@ -7,6 +7,8 @@ export interface MilestoneTrialPanelProps {
   specialization: Specialization;
   branch: BranchState;
   trial: TrialState | null;
+  isPending?: boolean;
+  error?: string | null;
   onStartTrial?: (attribute: AttributeId, spec: Specialization) => void;
   onRecordMilestone?: (attribute: AttributeId, text: string) => void;
   onClaimCrest?: (attribute: AttributeId) => void;
@@ -18,6 +20,8 @@ export const MilestoneTrialPanel: React.FC<MilestoneTrialPanelProps> = ({
   specialization,
   branch,
   trial,
+  isPending = false,
+  error = null,
   onStartTrial,
   onRecordMilestone,
   onClaimCrest,
@@ -33,7 +37,7 @@ export const MilestoneTrialPanel: React.FC<MilestoneTrialPanelProps> = ({
 
   const handleSubmitMilestone = (e: React.FormEvent) => {
     e.preventDefault();
-    if (inputText.trim() && onRecordMilestone) {
+    if (inputText.trim() && onRecordMilestone && !isPending) {
       onRecordMilestone(attribute, inputText.trim());
     }
   };
@@ -49,6 +53,7 @@ export const MilestoneTrialPanel: React.FC<MilestoneTrialPanelProps> = ({
         marginTop: '16px',
         color: '#F0E7D3',
         fontFamily: 'DM Sans, sans-serif',
+        opacity: isPending ? 0.8 : 1,
       }}
       aria-label={`${config.title} Panel`}
     >
@@ -84,29 +89,48 @@ export const MilestoneTrialPanel: React.FC<MilestoneTrialPanelProps> = ({
         </p>
       </header>
 
+      {/* Inline Error State */}
+      {error && (
+        <div
+          role="alert"
+          style={{
+            padding: '8px 12px',
+            backgroundColor: '#2B1A1A',
+            border: '1px solid #F0A79D',
+            borderRadius: '6px',
+            color: '#F0A79D',
+            fontSize: '12px',
+            marginBottom: '12px',
+          }}
+        >
+          <strong>Mutation Error:</strong> {error}
+        </div>
+      )}
+
       {/* Trial Body */}
       {!isStarted ? (
         <div style={{ marginTop: '12px' }}>
           <button
             type="button"
+            disabled={isPending}
             onClick={() => onStartTrial?.(attribute, specialization)}
             style={{
               width: '100%',
               minHeight: '44px',
-              backgroundColor: '#FFD38A',
-              color: '#141713',
+              backgroundColor: isPending ? '#3B463B' : '#FFD38A',
+              color: isPending ? '#B9BEAC' : '#141713',
               border: 'none',
               borderRadius: '6px',
               fontSize: '14px',
               fontWeight: 600,
-              cursor: 'pointer',
+              cursor: isPending ? 'not-allowed' : 'pointer',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               gap: '6px',
             }}
           >
-            <span>✍️</span> Start {config.title}
+            <span>✍️</span> {isPending ? 'Starting Trial...' : `Start ${config.title}`}
           </button>
         </div>
       ) : (
@@ -126,6 +150,7 @@ export const MilestoneTrialPanel: React.FC<MilestoneTrialPanelProps> = ({
                 onChange={(e) => setInputText(e.target.value)}
                 placeholder="Write your milestone reflection..."
                 rows={3}
+                disabled={isPending}
                 style={{
                   width: '100%',
                   padding: '10px',
@@ -141,20 +166,20 @@ export const MilestoneTrialPanel: React.FC<MilestoneTrialPanelProps> = ({
               />
               <button
                 type="submit"
-                disabled={!inputText.trim()}
+                disabled={!inputText.trim() || isPending}
                 style={{
                   width: '100%',
                   minHeight: '44px',
-                  backgroundColor: inputText.trim() ? '#E98A4B' : '#2A322A',
-                  color: inputText.trim() ? '#141713' : '#B9BEAC',
+                  backgroundColor: inputText.trim() && !isPending ? '#E98A4B' : '#2A322A',
+                  color: inputText.trim() && !isPending ? '#141713' : '#B9BEAC',
                   border: 'none',
                   borderRadius: '6px',
                   fontSize: '13px',
                   fontWeight: 600,
-                  cursor: inputText.trim() ? 'pointer' : 'not-allowed',
+                  cursor: inputText.trim() && !isPending ? 'pointer' : 'not-allowed',
                 }}
               >
-                Declare Milestone Reflection
+                {isPending ? 'Recording Reflection...' : 'Declare Milestone Reflection'}
               </button>
             </form>
           ) : (
@@ -188,21 +213,22 @@ export const MilestoneTrialPanel: React.FC<MilestoneTrialPanelProps> = ({
           {isCrestAvailable && (
             <button
               type="button"
+              disabled={isPending}
               onClick={() => onClaimCrest?.(attribute)}
               style={{
                 width: '100%',
                 minHeight: '44px',
-                backgroundColor: '#9FBA87',
-                color: '#141713',
+                backgroundColor: isPending ? '#3B463B' : '#9FBA87',
+                color: isPending ? '#B9BEAC' : '#141713',
                 border: 'none',
                 borderRadius: '6px',
                 fontSize: '14px',
                 fontWeight: 700,
-                cursor: 'pointer',
-                boxShadow: '0 0 12px rgba(159, 186, 135, 0.4)',
+                cursor: isPending ? 'not-allowed' : 'pointer',
+                boxShadow: isPending ? 'none' : '0 0 12px rgba(159, 186, 135, 0.4)',
               }}
             >
-              👑 Claim {config.crestName} Crest!
+              👑 {isPending ? 'Claiming Crest...' : `Claim ${config.crestName} Crest!`}
             </button>
           )}
 

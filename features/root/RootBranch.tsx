@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { AttributeId, BranchState, NodeState, RootNodeInfo, Specialization, TrialState } from './types';
+import { AttributeId, BranchState, Specialization, TrialState } from '../../game/contracts';
+import { NodeState, RootNodeInfo } from './types';
 import { BRANCH_CONFIGS } from './config';
 import { TRIAL_CONFIGS } from './trialConfig';
 import { BranchSvgRenderer } from './svg/BranchSvgRenderer';
@@ -13,6 +14,8 @@ export interface RootBranchProps {
   attribute: AttributeId;
   state: BranchState;
   trial?: TrialState | null;
+  isPending?: boolean;
+  error?: string | null;
   onSelectSpecialization?: (attribute: AttributeId, spec: Specialization) => void;
   onStartTrial?: (attribute: AttributeId, spec: Specialization) => void;
   onProgressSession?: (attribute: AttributeId) => void;
@@ -25,6 +28,8 @@ export const RootBranch: React.FC<RootBranchProps> = ({
   attribute,
   state,
   trial = null,
+  isPending = false,
+  error = null,
   onSelectSpecialization,
   onStartTrial,
   onProgressSession,
@@ -38,13 +43,13 @@ export const RootBranch: React.FC<RootBranchProps> = ({
   const {
     xp,
     specialization,
-    selectedSpecialization,
     specializationAvailable,
     crestAvailable,
     crestClaimed,
   } = state;
 
-  const activeSpec = specialization || selectedSpecialization || null;
+  const legacySpec = (state as any).selectedSpecialization;
+  const activeSpec: Specialization | null = specialization || legacySpec || null;
   const activeTrialConfig = activeSpec ? TRIAL_CONFIGS[activeSpec] : null;
 
   // Node state derivations
@@ -295,7 +300,7 @@ export const RootBranch: React.FC<RootBranchProps> = ({
                 key={node.id}
                 node={node}
                 onSelect={
-                  node.specializationKey && onSelectSpecialization
+                  node.specializationKey && onSelectSpecialization && !isPending
                     ? () => onSelectSpecialization(attribute, node.specializationKey!)
                     : undefined
                 }
@@ -321,6 +326,8 @@ export const RootBranch: React.FC<RootBranchProps> = ({
             specialization={activeSpec}
             branch={state}
             trial={trial}
+            isPending={isPending}
+            error={error}
             onStartTrial={onStartTrial}
             onProgressSession={onProgressSession}
             onClaimCrest={onClaimCrest}
@@ -331,6 +338,8 @@ export const RootBranch: React.FC<RootBranchProps> = ({
             specialization={activeSpec}
             branch={state}
             trial={trial}
+            isPending={isPending}
+            error={error}
             onStartTrial={onStartTrial}
             onRecordMilestone={onRecordMilestone}
             onClaimCrest={onClaimCrest}

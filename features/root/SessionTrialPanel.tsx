@@ -7,6 +7,8 @@ export interface SessionTrialPanelProps {
   specialization: Specialization;
   branch: BranchState;
   trial: TrialState | null;
+  isPending?: boolean;
+  error?: string | null;
   onStartTrial?: (attribute: AttributeId, spec: Specialization) => void;
   onProgressSession?: (attribute: AttributeId) => void;
   onClaimCrest?: (attribute: AttributeId) => void;
@@ -18,6 +20,8 @@ export const SessionTrialPanel: React.FC<SessionTrialPanelProps> = ({
   specialization,
   branch,
   trial,
+  isPending = false,
+  error = null,
   onStartTrial,
   onProgressSession,
   onClaimCrest,
@@ -44,6 +48,7 @@ export const SessionTrialPanel: React.FC<SessionTrialPanelProps> = ({
         marginTop: '16px',
         color: '#F0E7D3',
         fontFamily: 'DM Sans, sans-serif',
+        opacity: isPending ? 0.8 : 1,
       }}
       aria-label={`${config.title} Panel`}
     >
@@ -79,29 +84,48 @@ export const SessionTrialPanel: React.FC<SessionTrialPanelProps> = ({
         </p>
       </header>
 
+      {/* Inline Error State */}
+      {error && (
+        <div
+          role="alert"
+          style={{
+            padding: '8px 12px',
+            backgroundColor: '#2B1A1A',
+            border: '1px solid #F0A79D',
+            borderRadius: '6px',
+            color: '#F0A79D',
+            fontSize: '12px',
+            marginBottom: '12px',
+          }}
+        >
+          <strong>Mutation Error:</strong> {error}
+        </div>
+      )}
+
       {/* Trial Body */}
       {!isStarted ? (
         <div style={{ marginTop: '12px' }}>
           <button
             type="button"
+            disabled={isPending}
             onClick={() => onStartTrial?.(attribute, specialization)}
             style={{
               width: '100%',
               minHeight: '44px',
-              backgroundColor: '#E98A4B',
-              color: '#141713',
+              backgroundColor: isPending ? '#3B463B' : '#E98A4B',
+              color: isPending ? '#B9BEAC' : '#141713',
               border: 'none',
               borderRadius: '6px',
               fontSize: '14px',
               fontWeight: 600,
-              cursor: 'pointer',
+              cursor: isPending ? 'not-allowed' : 'pointer',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               gap: '6px',
             }}
           >
-            <span>📜</span> Start {config.title}
+            <span>📜</span> {isPending ? 'Starting Trial...' : `Start ${config.title}`}
           </button>
         </div>
       ) : (
@@ -143,6 +167,7 @@ export const SessionTrialPanel: React.FC<SessionTrialPanelProps> = ({
           {!isComplete && (
             <button
               type="button"
+              disabled={isPending}
               onClick={() => onProgressSession?.(attribute)}
               style={{
                 width: '100%',
@@ -153,11 +178,11 @@ export const SessionTrialPanel: React.FC<SessionTrialPanelProps> = ({
                 borderRadius: '6px',
                 fontSize: '13px',
                 fontWeight: 600,
-                cursor: 'pointer',
+                cursor: isPending ? 'not-allowed' : 'pointer',
                 marginBottom: '8px',
               }}
             >
-              + Record Day Session Progress ({completedDays}/{requiredDays})
+              {isPending ? 'Recording Progress...' : `+ Record Day Session Progress (${completedDays}/${requiredDays})`}
             </button>
           )}
 
@@ -165,21 +190,22 @@ export const SessionTrialPanel: React.FC<SessionTrialPanelProps> = ({
           {isCrestAvailable && (
             <button
               type="button"
+              disabled={isPending}
               onClick={() => onClaimCrest?.(attribute)}
               style={{
                 width: '100%',
                 minHeight: '44px',
-                backgroundColor: '#9FBA87',
-                color: '#141713',
+                backgroundColor: isPending ? '#3B463B' : '#9FBA87',
+                color: isPending ? '#B9BEAC' : '#141713',
                 border: 'none',
                 borderRadius: '6px',
                 fontSize: '14px',
                 fontWeight: 700,
-                cursor: 'pointer',
-                boxShadow: '0 0 12px rgba(159, 186, 135, 0.4)',
+                cursor: isPending ? 'not-allowed' : 'pointer',
+                boxShadow: isPending ? 'none' : '0 0 12px rgba(159, 186, 135, 0.4)',
               }}
             >
-              👑 Claim {config.crestName} Crest!
+              👑 {isPending ? 'Claiming Crest...' : `Claim ${config.crestName} Crest!`}
             </button>
           )}
 
