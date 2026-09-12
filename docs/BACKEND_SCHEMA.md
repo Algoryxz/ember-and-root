@@ -334,7 +334,7 @@ Must execute in a single PostgreSQL transaction under a per-user profile row loc
 BEGIN;
 SELECT ... FROM profiles WHERE user_id = auth.uid() FOR UPDATE;
 
-1. Check mutation_receipts(user_id, request_id) → replay or continue
+1. Derive canonical payload hash from (questId, expectedOccurrence) and check mutation_receipts(user_id, request_id) → replay or continue (reject if payload mismatch)
 2. Derive current_local_date using AT TIME ZONE profiles.timezone
 3. Verify quest ownership: quests.user_id = auth.uid()
 4. Verify quest not deleted: quests.deleted_at IS NULL
@@ -342,7 +342,7 @@ SELECT ... FROM profiles WHERE user_id = auth.uid() FOR UPDATE;
 6. Compute daily_xp_awarded (SUM of today's xp_awarded)
 7. Compute awarded_xp = LEAST(base_xp, GREATEST(0, 140 - daily_xp_awarded))
 8. Compute sparks_awarded = awarded_xp / 5
-9. INSERT INTO quest_completions (immutable row)
+9. INSERT INTO quest_completions (immutable row with trial_evidence = '{}'::jsonb)
 10. UPDATE profiles SET total_xp += awarded_xp, sparks_balance += sparks_awarded
 11. INSERT INTO branches (user_id, attribute, xp = awarded_xp)
     ON CONFLICT (user_id, attribute) DO UPDATE SET xp = branches.xp + awarded_xp
