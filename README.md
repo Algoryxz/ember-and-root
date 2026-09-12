@@ -6,9 +6,9 @@ A Life RPG where real tasks kindle today's Ember and grow a permanent Root shape
 
 ---
 
-> 🌿 **Status: Active Development / Root & Trial Features Integrated**
+> 🌿 **Status: Active Development / Experience V2 planning + Onboarding V2 integration**
 >
-> The Root system (all 4 branches, 8 specializations, Session & Milestone Trials, and Crest claims) and Hearth interface are implemented and integrated into `main`. A choice-first Onboarding V2 is being developed on `feat/onboarding-v2`.
+> The authoritative game foundation, Hearth, Root/Trial/Crest systems, and core product surfaces exist in the repository history. Choice-first Onboarding V2 has a detailed implementation contract and recovery contract; local implementation evidence must be reconciled with the remote branch and reverified before it is treated as the published baseline. Experience V2 now defines the next whole-product art-direction and workstream phase.
 
 ---
 
@@ -22,6 +22,32 @@ A Life RPG where real tasks kindle today's Ember and grow a permanent Root shape
 Complete a real-world quest → the server confirms it → Ember responds → XP travels toward the correct Root branch → the branch grows → cross a threshold → choose a specialization → complete a Trial → claim a permanent Crest.
 
 One real server-confirmed action produces one beautiful, understandable, permanent consequence.
+
+---
+
+## Experience V2 direction
+
+The next product-experience phase is governed by one idea:
+
+> **The organism should stop being an illustration inside the interface and become the structure that organizes the interface.**
+
+The recommended art direction is a **contemporary Botanical Folio**: asymmetric editorial composition, authored specimen/root linework, restrained materials, meaningful Seal impressions, and fewer generic dashboard containers.
+
+The Root should become one continuous visual object across:
+
+- public landing
+- signup/auth
+- onboarding
+- Hearth
+- Root
+- specialization
+- Trials
+- Crests
+- Chronicle
+
+Permanent progress changes **anatomy**. Transient feedback may change **light**.
+
+Read [`docs/EXPERIENCE_V2.md`](docs/EXPERIENCE_V2.md) before doing broad visual redesign work.
 
 ---
 
@@ -45,7 +71,7 @@ One real server-confirmed action produces one beautiful, understandable, permane
 
 ## Architecture
 
-```
+```text
 Browser
   └─ Next.js App Router
        ├─ Server Components — data fetching via Supabase server client
@@ -66,16 +92,29 @@ The server is **always authoritative** for XP, levels, Sparks, streaks, Trials, 
 
 ## Team
 
-| Person | Role | Branch |
-|--------|------|--------|
-| **Smarak** | Backend / Architecture / Integration Lead | `feat/smarak-core` |
-| **Deeptiman** | Experience / Frontend Lead | `feat/deeptiman-experience` |
-| **Akriti** | Root / Specialization / Trial UI Lead | `feat/akriti-root` |
-| **Susmita** | Delivery / Auth / Product Systems Lead | `feat/susmita-delivery` |
+| Person | Core Role |
+|--------|-----------|
+| **Smarak** | Backend / Architecture / Integration Lead |
+| **Deeptiman** | Experience / Frontend Lead |
+| **Akriti** | Root / Specialization / Trial UI Lead |
+| **Susmita** | Delivery / Auth / Product Systems Lead |
+
+### Experience V2 workstreams
+
+| Person | Experience V2 ownership |
+|---|---|
+| **Smarak** | Integration + truth + shared experience-system guardrails |
+| **Deeptiman** | Entry + daily ritual: landing, auth continuity, onboarding visual pass, Hearth |
+| **Akriti** | Living Root + progression moments: organism, specialization, Trials, Crests |
+| **Susmita** | Objects + history + product shell: Satchel, Chronicle, navigation, Settings |
+
+See [`docs/TEAM_WORKSTREAMS_V2.md`](docs/TEAM_WORKSTREAMS_V2.md) for exact scope, dependencies, merge order, and acceptance evidence.
 
 ---
 
-## Workstream Ownership
+## Original workstream ownership
+
+The original single-owner boundaries remain important for shared/core files unless the Experience V2 workstream document explicitly coordinates a cross-cutting change.
 
 | Area | Owner |
 |------|-------|
@@ -89,14 +128,16 @@ The server is **always authoritative** for XP, levels, Sparks, streaks, Trials, 
 | Satchel, Chronicle, Settings | Susmita |
 | Playwright E2E tests, axe-core accessibility checks | Susmita |
 
-See `docs/IMPLEMENTATION_PLAN.md` for the full single-owner file list.
+See `docs/IMPLEMENTATION_PLAN.md` for the historical full single-owner file list.
 
 ---
 
-## Branch Model
+## Branch model
 
-```
-main                    ← stable, always deployable
+Current historical feature branches include:
+
+```text
+main
   ├─ feat/smarak-core
   ├─ feat/deeptiman-experience
   ├─ feat/akriti-root
@@ -104,10 +145,23 @@ main                    ← stable, always deployable
   └─ feat/onboarding-v2
 ```
 
-- Feature branches are cut from `main`.
+After the **verified Onboarding V2 baseline is reconciled and pushed**, Experience V2 should use:
+
+```text
+feat/experience-entry-hearth
+feat/experience-living-root
+feat/experience-world-history
+feat/experience-system-integration
+```
+
+Do **not** cut those branches from a stale `main` while unpublished onboarding implementation changes remain the intended baseline.
+
+Rules:
+
 - No one force-pushes to `main`.
-- PRs to `main` require at minimum a sanity check from the integration lead (Smarak).
-- Integration changes must preserve the server-authoritative game contracts.
+- Do not overwrite already-pushed shared history merely to make the graph prettier.
+- PRs/integration changes must preserve server-authoritative game contracts.
+- Smarak publishes the approved baseline SHA before the four Experience V2 branches begin.
 
 ---
 
@@ -117,17 +171,81 @@ main                    ← stable, always deployable
 |----------|---------|
 | [`docs/PRD.md`](docs/PRD.md) | Product requirements, features, non-goals |
 | [`docs/TRD.md`](docs/TRD.md) | Technical architecture, stack, forbidden dependencies |
-| [`docs/APP_FLOW.md`](docs/APP_FLOW.md) | Every user flow with trigger, server action, success, failure |
-| [`docs/UI_UX_BRIEF.md`](docs/UI_UX_BRIEF.md) | Frozen visual language, palette, typography, motion |
-| [`docs/BACKEND_SCHEMA.md`](docs/BACKEND_SCHEMA.md) | All tables, constraints, RPC contracts, reward rules |
-| [`docs/CONTRACTS.md`](docs/CONTRACTS.md) | TypeScript type contracts shared between all workstreams |
-| [`docs/IMPLEMENTATION_PLAN.md`](docs/IMPLEMENTATION_PLAN.md) | Checkpoints, ownership, cut rules, demo fixture |
-| [`docs/ONBOARDING_V2.md`](docs/ONBOARDING_V2.md) | Choice-first onboarding, deterministic starter quest deck, first-seal experience |
-| [`docs/ATTRIBUTIONS.md`](docs/ATTRIBUTIONS.md) | Third-party dependencies, agent skills, component references, inspiration, and creator credit |
+| [`docs/APP_FLOW.md`](docs/APP_FLOW.md) | Baseline user flows |
+| [`docs/APP_FLOW_V2_SUPPLEMENT.md`](docs/APP_FLOW_V2_SUPPLEMENT.md) | Approved Onboarding V2 flow changes that supersede the old timezone-only onboarding section |
+| [`docs/UI_UX_BRIEF.md`](docs/UI_UX_BRIEF.md) | Current frozen visual baseline, palette, typography, motion rules |
+| [`docs/EXPERIENCE_V2.md`](docs/EXPERIENCE_V2.md) | Botanical Folio direction, whole-product surface guidance, experiment protocol |
+| [`docs/BACKEND_SCHEMA.md`](docs/BACKEND_SCHEMA.md) | Tables, constraints, RPC contracts, reward rules |
+| [`docs/CONTRACTS.md`](docs/CONTRACTS.md) | TypeScript contracts shared between workstreams |
+| [`docs/IMPLEMENTATION_PLAN.md`](docs/IMPLEMENTATION_PLAN.md) | Historical 24-hour implementation plan and original ownership |
+| [`docs/ONBOARDING_V2.md`](docs/ONBOARDING_V2.md) | Choice-first onboarding, deterministic starter deck, first-Seal product contract |
+| [`docs/ONBOARDING_V2_RECOVERY.md`](docs/ONBOARDING_V2_RECOVERY.md) | Resumable first-Seal recovery/idempotency contract |
+| [`docs/TEAM_WORKSTREAMS_V2.md`](docs/TEAM_WORKSTREAMS_V2.md) | Four-person Experience V2 ownership and integration order |
+| [`docs/EXECUTION_PROMPTS_V2.md`](docs/EXECUTION_PROMPTS_V2.md) | Copy-paste continuation prompts for Smarak, Deeptiman, Akriti, Susmita |
+| [`docs/INTEGRITY_AUDIT_2026-09-12.md`](docs/INTEGRITY_AUDIT_2026-09-12.md) | Verified-vs-reported state and blockers before Experience V2 branching |
+| [`docs/ATTRIBUTIONS.md`](docs/ATTRIBUTIONS.md) | Third-party dependencies, skills, component references, inspiration, creator credit |
 | [`AGENTS.md`](AGENTS.md) | Rules for AI coding agents working in this repository |
-| [`project/context-graph.yaml`](project/context-graph.yaml) | Lightweight project knowledge graph |
+| [`project/context-graph.yaml`](project/context-graph.yaml) | Lightweight historical project knowledge graph; verify stale statuses against the repository |
 
-**Read order for new contributors:** PRD → TRD → APP_FLOW → UI_UX_BRIEF → BACKEND_SCHEMA → CONTRACTS → relevant feature spec → IMPLEMENTATION_PLAN
+**Recommended read order now:**
+
+PRD → TRD → APP_FLOW → APP_FLOW_V2_SUPPLEMENT → UI_UX_BRIEF → EXPERIENCE_V2 → BACKEND_SCHEMA → CONTRACTS → relevant feature spec → TEAM_WORKSTREAMS_V2 → IMPLEMENTATION_PLAN
+
+---
+
+## Onboarding V2
+
+Onboarding V2 replaces the old timezone-first setup with:
+
+```text
+Choose what matters
+→ intensity
+→ available time / rhythm
+→ deterministic starter quest deck
+→ Keep / Swap / Edit
+→ timezone confirmation
+→ choose first quest
+→ complete it in real life
+→ first authoritative Seal
+→ Ember responds
+→ first Root filament wakes
+→ Hearth
+```
+
+Non-negotiable rules:
+
+- no fake reward math
+- no `onboarded = true` before the first real Seal succeeds
+- stable request IDs across retry/recovery
+- no duplicate quests/rewards after network loss
+- preferences preserve existing keys
+- unfinished authenticated users remain gated to onboarding
+
+See `docs/ONBOARDING_V2.md` and `docs/ONBOARDING_V2_RECOVERY.md`.
+
+---
+
+## Experience experiment protocol
+
+Do not redesign the entire product in one pass.
+
+For each material experiment:
+
+1. capture baseline screenshots
+2. change one major variable
+3. hold unrelated typography/palette/copy/motion constant
+4. inspect the still state before animation
+5. capture the same viewports again
+6. verify keyboard/reduced motion/mobile/zoom
+7. decide **KEEP / REVISE / REJECT**
+8. only then propagate the pattern
+
+The first parallel experiment wave is intentionally bounded:
+
+- **Deeptiman:** object-first Hearth
+- **Akriti:** one living Root branch + Root Specimen V1
+- **Susmita:** Copper Halo inspection
+- **Smarak:** onboarding recovery + authoritative correctness fixes + integration harness
 
 ---
 
@@ -195,27 +313,50 @@ See [`.env.example`](.env.example) for the full list of required variables.
 
 ## Contribution Workflow
 
-1. **Read the docs** before writing any code: PRD → TRD → relevant APP_FLOW/feature spec.
-2. **Work on your feature branch.** Do not commit directly to `main`.
-3. **Write descriptive commit messages:** `feat(hearth): add quest completion pending state`
-4. **Test on mobile** (320px, 375px, 390px) and by keyboard before marking complete.
-5. **Do not add dependencies** without the delivery owner's approval.
-6. **Do not modify another owner's single-owner files** without coordination.
-7. **Credit external work** in `docs/ATTRIBUTIONS.md` in the same change that introduces or materially adapts it.
-8. When you believe a feature is complete, verify the [Completion Standard](AGENTS.md#completion-standard) in `AGENTS.md`.
+1. **Read the docs** before writing code.
+2. **Fetch before branching.** Confirm the approved baseline SHA for Experience V2 work.
+3. **Work on your feature branch.** Do not commit directly to `main`.
+4. **Write descriptive commit messages:** `feat(hearth): add quest completion pending state`.
+5. **Test mobile + keyboard** before marking a UI feature complete.
+6. **Do not add dependencies** without delivery/integration approval.
+7. **Do not modify another owner's single-owner files** without coordination.
+8. **Credit external work** in `docs/ATTRIBUTIONS.md` in the same change that introduces/materially adapts it.
+9. Use the handoff format in `docs/EXECUTION_PROMPTS_V2.md` for Experience V2 work.
+10. Verify the [Completion Standard](AGENTS.md#completion-standard) before claiming a feature complete.
+
+---
+
+## Verification Standard
+
+Before claiming an integration branch ready:
+
+```bash
+npm run typecheck
+npm test
+npm run lint
+npm run build
+npx playwright test
+node scripts/test-live-db.mjs
+```
+
+Also inspect real screenshots at the relevant required viewports, including 320/390 mobile and desktop/tablet targets.
+
+Never report PASS without current command evidence.
 
 ---
 
 ## AI Agent Rules
 
-This repository uses [`AGENTS.md`](AGENTS.md) to govern all AI coding agent behavior (Antigravity, Claude, Codex, etc.). Read it before asking an agent to write code in this repository.
+This repository uses [`AGENTS.md`](AGENTS.md) to govern AI coding agent behavior (Antigravity, Claude, Codex, etc.). Read it before asking an agent to write code.
 
-Seven skills are currently available in `.agents/skills/`:
+Project/reusable skills in `.agents/skills/` include:
 
-- `ember-ui` — project-specific UI and browser review rules
-- `reward-integrity` — server-authoritative progression integrity
-- `integration-guardian` — shared contract/schema protection
-- `ship-check` — release/demo verification
-- `frontend-design` — adapted reusable design-quality guidance
-- `animate` — adapted reusable motion guidance
-- `theme-factory` — adapted token-system enforcement guidance
+- `ember-ui`
+- `reward-integrity`
+- `integration-guardian`
+- `ship-check`
+- `frontend-design`
+- `animate`
+- `theme-factory`
+
+Project documents and project-specific skills take precedence over generic reusable guidance.
