@@ -49,7 +49,7 @@ Project-original skills (`ember-ui`, `reward-integrity`, `integration-guardian`,
 | Dynamic Hero | Hossain Jahed — https://21st.dev/@jahed/components/dynamic-hero | **Reference / evaluation** | Dynamic hero-state ideas for the public entry experience. |
 | Cinematic landing Hero | Hossain Jahed — https://21st.dev/@jahed/components/cinematic-landing-hero | **Reference / evaluation** | Full-viewport storytelling, strong hierarchy and scene-based landing composition. |
 | Horizon Hero Section | scott clayton, surfaced on 21st.dev | **Inspiration only** | Spatial storytelling and environmental typography. The Three.js/GSAP/WebGL implementation is intentionally not adopted. |
-| Animated Cards Stack | YoucefBnm Bnm — https://21st.dev/@youcefbnm/components/animated-cards-stack | **Planned adaptation for onboarding** | Stacked-card sequencing and directional motion for goal/intensity/starter-quest choices. Tap/button equivalents remain mandatory for accessibility. |
+| Animated Cards Stack | YoucefBnm Bnm — https://21st.dev/@youcefbnm/components/animated-cards-stack | **Adapted** (`features/onboarding/GoalDeck.tsx`, `StarterQuestDeck.tsx`) | Stacked field journal leaf depth, rotational decay (-2° to +2°), directional drag and button dismissal, next-card anticipation, and accessible buttons. Rebuilt with `motion/react` in Ember & Root's material language. |
 | Svg follow scroll | reuno-ui — https://21st.dev/@reuno-ui/components/svg-follow-scroll ; source credited by 21st.dev to https://skiper-ui.com/ | **Planned adaptation** | Scroll-linked SVG path progress for the public Root story; re-authored with Ember & Root SVG geometry and palette. |
 
 ### Other references
@@ -58,7 +58,7 @@ Project-original skills (`ember-ui`, `reward-integrity`, `integration-guardian`,
 |---|---|---|---|
 | Spector | https://spector.framer.website/ | **Visual/motion inspiration only** | Scroll choreography, editorial typography, section rhythm, and integrated interaction polish. No site assets or copy are reused. |
 | Timeline | Aceternity UI — https://ui.aceternity.com/components/timeline | **Planned adaptation for Chronicle** | Sticky chronology + scroll-follow beam concept, reinterpreted as a living root/history line. |
-| Glass Button | Original interaction by Petr Knoll — https://codepen.io/Petr-Knoll/pen/QwWLZdx | **Interaction reference only** | Pressed-depth/tactile button construction. Ember & Root will not ship the glassmorphism visual treatment. |
+| Glass Button | Original interaction by Petr Knoll — https://codepen.io/Petr-Knoll/pen/QwWLZdx | **Adapted** (`components/ui/PathButton.tsx`, `features/onboarding/FirstSeal.tsx`) | Multi-layered physical button depth, dark depression well, brass rim, copper face, and physical compression with held pending pressure. Glassmorphism omitted in favor of pure charcoal, brass, and ember materials. |
 
 ## 4. Attribution rules for future additions
 

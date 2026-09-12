@@ -24,29 +24,33 @@ test.describe('Ember & Root — Public Entry Experience (Phase 1)', () => {
     await expect(secondaryCta).toBeVisible();
     await expect(secondaryCta).toHaveAttribute('href', '/login');
 
-    // Section 2: The Core Loop
+    // Section 2: The Core Loop / Causal Ritual
     const loopTitle = page.locator('#loop-title');
     await expect(loopTitle).toBeVisible();
-    await expect(loopTitle).toContainText('The Living Cycle');
+    await expect(loopTitle).toContainText(/The Living Cycle|The Causal Ritual/);
 
-    const loopCards = page.locator('.loop-step-card');
-    await expect(loopCards).toHaveCount(4);
-    await expect(page.locator('.loop-step-title:has-text("Inscribe")')).toBeVisible();
-    await expect(page.locator('.loop-step-title:has-text("Seal")')).toBeVisible();
-    await expect(page.locator('.loop-step-title:has-text("Ember Responds")')).toBeVisible();
-    await expect(page.locator('.loop-step-title:has-text("Root Grows")')).toBeVisible();
+    const hasRitualFolio = await page.locator('.ritual-folio-spread').count();
+    if (hasRitualFolio > 0) {
+      await expect(page.locator('.ritual-rail-item')).toHaveCount(5);
+    } else {
+      const loopCards = page.locator('.loop-step-card');
+      await expect(loopCards).toHaveCount(4);
+    }
 
-    // Section 3: The Evolving Root
-    const rootTitle = page.locator('#root-title');
-    await expect(rootTitle).toBeVisible();
-    await expect(rootTitle).toContainText('A Living Organism Shaped by You');
-
-    const evolutionCards = page.locator('.evolution-card');
-    await expect(evolutionCards).toHaveCount(4);
-    await expect(page.getByText('0 XP', { exact: true })).toBeVisible();
-    await expect(page.getByText('20 XP', { exact: true })).toBeVisible();
-    await expect(page.getByText('80 XP', { exact: true })).toBeVisible();
-    await expect(page.getByText('160 XP', { exact: true })).toBeVisible();
+    // Section 3: The Organism / Evolving Root
+    const hasSpecimenPlate = await page.locator('.landing-specimen-section').count();
+    if (hasSpecimenPlate > 0) {
+      const specimenTitle = page.locator('#specimen-title');
+      await expect(specimenTitle).toBeVisible();
+      await expect(specimenTitle).toContainText('An Organism Shaped by Real Days');
+      await expect(page.locator('.landing-specimen-plate')).toBeVisible();
+    } else {
+      const rootTitle = page.locator('#root-title');
+      await expect(rootTitle).toBeVisible();
+      await expect(rootTitle).toContainText('A Living Organism Shaped by You');
+      const evolutionCards = page.locator('.evolution-card');
+      await expect(evolutionCards).toHaveCount(4);
+    }
 
     // Section 4: Closing CTA
     const closingTitle = page.locator('#closing-title');

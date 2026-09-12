@@ -123,12 +123,12 @@ export const QuestRow: React.FC<QuestRowProps> = ({
         </div>
 
         <div className="entry-meta-row">
-          <span className={`entry-attribute-tag attr-${attribute}`}>
+          <span className={`entry-attribute-tag attr-${attribute} entry-tag tag-${attribute}`}>
             {attribute.toUpperCase()}
           </span>
           <span className="entry-meta-dot" aria-hidden="true">·</span>
-          <span className="entry-effort-tag">
-            {effort.toUpperCase()}
+          <span className="entry-effort-tag entry-tag tag-effort">
+            {effort.toLowerCase()} effort
           </span>
           <span className="entry-meta-dot" aria-hidden="true">·</span>
           <span className="entry-cadence-label">
@@ -162,9 +162,10 @@ export const QuestRow: React.FC<QuestRowProps> = ({
       <div className="entry-seal-affordance">
         <button
           type="button"
-          className={`entry-seal-btn ${isCompleted ? 'is-sealed' : ''} ${isPending ? 'is-pending' : ''}`}
+          className={`entry-seal-btn btn-completion ${isCompleted ? 'is-sealed is-completed' : ''} ${isPending ? 'is-pending' : ''}`}
           onClick={handleAction}
           disabled={isCompleted || isPending}
+          aria-disabled={isCompleted || isPending ? 'true' : undefined}
           aria-label={
             isCompleted
               ? `Practice sealed: ${title}`
@@ -173,12 +174,7 @@ export const QuestRow: React.FC<QuestRowProps> = ({
               : `Apply seal to practice: ${title}`
           }
         >
-          <span className="seal-btn-mark" aria-hidden="true">
-            {isCompleted ? '✦' : isPending ? '◌' : '◎'}
-          </span>
-          <span className="seal-btn-label">
-            {isCompleted ? 'Sealed' : isPending ? 'Sealing...' : 'Seal'}
-          </span>
+          {isCompleted ? 'Sealed ✓' : isPending ? 'Sealing...' : 'Seal quest'}
         </button>
       </div>
     </li>

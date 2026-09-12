@@ -162,10 +162,10 @@ export const QuestJournal: React.FC<QuestJournalProps> = ({
                 type="button"
                 className="journal-inscribe-btn"
                 onClick={onOpenCreateDialog}
-                aria-label="Inscribe new daily practice"
+                aria-label="Inscribe a new quest into today's journal"
               >
                 <span className="inscribe-btn-mark" aria-hidden="true">+</span>
-                <span className="inscribe-btn-text">Inscribe new daily practice</span>
+                <span className="inscribe-btn-text">Inscribe a quest</span>
               </button>
             </div>
           )}

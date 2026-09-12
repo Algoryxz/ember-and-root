@@ -380,7 +380,7 @@ async function main() {
       body: JSON.stringify({
         p_request_id: requestId1,
         p_quest_id: questA1Id,
-        p_expected_occurrence: '2026-09-13' // DIFFERENT payload!
+        p_expected_occurrence: '2099-01-01' // DIFFERENT payload!
       })
     }, userA.token);
     assert(!resConflict.ok, 'Reusing requestId with different payload rejected with error');

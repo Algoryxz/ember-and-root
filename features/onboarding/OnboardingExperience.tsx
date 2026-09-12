@@ -22,6 +22,7 @@ import type {
 import type { SealPending } from './recovery';
 import { readRecovery, writeRecovery, updateRecovery } from './recovery';
 import type { Effort } from '@/game/contracts';
+import { PathButton } from '@/components/ui/PathButton';
 import './OnboardingExperience.css';
 
 const COMMON_TIMEZONES = [
@@ -331,21 +332,22 @@ export const OnboardingExperience: React.FC = () => {
               />
 
               <div className="flex gap-3 w-full max-w-md mt-6">
-                <button
-                  type="button"
+                <PathButton
+                  variant="parchment"
+                  size="md"
                   onClick={() => setStep('goals')}
-                  className="px-4 py-3 rounded-lg border border-[#374537] bg-[#141713] text-[#B9BEAC] hover:text-[#F0E7D3] text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C4A96A]"
                 >
                   ← Back
-                </button>
-                <button
-                  type="button"
+                </PathButton>
+                <PathButton
+                  variant="ember"
+                  size="md"
+                  className="flex-1"
                   onClick={() => setStep('time')}
                   disabled={!intensity}
-                  className="flex-1 px-4 py-3 rounded-lg bg-[#E98A4B] hover:bg-[#d87c3f] text-[#141713] font-semibold text-sm transition-all duration-100 ease-in-out active:translate-y-[1px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C4A96A] disabled:opacity-40 disabled:cursor-not-allowed shadow-md"
                 >
                   Continue to Available Time →
-                </button>
+                </PathButton>
               </div>
             </div>
           )}
@@ -412,15 +414,17 @@ export const OnboardingExperience: React.FC = () => {
               </div>
 
               <div className="flex gap-3 w-full max-w-md mt-6">
-                <button
-                  type="button"
+                <PathButton
+                  variant="parchment"
+                  size="md"
                   onClick={() => setStep('intensity')}
-                  className="px-4 py-3 rounded-lg border border-[#374537] bg-[#141713] text-[#B9BEAC] hover:text-[#F0E7D3] text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C4A96A]"
                 >
                   ← Back
-                </button>
-                <button
-                  type="button"
+                </PathButton>
+                <PathButton
+                  variant="ember"
+                  size="md"
+                  className="flex-1"
                   onClick={() => {
                     generateRecommendations(
                       selectedGoals,
@@ -430,10 +434,9 @@ export const OnboardingExperience: React.FC = () => {
                     setStep('quests');
                   }}
                   disabled={!availableMinutes}
-                  className="flex-1 px-4 py-3 rounded-lg bg-[#E98A4B] hover:bg-[#d87c3f] text-[#141713] font-semibold text-sm transition-all duration-100 ease-in-out active:translate-y-[1px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C4A96A] disabled:opacity-40 disabled:cursor-not-allowed shadow-md"
                 >
                   Assemble Starter Quests →
-                </button>
+                </PathButton>
               </div>
             </div>
           )}
@@ -523,23 +526,26 @@ export const OnboardingExperience: React.FC = () => {
 
               <div className="flex flex-col sm:flex-row gap-3">
                 {!isEditingTimezone && (
-                  <button
-                    type="button"
+                  <PathButton
+                    variant="parchment"
+                    size="md"
                     onClick={() => setIsEditingTimezone(true)}
-                    className="min-h-[44px] px-4 py-2.5 rounded-lg border border-[#374537] bg-[#141713] hover:bg-[#1D231D] text-[#B9BEAC] hover:text-[#F0E7D3] text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C4A96A]"
                   >
                     Change Timezone
-                  </button>
+                  </PathButton>
                 )}
 
-                <button
-                  type="button"
+                <PathButton
+                  variant="ember"
+                  size="md"
+                  className="flex-1"
                   onClick={handleConfirmTimezone}
                   disabled={isSavingPreferences}
-                  className="flex-1 min-h-[44px] px-4 py-2.5 rounded-lg bg-[#E98A4B] hover:bg-[#d87c3f] text-[#141713] font-semibold text-sm transition-all duration-100 ease-in-out active:translate-y-[1px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C4A96A] disabled:opacity-50 shadow-md"
+                  pending={isSavingPreferences}
+                  pendingText="Aligning Cycle…"
                 >
-                  {isSavingPreferences ? 'Aligning Cycle…' : 'Looks Right →'}
-                </button>
+                  Looks Right →
+                </PathButton>
               </div>
             </div>
           )}

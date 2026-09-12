@@ -5,7 +5,8 @@ import { createClient } from '@/lib/supabase/client';
 import type { MutationResult, AttributeId, Effort } from '@/game/contracts';
 import type { OnboardingPreferences, StarterQuestTemplate } from './types';
 import type { SealPending } from './recovery';
-import { updateRecovery, clearRecovery } from './recovery';
+import { readRecovery, writeRecovery, updateRecovery, clearRecovery } from './recovery';
+import { PathButton } from '@/components/ui/PathButton';
 
 export interface FirstSealProps {
   keptQuests: StarterQuestTemplate[];
@@ -291,24 +292,28 @@ export const FirstSeal: React.FC<FirstSealProps> = ({
           {/* ── Enter / Finalize CTA ── */}
           {/* Confirmed: server wrote preferences.onboarded = true. Safe to enter. */}
           {prefUpdateStatus === 'confirmed' && (
-            <button
-              type="button"
+            <PathButton
+              variant="ember"
+              size="lg"
+              className="w-full"
               onClick={() => router.push('/hearth')}
-              className="w-full min-h-[50px] px-6 py-3.5 rounded-lg bg-[#E98A4B] hover:bg-[#d87c3f] text-[#141713] font-semibold text-base transition-all duration-100 ease-in-out active:translate-y-[1px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C4A96A] shadow-xl"
             >
               Enter the Hearth →
-            </button>
+            </PathButton>
           )}
 
           {/* Pending: pref write in-flight alongside choreography. */}
           {(prefUpdateStatus === 'idle' || prefUpdateStatus === 'pending') && (
-            <button
-              type="button"
+            <PathButton
+              variant="ember"
+              size="lg"
+              className="w-full"
               disabled
-              className="w-full min-h-[50px] px-6 py-3.5 rounded-lg bg-[#E98A4B] text-[#141713] font-semibold text-base disabled:opacity-50 shadow-xl cursor-wait"
+              pending
+              pendingText="Finalising your path…"
             >
               Finalising your path…
-            </button>
+            </PathButton>
           )}
 
           {/* Failed: display error and offer a retry. Does NOT re-run the Seal. */}
@@ -323,8 +328,10 @@ export const FirstSeal: React.FC<FirstSealProps> = ({
                   {prefUpdateError}
                 </p>
               )}
-              <button
-                type="button"
+              <PathButton
+                variant="ember"
+                size="lg"
+                className="w-full"
                 onClick={() =>
                   void handleFinalizePref(
                     mutationResult,
@@ -332,10 +339,9 @@ export const FirstSeal: React.FC<FirstSealProps> = ({
                     sealPending?.onboardingPreferences ?? onboardingPreferences
                   )
                 }
-                className="w-full min-h-[50px] px-6 py-3.5 rounded-lg bg-[#E98A4B] hover:bg-[#d87c3f] text-[#141713] font-semibold text-base transition-all duration-100 ease-in-out active:translate-y-[1px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C4A96A] shadow-xl"
               >
                 Retry Finalization
-              </button>
+              </PathButton>
             </div>
           )}
         </div>
@@ -452,17 +458,21 @@ export const FirstSeal: React.FC<FirstSealProps> = ({
           )}
 
           {/* Primary Action: Complete & Seal */}
-          {motionStage === 'idle' && (
+          {(motionStage === 'idle' || motionStage === 'in_flight') && (
             <div className="pt-2">
-              <button
-                type="button"
+              <PathButton
+                variant="seal"
+                size="lg"
+                className="w-full"
                 onClick={handlePerformFirstSeal}
-                disabled={!selectedQuest}
-                className="w-full min-h-[50px] px-6 py-3.5 rounded-lg bg-[#E98A4B] hover:bg-[#d87c3f] text-[#141713] font-semibold text-base transition-all duration-100 ease-in-out active:translate-y-[1px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C4A96A] disabled:opacity-50 shadow-xl flex items-center justify-center gap-2"
+                disabled={!selectedQuest || motionStage === 'in_flight'}
+                holdingPressure={motionStage === 'in_flight'}
+                pending={motionStage === 'in_flight'}
+                pendingText="Inscribing & Sealing…"
               >
                 <span>Seal First Quest</span>
-                <span className="text-sm">✦</span>
-              </button>
+                <span className="text-sm" aria-hidden="true">✦</span>
+              </PathButton>
             </div>
           )}
         </div>

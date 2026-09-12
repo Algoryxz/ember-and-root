@@ -42,6 +42,9 @@ export const OnboardingRoot: React.FC<OnboardingRootProps> = ({
   const sproutVisible =
     ['quests', 'timezone', 'first_quest', 'sealed'].includes(currentStep) || isSealed;
 
+  // Filament thickness scales with intensity choice (delicate light -> balanced -> dense push)
+  const baseStrokeWidth = intensity === 'push' ? 3.6 : intensity === 'balanced' ? 2.8 : 2.2;
+
   const transitionConfig = shouldReduceMotion
     ? { duration: 0.1 }
     : { duration: 0.8, ease: 'easeOut' as const };
@@ -92,7 +95,7 @@ export const OnboardingRoot: React.FC<OnboardingRootProps> = ({
           d="M 160 350 Q 160 270 160 220 Q 130 230 100 170 Q 80 130 65 90"
           fill="none"
           stroke={isSealed ? 'url(#rootGlowGrad)' : '#9FBA87'}
-          strokeWidth={filament1Active ? (isSealed ? 3 : 2.5) : 0}
+          strokeWidth={filament1Active ? (isSealed ? baseStrokeWidth + 1 : baseStrokeWidth) : 0}
           strokeLinecap="round"
           initial={{ pathLength: 0, opacity: 0 }}
           animate={{
@@ -100,7 +103,7 @@ export const OnboardingRoot: React.FC<OnboardingRootProps> = ({
             opacity: filament1Active ? 1 : 0,
           }}
           transition={transitionConfig}
-          filter={filament1Active ? 'url(#subtleGlow)' : undefined}
+          filter={filament1Active ? (isSealed ? 'url(#emberGlow)' : 'url(#subtleGlow)') : undefined}
         />
 
         {/* Filament 2: Wakes with 2nd Goal */}
@@ -108,7 +111,7 @@ export const OnboardingRoot: React.FC<OnboardingRootProps> = ({
           d="M 160 270 Q 190 220 220 160 Q 240 120 255 80"
           fill="none"
           stroke={isSealed ? 'url(#rootGlowGrad)' : '#9FBA87'}
-          strokeWidth={filament2Active ? (isSealed ? 3 : 2.5) : 0}
+          strokeWidth={filament2Active ? (isSealed ? baseStrokeWidth + 1 : baseStrokeWidth) : 0}
           strokeLinecap="round"
           initial={{ pathLength: 0, opacity: 0 }}
           animate={{
@@ -116,7 +119,7 @@ export const OnboardingRoot: React.FC<OnboardingRootProps> = ({
             opacity: filament2Active ? 1 : 0,
           }}
           transition={{ ...transitionConfig, delay: shouldReduceMotion ? 0 : 0.2 }}
-          filter={filament2Active ? 'url(#subtleGlow)' : undefined}
+          filter={filament2Active ? (isSealed ? 'url(#emberGlow)' : 'url(#subtleGlow)') : undefined}
         />
 
         {/* Filament 3: Wakes with 3rd Goal or Seals */}
@@ -124,7 +127,7 @@ export const OnboardingRoot: React.FC<OnboardingRootProps> = ({
           d="M 160 240 Q 145 180 130 130 Q 120 90 115 60"
           fill="none"
           stroke={isSealed ? '#FFD38A' : '#9FBA87'}
-          strokeWidth={filament3Active ? 2 : 0}
+          strokeWidth={filament3Active ? Math.max(baseStrokeWidth - 0.8, 1.8) : 0}
           strokeLinecap="round"
           initial={{ pathLength: 0, opacity: 0 }}
           animate={{

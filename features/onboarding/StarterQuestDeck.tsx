@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import type { Effort, AttributeId } from '@/game/contracts';
 import type { StarterQuestTemplate } from './types';
+import { PathButton } from '@/components/ui/PathButton';
 
 export interface StarterQuestDeckProps {
   suggestions: StarterQuestTemplate[];
@@ -13,11 +14,11 @@ export interface StarterQuestDeckProps {
   maxKept?: number;
 }
 
-const ATTRIBUTE_LABELS: Record<AttributeId, { name: string; color: string }> = {
-  mind: { name: 'Mind', color: '#8FA37E' },
-  body: { name: 'Body', color: '#D9986A' },
-  will: { name: 'Will', color: '#C4A96A' },
-  craft: { name: 'Craft', color: '#9FBA87' },
+const ATTRIBUTE_LABELS: Record<AttributeId, { name: string; color: string; bg: string; border: string }> = {
+  mind: { name: 'Mind', color: '#8FA37E', bg: 'rgba(143, 163, 126, 0.1)', border: 'rgba(143, 163, 126, 0.25)' },
+  body: { name: 'Body', color: '#D9986A', bg: 'rgba(217, 152, 106, 0.1)', border: 'rgba(217, 152, 106, 0.25)' },
+  will: { name: 'Will', color: '#C4A96A', bg: 'rgba(196, 169, 106, 0.1)', border: 'rgba(196, 169, 106, 0.25)' },
+  craft: { name: 'Craft', color: '#9FBA87', bg: 'rgba(159, 186, 135, 0.1)', border: 'rgba(159, 186, 135, 0.25)' },
 };
 
 const EFFORT_LABELS: Record<Effort, { name: string; xp: number }> = {
@@ -26,6 +27,12 @@ const EFFORT_LABELS: Record<Effort, { name: string; xp: number }> = {
   deep: { name: 'Deep', xp: 35 },
 };
 
+/**
+ * StarterQuestDeck — Authored Starter Quests in Field Journal Format
+ *
+ * Visual Direction: Illuminated Field Journal leaves / rows.
+ * Features Keep, Swap, and Edit capabilities with tactile PathButton interactions.
+ */
 export const StarterQuestDeck: React.FC<StarterQuestDeckProps> = ({
   suggestions,
   keptIds,
@@ -62,7 +69,7 @@ export const StarterQuestDeck: React.FC<StarterQuestDeckProps> = ({
 
   return (
     <div className="w-full max-w-xl">
-      {/* Header */}
+      {/* Editorial Chapter Header */}
       <div className="text-center mb-6">
         <span className="inline-block text-xs uppercase tracking-widest text-[#E98A4B] font-semibold mb-1">
           Chapter IV · Your First Inscriptions
@@ -75,9 +82,9 @@ export const StarterQuestDeck: React.FC<StarterQuestDeckProps> = ({
           You may swap or customize any row.
         </p>
 
-        {/* Counter */}
-        <div className="mt-3 inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#1D231D] border border-[#2D382D] text-xs text-[#B9BEAC]">
-          <span>Kept: <strong className="text-[#F0E7D3]">{keptCount}</strong> of {suggestions.length}</span>
+        {/* Ledger Count Badge */}
+        <div className="mt-3 inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#1D231D] border border-[#2D382D] text-xs text-[#B9BEAC]">
+          <span>Kept: <strong className="text-[#F0E7D3] font-mono">{keptCount}</strong> of {suggestions.length}</span>
           <span className="text-[#6E7B6E]">·</span>
           <span>Target: {minKept}–{maxKept} quests</span>
         </div>
@@ -97,9 +104,14 @@ export const StarterQuestDeck: React.FC<StarterQuestDeckProps> = ({
               role="listitem"
               className={`p-4 sm:p-5 rounded-xl border transition-all duration-150 ${
                 isKept
-                  ? 'bg-[#1D231D] border-[#374537] shadow-md'
-                  : 'bg-[#141713] border-[#252C25] opacity-75'
+                  ? 'bg-[#1D231D] border-[#374537] shadow-lg'
+                  : 'bg-[#141713] border-[#252C25] opacity-75 hover:opacity-90'
               }`}
+              style={{
+                boxShadow: isKept
+                  ? '0 6px 20px -4px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.03)'
+                  : undefined,
+              }}
             >
               {isEditing ? (
                 /* Inline Edit Form */
@@ -141,20 +153,20 @@ export const StarterQuestDeck: React.FC<StarterQuestDeckProps> = ({
                   </div>
 
                   <div className="flex justify-end gap-2 pt-2">
-                    <button
-                      type="button"
+                    <PathButton
+                      variant="parchment"
+                      size="sm"
                       onClick={cancelEdit}
-                      className="px-3 py-1.5 text-xs text-[#B9BEAC] hover:text-[#F0E7D3] border border-[#2D382D] rounded-lg"
                     >
                       Cancel
-                    </button>
-                    <button
-                      type="button"
+                    </PathButton>
+                    <PathButton
+                      variant="ember"
+                      size="sm"
                       onClick={() => saveEdit(q.id)}
-                      className="px-3 py-1.5 text-xs font-medium text-[#141713] bg-[#E98A4B] hover:bg-[#d87c3f] rounded-lg"
                     >
                       Save Changes
-                    </button>
+                    </PathButton>
                   </div>
                 </div>
               ) : (
@@ -167,8 +179,8 @@ export const StarterQuestDeck: React.FC<StarterQuestDeckProps> = ({
                         className="text-[11px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded border"
                         style={{
                           color: attr?.color || '#8FA37E',
-                          borderColor: `${attr?.color || '#8FA37E'}33`,
-                          backgroundColor: `${attr?.color || '#8FA37E'}11`,
+                          borderColor: attr?.border || 'rgba(143,163,126,0.25)',
+                          backgroundColor: attr?.bg || 'rgba(143,163,126,0.1)',
                         }}
                       >
                         {attr?.name}
@@ -180,7 +192,7 @@ export const StarterQuestDeck: React.FC<StarterQuestDeckProps> = ({
                       </span>
 
                       {/* Estimated Duration */}
-                      <span className="text-[11px] text-[#6E7B6E]">
+                      <span className="text-[11px] text-[#6E7B6E] font-mono">
                         ~{q.estimatedMinutes}m
                       </span>
                     </div>
@@ -188,46 +200,43 @@ export const StarterQuestDeck: React.FC<StarterQuestDeckProps> = ({
                     <h3 className="text-base font-medium text-[#F0E7D3] leading-snug">
                       {q.title}
                     </h3>
-                    <p className="text-xs text-[#8E9782] mt-0.5">
+                    <p className="text-xs text-[#8E9782] mt-0.5 leading-relaxed">
                       {q.description}
                     </p>
                   </div>
 
                   {/* Actions: Keep / Swap / Edit */}
                   <div className="flex items-center gap-2 pt-2 sm:pt-0 border-t sm:border-t-0 border-[#2D382D]/60">
-                    <button
-                      type="button"
+                    <PathButton
+                      variant={isKept ? 'charcoal' : 'parchment'}
+                      size="sm"
                       onClick={() => onToggleKeep(q.id)}
                       aria-pressed={isKept}
                       aria-label={isKept ? `Remove ${q.title} from starter quests` : `Keep ${q.title} in starter quests`}
-                      className={`min-h-[44px] px-3.5 py-2 rounded-lg text-xs font-semibold transition-all duration-100 ease-in-out active:translate-y-[1px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C4A96A] ${
-                        isKept
-                          ? 'bg-[#2D3B2D] border border-[#9FBA87] text-[#D9E3B2]'
-                          : 'bg-[#141713] border border-[#374537] text-[#B9BEAC] hover:text-[#F0E7D3]'
-                      }`}
+                      className={isKept ? 'border border-[#9FBA87]/40 text-[#D9E3B2]' : ''}
                     >
                       {isKept ? 'Kept ✓' : 'Keep'}
-                    </button>
+                    </PathButton>
 
-                    <button
-                      type="button"
+                    <PathButton
+                      variant="ghost"
+                      size="sm"
                       onClick={() => onSwapQuest(q.id)}
                       aria-label={`Swap ${q.title} with another quest`}
-                      className="min-h-[44px] px-2.5 py-2 rounded-lg border border-[#2D382D] hover:border-[#374537] bg-[#141713] text-[#B9BEAC] hover:text-[#F0E7D3] text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C4A96A]"
                       title="Swap for another option"
                     >
                       Swap ↻
-                    </button>
+                    </PathButton>
 
-                    <button
-                      type="button"
+                    <PathButton
+                      variant="ghost"
+                      size="sm"
                       onClick={() => startEdit(q)}
                       aria-label={`Edit ${q.title}`}
-                      className="min-h-[44px] px-2.5 py-2 rounded-lg border border-[#2D382D] hover:border-[#374537] bg-[#141713] text-[#B9BEAC] hover:text-[#F0E7D3] text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C4A96A]"
                       title="Edit quest title or effort"
                     >
                       Edit ✎
-                    </button>
+                    </PathButton>
                   </div>
                 </div>
               )}
@@ -238,16 +247,17 @@ export const StarterQuestDeck: React.FC<StarterQuestDeckProps> = ({
 
       {/* Confirmation CTA */}
       <div className="mt-6">
-        <button
-          type="button"
+        <PathButton
+          variant="ember"
+          size="lg"
+          className="w-full"
           onClick={onProceed}
           disabled={!canProceed}
-          className="w-full min-h-[48px] px-4 py-3 rounded-lg bg-[#E98A4B] hover:bg-[#d87c3f] text-[#141713] font-semibold text-base transition-all duration-100 ease-in-out active:translate-y-[1px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C4A96A] disabled:opacity-40 disabled:cursor-not-allowed shadow-md"
         >
           {canProceed
             ? `Confirm ${keptCount} Starter Quests →`
             : `Keep ${minKept} to ${maxKept} quests to continue (currently ${keptCount})`}
-        </button>
+        </PathButton>
       </div>
     </div>
   );
