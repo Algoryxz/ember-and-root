@@ -32,8 +32,8 @@ CREATE TABLE IF NOT EXISTS public.profiles (
 -- 2. Quests
 CREATE TABLE IF NOT EXISTS public.quests (
   id uuid PRIMARY KEY DEFAULT pg_catalog.gen_random_uuid(),
-  user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  title text NOT NULL CHECK (pg_catalog.char_length(pg_catalog.trim(title)) BETWEEN 1 AND 120),
+  user_id uuid NOT NULL DEFAULT auth.uid() REFERENCES auth.users(id) ON DELETE CASCADE,
+  title text NOT NULL CHECK (pg_catalog.char_length(pg_catalog.btrim(title)) BETWEEN 1 AND 120),
   attribute text NOT NULL CHECK (attribute IN ('mind', 'body', 'will', 'craft')),
   effort text NOT NULL CHECK (effort IN ('quick', 'standard', 'deep')),
   cadence text NOT NULL CHECK (cadence IN ('once', 'daily')),

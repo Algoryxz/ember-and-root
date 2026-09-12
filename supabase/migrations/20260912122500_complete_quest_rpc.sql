@@ -100,7 +100,7 @@ BEGIN
 
   -- 3. Compute local date in user's saved IANA timezone (defensive UTC fallback)
   BEGIN
-    v_current_local_date := (pg_catalog.now() AT TIME ZONE pg_catalog.coalesce(v_profile.timezone, 'UTC'))::date;
+    v_current_local_date := (pg_catalog.now() AT TIME ZONE COALESCE(v_profile.timezone, 'UTC'))::date;
   EXCEPTION WHEN OTHERS THEN
     v_current_local_date := (pg_catalog.now() AT TIME ZONE 'UTC')::date;
   END;
@@ -115,7 +115,7 @@ BEGIN
 
   -- 5. Today's stats
   SELECT
-    pg_catalog.coalesce(pg_catalog.sum(xp_awarded), 0),
+    COALESCE(pg_catalog.sum(xp_awarded), 0),
     pg_catalog.count(*)
   INTO
     v_today_xp,
@@ -130,12 +130,12 @@ BEGIN
   WITH attr_branches AS (
     SELECT
       a.attr AS attribute,
-      pg_catalog.coalesce(b.xp, 0) AS xp,
+      COALESCE(b.xp, 0) AS xp,
       b.selected_specialization AS specialization,
       b.selected_at AS selected_at,
-      (pg_catalog.coalesce(b.xp, 0) > 0) AS sprout_available,
-      (pg_catalog.coalesce(b.xp, 0) >= 80 AND b.selected_specialization IS NULL) AS specialization_available,
-      (pg_catalog.coalesce(b.xp, 0) >= 160 AND t.completed_at IS NOT NULL AND t.claimed_at IS NULL) AS crest_available,
+      (COALESCE(b.xp, 0) > 0) AS sprout_available,
+      (COALESCE(b.xp, 0) >= 80 AND b.selected_specialization IS NULL) AS specialization_available,
+      (COALESCE(b.xp, 0) >= 160 AND t.completed_at IS NOT NULL AND t.claimed_at IS NULL) AS crest_available,
       (t.id IS NOT NULL) AS trial_started,
       (t.completed_at IS NOT NULL) AS trial_complete,
       (t.claimed_at IS NOT NULL) AS crest_claimed
@@ -160,7 +160,7 @@ BEGIN
   ) INTO v_branches FROM attr_branches;
 
   -- 7. Trials
-  SELECT pg_catalog.coalesce(
+  SELECT COALESCE(
     pg_catalog.jsonb_object_agg(
       attribute,
       pg_catalog.jsonb_build_object(
@@ -187,11 +187,11 @@ BEGIN
   WHERE user_id = v_user_id AND equipped = true
   LIMIT 1;
 
-  SELECT pg_catalog.coalesce(
+  SELECT COALESCE(
     pg_catalog.jsonb_agg(
       pg_catalog.jsonb_build_object(
         'item', pg_catalog.jsonb_build_object(
-          'id', i.id,
+          'id', itm.id,
           'name', itm.name,
           'price', itm.price,
           'visualKey', itm.visual_key
@@ -207,7 +207,7 @@ BEGIN
   WHERE i.user_id = v_user_id;
 
   -- 9. Quests
-  SELECT pg_catalog.coalesce(
+  SELECT COALESCE(
     pg_catalog.jsonb_agg(
       pg_catalog.jsonb_build_object(
         'id', q.id,
@@ -283,8 +283,8 @@ BEGIN
   END IF;
 
   UPDATE public.profiles SET
-    preferences = pg_catalog.coalesce(p_preferences, preferences),
-    timezone = pg_catalog.coalesce(p_timezone, timezone),
+    preferences = COALESCE(p_preferences, preferences),
+    timezone = COALESCE(p_timezone, timezone),
     updated_at = pg_catalog.now()
   WHERE user_id = v_user_id
   RETURNING * INTO v_updated;
@@ -370,7 +370,7 @@ BEGIN
   -- 3. Derive canonical payload fingerprint internally
   v_canonical_payload := pg_catalog.jsonb_build_object(
     'questId', p_quest_id,
-    'expectedOccurrence', pg_catalog.coalesce(p_expected_occurrence, '')
+    'expectedOccurrence', COALESCE(p_expected_occurrence, '')
   );
   v_payload_hash := pg_catalog.encode(pg_catalog.sha256(v_canonical_payload::text::bytea), 'hex');
 
@@ -402,7 +402,7 @@ BEGIN
   END IF;
 
   -- 6. Derive current local date in user's saved IANA timezone
-  v_timezone := pg_catalog.coalesce(v_profile.timezone, 'UTC');
+  v_timezone := COALESCE(v_profile.timezone, 'UTC');
   BEGIN
     v_current_local_date := (pg_catalog.now() AT TIME ZONE v_timezone)::date;
   EXCEPTION WHEN OTHERS THEN
@@ -441,13 +441,13 @@ BEGIN
   END CASE;
 
   -- 10. Calculate XP already awarded today
-  SELECT pg_catalog.coalesce(pg_catalog.sum(xp_awarded), 0)
+  SELECT COALESCE(pg_catalog.sum(xp_awarded), 0)
   INTO v_daily_xp_awarded
   FROM public.quest_completions
   WHERE user_id = v_user_id AND local_date = v_current_local_date;
 
   -- 11. Enforce remaining 140 XP daily reward ceiling
-  v_awarded_xp := pg_catalog.least(v_base_xp, pg_catalog.greatest(0, 140 - v_daily_xp_awarded));
+  v_awarded_xp := LEAST(v_base_xp, GREATEST(0, 140 - v_daily_xp_awarded));
   IF v_daily_xp_awarded >= 140 OR v_awarded_xp < v_base_xp THEN
     v_capped_today := true;
   END IF;
@@ -530,7 +530,7 @@ BEGIN
     v_new_streak := 1;
     v_ember_relit := true;
   END IF;
-  v_longest_streak := pg_catalog.greatest(v_profile.longest_streak, v_new_streak);
+  v_longest_streak := GREATEST(v_profile.longest_streak, v_new_streak);
 
   -- 18. Check specialization & crest availability
   IF v_new_branch_xp >= 80 AND v_branch_spec IS NULL THEN
@@ -542,7 +542,7 @@ BEGIN
     SELECT (completed_at IS NOT NULL AND claimed_at IS NULL) INTO v_crest_available
     FROM public.trials
     WHERE user_id = v_user_id AND attribute = v_quest.attribute;
-    v_crest_available := pg_catalog.coalesce(v_crest_available, false);
+    v_crest_available := COALESCE(v_crest_available, false);
   END IF;
 
   -- 19. Determine new Ember state
