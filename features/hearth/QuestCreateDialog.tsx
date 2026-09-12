@@ -6,7 +6,12 @@ import './QuestCreateDialog.css';
 export interface QuestCreateDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  onCreateQuest: (quest: Omit<Quest, 'id' | 'userId' | 'version' | 'deletedAt' | 'createdAt' | 'updatedAt' | 'trialId'>) => void;
+  onCreateQuest: (quest: {
+    title: string;
+    attribute: AttributeId;
+    effort: Effort;
+    cadence: Cadence;
+  }) => Promise<void> | void;
 }
 
 /**
@@ -19,6 +24,7 @@ export interface QuestCreateDialogProps {
  * - Accessible dialog semantics (role="dialog", aria-modal="true", Escape key)
  * - Focus trapping and sensible autofocus
  * - Minimum 44px touch targets
+ * - Async authoritative mutation with pending state and retry
  * - NO local XP / progression calculations
  */
 export const QuestCreateDialog: React.FC<QuestCreateDialogProps> = ({
@@ -31,6 +37,7 @@ export const QuestCreateDialog: React.FC<QuestCreateDialogProps> = ({
   const [effort, setEffort] = useState<Effort>('standard');
   const [cadence, setCadence] = useState<Cadence>('daily');
   const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
   const inputRef = useRef<HTMLInputElement>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
@@ -40,7 +47,7 @@ export const QuestCreateDialog: React.FC<QuestCreateDialogProps> = ({
     if (!isOpen) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
+      if (e.key === 'Escape' && !isSubmitting) {
         onClose();
         return;
       }
@@ -77,12 +84,14 @@ export const QuestCreateDialog: React.FC<QuestCreateDialogProps> = ({
       document.removeEventListener('keydown', handleKeyDown);
       clearTimeout(timer);
     };
-  }, [isOpen, onClose]);
+  }, [isOpen, onClose, isSubmitting]);
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return;
+
     const trimmed = title.trim();
 
     if (!trimmed) {
@@ -95,16 +104,27 @@ export const QuestCreateDialog: React.FC<QuestCreateDialogProps> = ({
       return;
     }
 
-    onCreateQuest({
-      title: trimmed,
-      attribute,
-      effort,
-      cadence,
-    });
-
-    setTitle('');
+    setIsSubmitting(true);
     setError(null);
-    onClose();
+
+    try {
+      await onCreateQuest({
+        title: trimmed,
+        attribute,
+        effort,
+        cadence,
+      });
+
+      setTitle('');
+      setError(null);
+      setIsSubmitting(false);
+      onClose();
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error ? err.message : 'Could not inscribe quest. Please retry.';
+      setError(message);
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -222,10 +242,15 @@ export const QuestCreateDialog: React.FC<QuestCreateDialogProps> = ({
 
           {/* Dialog Action Buttons */}
           <div className="dialog-actions">
-            <Button variant="ghost" onClick={onClose}>
+            <Button variant="ghost" onClick={onClose} disabled={isSubmitting}>
               Discard
             </Button>
-            <Button variant="primary" type="submit">
+            <Button
+              variant="primary"
+              type="submit"
+              pending={isSubmitting}
+              pendingText="Inscribing..."
+            >
               Inscribe in Journal
             </Button>
           </div>

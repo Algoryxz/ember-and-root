@@ -1,12 +1,15 @@
 import React, { useState } from 'react';
 import {
   DEMO_SNAPSHOT,
-  simulateServerCompletion,
+  completeQuestAction,
+  createQuestAction,
   type AttributeId,
+  type CreateQuestParams,
   type GameSnapshot,
   type HearthQuest,
   type MutationEvent,
-  type Quest,
+  type MutationResult,
+  type SupabaseClientLike,
 } from './contracts';
 import { EmberDisplay } from './EmberDisplay';
 import { HearthRootPreview } from './HearthRootPreview';
@@ -17,6 +20,10 @@ import './HearthView.css';
 
 export interface HearthViewProps {
   initialSnapshot?: GameSnapshot;
+  supabaseClient?: SupabaseClientLike | null;
+  showShellNav?: boolean;
+  onMutationSuccess?: (result: MutationResult) => void;
+  onNavigateToRoot?: () => void;
   className?: string;
 }
 
@@ -25,8 +32,17 @@ export interface HearthViewProps {
  * Owned by: Deeptiman (Experience / Frontend Lead)
  * Visual Direction: Illuminated Field Journal
  * 
+ * Architecture:
+ * Authoritative Repository / Supabase RPCs
+ *        ↓
+ * Hearth Adapter (completeQuestAction, createQuestAction)
+ *        ↓
+ * HearthView (this component)
+ *        ↓
+ * Hearth Presentation Components
+ * 
  * Hierarchy:
- * 1. App Shell Nav & Character Status Strip
+ * 1. App Shell Nav & Character Status Strip (if showShellNav is true)
  * 2. HEARTH Title & "Today is where the path begins."
  * 3. Living Ember Momentum & Compact Root Advancement Preview
  * 4. TODAY's Inscribed Quests Journal
@@ -35,6 +51,10 @@ export interface HearthViewProps {
  */
 export const HearthView: React.FC<HearthViewProps> = ({
   initialSnapshot = DEMO_SNAPSHOT,
+  supabaseClient = null,
+  showShellNav = true,
+  onMutationSuccess,
+  onNavigateToRoot,
   className = '',
 }) => {
   // Authoritative snapshot state (replaces local state upon confirmed server response)
@@ -82,14 +102,21 @@ export const HearthView: React.FC<HearthViewProps> = ({
     });
 
     try {
-      // 2. Call authoritative server mutation / simulation
-      const result = await simulateServerCompletion(snapshot, questId, simulateFailure);
+      // 2. Call authoritative server mutation via thin Hearth adapter
+      const result = await completeQuestAction(
+        snapshot,
+        questId,
+        supabaseClient,
+        undefined,
+        simulateFailure
+      );
 
-      // 3. Apply confirmed authoritative server result
+      // 3. Apply confirmed authoritative server result (NO local math)
       setCompletedQuestIds((prev) => new Set([...prev, questId]));
       setSnapshot(result.snapshot);
+      if (onMutationSuccess) onMutationSuccess(result);
 
-      // 4. Trigger reward sequence choreography
+      // 4. Trigger reward sequence choreography from authoritative event
       setActiveQuestTitle(quest.title);
       setActiveEvent(result.event);
       setHighlightAttribute(quest.attribute);
@@ -116,27 +143,20 @@ export const HearthView: React.FC<HearthViewProps> = ({
     handleCompleteQuest(questId);
   };
 
-  const handleCreateQuest = (
-    newQuestData: Omit<Quest, 'id' | 'userId' | 'version' | 'deletedAt' | 'createdAt' | 'updatedAt' | 'trialId'>
-  ) => {
-    const todayKey = new Date().toISOString().split('T')[0];
-    const newQuest: HearthQuest = {
-      ...newQuestData,
-      id: `q-inscribed-${Date.now()}`,
-      userId: snapshot.userId,
-      version: 1,
-      deletedAt: null,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      trialId: null,
-      currentOccurrenceKey: todayKey,
-      completedForCurrentOccurrence: false,
-    };
+  // --------------------------------------------------------------------------
+  // Authoritative Quest Creation Flow
+  // --------------------------------------------------------------------------
+  const handleCreateQuest = async (newQuestData: CreateQuestParams) => {
+    // Invoke authoritative createQuestAction via thin Hearth adapter
+    const result = await createQuestAction(
+      snapshot,
+      newQuestData,
+      supabaseClient
+    );
 
-    setSnapshot((prev) => ({
-      ...prev,
-      quests: [newQuest, ...(prev.quests || [])],
-    }));
+    // Apply authoritative snapshot from server mutation
+    setSnapshot(result.snapshot);
+    if (onMutationSuccess) onMutationSuccess(result);
   };
 
   const quests = snapshot.quests || [];
@@ -148,54 +168,56 @@ export const HearthView: React.FC<HearthViewProps> = ({
         Skip to Today’s Journal
       </a>
 
-      {/* App Shell Navigation Bar */}
-      <header className="hearth-app-header">
-        <div className="hearth-header-inner">
-          <div className="hearth-brand">
-            <div className="hearth-brand-flame" aria-hidden="true" />
-            <span className="hearth-brand-name">Ember &amp; Root</span>
-          </div>
+      {/* App Shell Navigation Bar (rendered when standalone or showShellNav is true) */}
+      {showShellNav && (
+        <header className="hearth-app-header">
+          <div className="hearth-header-inner">
+            <div className="hearth-brand">
+              <div className="hearth-brand-flame" aria-hidden="true" />
+              <span className="hearth-brand-name">Ember &amp; Root</span>
+            </div>
 
-          <nav aria-label="Primary game destinations" className="hearth-main-nav">
-            <ul className="hearth-nav-list">
-              <li className="hearth-nav-item is-active">
-                <a href="#hearth" aria-current="page">
-                  Hearth
-                </a>
-              </li>
-              <li className="hearth-nav-item">
-                <a href="#root">Root</a>
-              </li>
-              <li className="hearth-nav-item">
-                <a href="#satchel">Satchel</a>
-              </li>
-              <li className="hearth-nav-item">
-                <a href="#chronicle">Chronicle</a>
-              </li>
-            </ul>
-          </nav>
+            <nav aria-label="Primary game destinations" className="hearth-main-nav">
+              <ul className="hearth-nav-list">
+                <li className="hearth-nav-item is-active">
+                  <a href="/hearth" aria-current="page">
+                    Hearth
+                  </a>
+                </li>
+                <li className="hearth-nav-item">
+                  <a href="/root">Root</a>
+                </li>
+                <li className="hearth-nav-item">
+                  <a href="/satchel">Satchel</a>
+                </li>
+                <li className="hearth-nav-item">
+                  <a href="/chronicle">Chronicle</a>
+                </li>
+              </ul>
+            </nav>
 
-          {/* Character Status Strip */}
-          <div className="hearth-status-strip" role="region" aria-label="Character Status">
-            <div className="status-item">
-              <span className="status-label">Level</span>
-              <span className="status-value">{snapshot.level}</span>
-            </div>
-            <div className="status-divider" aria-hidden="true">·</div>
-            <div className="status-item">
-              <span className="status-icon sparks-icon" aria-hidden="true">✦</span>
-              <span className="status-label">Sparks</span>
-              <span className="status-value">{snapshot.sparksBalance}</span>
-            </div>
-            <div className="status-divider" aria-hidden="true">·</div>
-            <div className="status-item">
-              <span className="status-icon streak-icon" aria-hidden="true">🔥</span>
-              <span className="status-label">Streak</span>
-              <span className="status-value">{snapshot.currentStreak}d</span>
+            {/* Character Status Strip */}
+            <div className="hearth-status-strip" role="region" aria-label="Character Status">
+              <div className="status-item">
+                <span className="status-label">Level</span>
+                <span className="status-value">{snapshot.level}</span>
+              </div>
+              <div className="status-divider" aria-hidden="true">·</div>
+              <div className="status-item">
+                <span className="status-icon sparks-icon" aria-hidden="true">✦</span>
+                <span className="status-label">Sparks</span>
+                <span className="status-value">{snapshot.sparksBalance}</span>
+              </div>
+              <div className="status-divider" aria-hidden="true">·</div>
+              <div className="status-item">
+                <span className="status-icon streak-icon" aria-hidden="true">🔥</span>
+                <span className="status-label">Streak</span>
+                <span className="status-value">{snapshot.currentStreak}d</span>
+              </div>
             </div>
           </div>
-        </div>
-      </header>
+        </header>
+      )}
 
       {/* Main Field Journal Canvas */}
       <main id="hearth-main" className="hearth-canvas">
@@ -230,6 +252,7 @@ export const HearthView: React.FC<HearthViewProps> = ({
           <HearthRootPreview
             branches={snapshot.branches}
             highlightAttribute={highlightAttribute}
+            onNavigateToRoot={onNavigateToRoot}
           />
         </div>
 

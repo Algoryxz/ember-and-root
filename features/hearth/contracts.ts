@@ -404,3 +404,13 @@ export function simulateServerCompletion(
     }, 250);
   });
 }
+
+// ── Hearth Adapter Exports ───────────────────────────────────────────────────
+
+export {
+  completeQuestAction,
+  createQuestAction,
+  type CreateQuestParams,
+  type SupabaseClientLike,
+} from './hearthAdapter';
+
