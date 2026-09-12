@@ -1,21 +1,29 @@
 import React from 'react';
 import { Button } from '../../components/ui/Button';
-import type { Quest } from './contracts';
+import type { HearthQuest, Quest } from './contracts';
 import './QuestRow.css';
 
 export interface QuestRowProps {
-  quest: Quest;
+  quest: Quest | HearthQuest;
   isCompleted?: boolean;
   isPending?: boolean;
   errorMessage?: string | null;
   onComplete: (questId: string) => void;
+  onEdit?: (quest: Quest | HearthQuest) => void;
   onRetry?: (questId: string) => void;
 }
 
 /**
  * QuestRow — Individual quest entry in the illuminated field journal
  * Owned by: Deeptiman (Experience / Frontend Lead)
- * Visual Direction: Illuminated Field Journal
+ * Visual Direction: Illuminated Field Journal (ruled lines, ink stamps, not SaaS cards)
+ * 
+ * Invariants:
+ * - Clear states: idle, focused, completing/pending, confirmed, error, retry
+ * - Semantic HTML <li> with accessible labels
+ * - Min 44px interaction targets
+ * - Subtle field-journal edit action (quill affordance) without SaaS clutter
+ * - NO local progression or XP calculation
  */
 export const QuestRow: React.FC<QuestRowProps> = ({
   quest,
@@ -23,13 +31,15 @@ export const QuestRow: React.FC<QuestRowProps> = ({
   isPending = false,
   errorMessage = null,
   onComplete,
+  onEdit,
   onRetry,
 }) => {
   const { id, title, attribute, effort, cadence } = quest;
 
   const rowClasses = [
-    'quest-row',
-    isCompleted ? 'is-completed' : '',
+    'quest-journal-entry',
+    `entry-attr-${attribute}`,
+    isCompleted ? 'is-sealed' : '',
     isPending ? 'is-pending' : '',
     errorMessage ? 'has-error' : '',
   ]
@@ -42,31 +52,49 @@ export const QuestRow: React.FC<QuestRowProps> = ({
     }
   };
 
+  const handleEdit = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onEdit && !isPending) {
+      onEdit(quest);
+    }
+  };
+
+  // Human-friendly cadence text
+  const cadenceLabel = cadence === 'daily' ? 'Daily habit' : 'Single milestone';
+
   return (
     <li className={rowClasses}>
-      <div className="quest-main">
-        <span className="quest-title">{title}</span>
+      {/* Left field journal ink margin stamp */}
+      <div className="entry-ink-margin" aria-hidden="true" />
 
-        <div className="quest-metadata">
-          <span className={`quest-badge quest-attr-${attribute}`}>
+      <div className="entry-content">
+        <div className="entry-header">
+          <span className="entry-title">{title}</span>
+        </div>
+
+        <div className="entry-meta">
+          <span className={`entry-tag tag-${attribute}`}>
             {attribute}
           </span>
-          <span className="quest-badge quest-effort-badge">
+          <span className="entry-tag tag-effort">
             {effort} effort
           </span>
-          <span className="quest-cadence-badge">
-            • {cadence}
+          <span className="entry-cadence">
+            {cadenceLabel}
           </span>
         </div>
 
+        {/* Error notification and retry action */}
         {errorMessage && (
-          <div className="quest-error-notice" role="alert">
-            <span>⚠ {errorMessage}</span>
+          <div className="entry-error-alert" role="alert">
+            <span className="entry-error-icon" aria-hidden="true">⚠</span>
+            <span className="entry-error-text">{errorMessage}</span>
             {onRetry && (
               <button
                 type="button"
-                className="quest-retry-btn"
+                className="entry-retry-button"
                 onClick={() => onRetry(id)}
+                aria-label={`Retry completing quest: ${title}`}
               >
                 Retry
               </button>
@@ -75,18 +103,39 @@ export const QuestRow: React.FC<QuestRowProps> = ({
         )}
       </div>
 
-      <div className="quest-action-area">
-        <Button
-          variant="completion"
-          pending={isPending}
-          completed={isCompleted}
-          pendingText="Sealing..."
-          onClick={handleAction}
-          aria-label={isCompleted ? `Quest completed: ${title}` : `Complete quest: ${title}`}
-        >
-          {isCompleted ? 'Completed ✓' : 'Complete quest'}
-        </Button>
+      <div className="entry-actions-cluster">
+        {/* Subtle field-journal edit affordance (quill icon) */}
+        {onEdit && (
+          <button
+            type="button"
+            className="entry-edit-btn"
+            onClick={handleEdit}
+            disabled={isPending}
+            aria-label={`Edit quest: ${title}`}
+            title="Edit quest"
+          >
+            <span className="entry-edit-icon" aria-hidden="true">✎</span>
+          </button>
+        )}
+
+        <div className="entry-action-cell">
+          <Button
+            variant="completion"
+            pending={isPending}
+            completed={isCompleted}
+            pendingText="Sealing..."
+            onClick={handleAction}
+            aria-label={
+              isCompleted
+                ? `Quest already sealed: ${title}`
+                : `Seal quest: ${title}`
+            }
+          >
+            {isCompleted ? 'Sealed ✓' : 'Seal quest'}
+          </Button>
+        </div>
       </div>
     </li>
   );
 };
+

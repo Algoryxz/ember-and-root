@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useMemo } from 'react';
 import { createClient } from '@/lib/supabase/client';
@@ -16,8 +16,7 @@ export function HearthViewWrapper({ initialSnapshot }: HearthViewWrapperProps) {
     <HearthView
       initialSnapshot={initialSnapshot}
       supabaseClient={supabase}
-      showNav={false}
-      showDevPresets={false}
+      showShellNav={false}
     />
   );
 }

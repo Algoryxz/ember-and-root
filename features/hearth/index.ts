@@ -1,4 +1,4 @@
-export { HearthView } from './HearthView';
+﻿export { HearthView } from './HearthView';
 export type { HearthViewProps } from './HearthView';
 export { EmberDisplay } from './EmberDisplay';
 export type { EmberDisplayProps } from './EmberDisplay';
@@ -12,6 +12,8 @@ export { RewardSequence } from './RewardSequence';
 export type { RewardSequenceProps } from './RewardSequence';
 export { QuestCreateDialog } from './QuestCreateDialog';
 export type { QuestCreateDialogProps } from './QuestCreateDialog';
+export { QuestEditDialog } from './QuestEditDialog';
+export type { QuestEditDialogProps } from './QuestEditDialog';
 export * from './contracts';
 export * from './hearthAdapter';
 export * from './hearthFixtureAdapter';

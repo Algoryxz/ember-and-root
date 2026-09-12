@@ -1,36 +1,43 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Button } from '../../components/ui/Button';
-import type { AttributeId, Cadence, Effort, Quest } from './contracts';
-import './QuestCreateDialog.css';
+import type { AttributeId, Cadence, Effort, HearthQuest, Quest } from './contracts';
+import './QuestEditDialog.css';
 
-export interface QuestCreateDialogProps {
+export interface QuestEditDialogProps {
   isOpen: boolean;
+  quest: Quest | HearthQuest | null;
   onClose: () => void;
-  onCreateQuest: (quest: {
-    title: string;
-    attribute: AttributeId;
-    effort: Effort;
-    cadence: Cadence;
-  }) => Promise<void> | void;
+  onUpdateQuest: (
+    questId: string,
+    updates: {
+      title: string;
+      attribute: AttributeId;
+      effort: Effort;
+      cadence: Cadence;
+    }
+  ) => Promise<void> | void;
 }
 
 /**
- * QuestCreateDialog — Accessible field-journal modal for inscribing new tasks
+ * QuestEditDialog — Accessible field-journal dialog for editing existing quests
  * Owned by: Deeptiman (Experience / Frontend Lead)
  * Visual Direction: Illuminated Field Journal
  * 
  * Invariants:
- * - Field journal atmosphere (not a corporate SaaS form)
+ * - Field journal atmosphere (not a corporate SaaS modal)
  * - Accessible dialog semantics (role="dialog", aria-modal="true", Escape key)
- * - Focus trapping and sensible autofocus
- * - Minimum 44px touch targets
- * - Async authoritative mutation with pending state and retry
+ * - Focus trapping and sensible autofocus on the title field
+ * - Pre-populates existing quest values faithfully
+ * - Minimum 44px touch targets on mobile & desktop
+ * - Client-side validation: trims whitespace, requires non-empty title (<= 120 chars)
+ * - Async authoritative mutation via adapter with pending state, error persistence, and retry
  * - NO local XP / progression calculations
  */
-export const QuestCreateDialog: React.FC<QuestCreateDialogProps> = ({
+export const QuestEditDialog: React.FC<QuestEditDialogProps> = ({
   isOpen,
+  quest,
   onClose,
-  onCreateQuest,
+  onUpdateQuest,
 }) => {
   const [title, setTitle] = useState('');
   const [attribute, setAttribute] = useState<AttributeId>('mind');
@@ -42,7 +49,19 @@ export const QuestCreateDialog: React.FC<QuestCreateDialogProps> = ({
   const inputRef = useRef<HTMLInputElement>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
 
-  // Accessibility: Escape key handling and focus management
+  // Synchronize internal state with incoming quest whenever the dialog opens or quest changes
+  useEffect(() => {
+    if (quest && isOpen) {
+      setTitle(quest.title);
+      setAttribute(quest.attribute);
+      setEffort(quest.effort);
+      setCadence(quest.cadence);
+      setError(null);
+      setIsSubmitting(false);
+    }
+  }, [quest, isOpen]);
+
+  // Accessibility: Escape key handling and focus management (focus trap)
   useEffect(() => {
     if (!isOpen) return;
 
@@ -86,7 +105,7 @@ export const QuestCreateDialog: React.FC<QuestCreateDialogProps> = ({
     };
   }, [isOpen, onClose, isSubmitting]);
 
-  if (!isOpen) return null;
+  if (!isOpen || !quest) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -95,7 +114,7 @@ export const QuestCreateDialog: React.FC<QuestCreateDialogProps> = ({
     const trimmed = title.trim();
 
     if (!trimmed) {
-      setError('A quest title is required before it can be inscribed.');
+      setError('A quest title is required to update the journal entry.');
       return;
     }
 
@@ -108,20 +127,21 @@ export const QuestCreateDialog: React.FC<QuestCreateDialogProps> = ({
     setError(null);
 
     try {
-      await onCreateQuest({
+      await onUpdateQuest(quest.id, {
         title: trimmed,
         attribute,
         effort,
         cadence,
       });
 
-      setTitle('');
       setError(null);
       setIsSubmitting(false);
       onClose();
     } catch (err: unknown) {
       const message =
-        err instanceof Error ? err.message : 'Could not inscribe quest. Please retry.';
+        err instanceof Error
+          ? err.message
+          : 'Could not update quest in the journal. Please retry.';
       setError(message);
       setIsSubmitting(false);
     }
@@ -132,8 +152,8 @@ export const QuestCreateDialog: React.FC<QuestCreateDialogProps> = ({
       className="dialog-backdrop"
       role="dialog"
       aria-modal="true"
-      aria-labelledby="inscribe-title"
-      aria-describedby="inscribe-desc"
+      aria-labelledby="edit-quest-title"
+      aria-describedby="edit-quest-desc"
       onClick={onClose}
     >
       <div
@@ -145,32 +165,33 @@ export const QuestCreateDialog: React.FC<QuestCreateDialogProps> = ({
         {/* Field Journal Header */}
         <div className="dialog-header">
           <div>
-            <h2 id="inscribe-title" className="dialog-title">
-              Inscribe a Quest
+            <h2 id="edit-quest-title" className="dialog-title">
+              Revise Inscription
             </h2>
-            <p id="inscribe-desc" className="dialog-subtitle">
-              Declare today’s intention. What you do becomes who you are.
+            <p id="edit-quest-desc" className="dialog-subtitle">
+              Refine your declaration. Adjust the scope, discipline, or rhythm of your task.
             </p>
           </div>
           <button
             type="button"
             className="dialog-close-btn"
             onClick={onClose}
-            aria-label="Close inscription dialog"
+            aria-label="Close revision dialog"
+            disabled={isSubmitting}
           >
             ✕
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="quest-inscribe-form">
+        <form onSubmit={handleSubmit} className="quest-edit-form">
           {/* Quest Title */}
           <div className="form-field">
-            <label htmlFor="quest-title-input" className="form-label">
+            <label htmlFor="edit-quest-title-input" className="form-label">
               Quest Title <span className="label-required">*</span>
             </label>
             <input
               ref={inputRef}
-              id="quest-title-input"
+              id="edit-quest-title-input"
               type="text"
               className="form-input"
               value={title}
@@ -181,6 +202,7 @@ export const QuestCreateDialog: React.FC<QuestCreateDialogProps> = ({
               placeholder="e.g., Read two chapters of classical literature"
               maxLength={120}
               required
+              disabled={isSubmitting}
             />
             {error && (
               <span className="form-error-text" role="alert">
@@ -191,14 +213,15 @@ export const QuestCreateDialog: React.FC<QuestCreateDialogProps> = ({
 
           {/* Attribute Domain */}
           <div className="form-field">
-            <label htmlFor="quest-attribute-select" className="form-label">
+            <label htmlFor="edit-quest-attribute-select" className="form-label">
               Attribute Domain
             </label>
             <select
-              id="quest-attribute-select"
+              id="edit-quest-attribute-select"
               className="form-select"
               value={attribute}
               onChange={(e) => setAttribute(e.target.value as AttributeId)}
+              disabled={isSubmitting}
             >
               <option value="mind">Mind — Intellect, study, deep curiosity</option>
               <option value="body">Body — Movement, endurance, physical vitality</option>
@@ -209,14 +232,15 @@ export const QuestCreateDialog: React.FC<QuestCreateDialogProps> = ({
 
           {/* Effort Level */}
           <div className="form-field">
-            <label htmlFor="quest-effort-select" className="form-label">
+            <label htmlFor="edit-quest-effort-select" className="form-label">
               Effort Level
             </label>
             <select
-              id="quest-effort-select"
+              id="edit-quest-effort-select"
               className="form-select"
               value={effort}
               onChange={(e) => setEffort(e.target.value as Effort)}
+              disabled={isSubmitting}
             >
               <option value="quick">Quick — ~15 mins (10 XP reference)</option>
               <option value="standard">Standard — ~45 mins (20 XP reference)</option>
@@ -226,14 +250,15 @@ export const QuestCreateDialog: React.FC<QuestCreateDialogProps> = ({
 
           {/* Cadence */}
           <div className="form-field">
-            <label htmlFor="quest-cadence-select" className="form-label">
+            <label htmlFor="edit-quest-cadence-select" className="form-label">
               Cadence
             </label>
             <select
-              id="quest-cadence-select"
+              id="edit-quest-cadence-select"
               className="form-select"
               value={cadence}
               onChange={(e) => setCadence(e.target.value as Cadence)}
+              disabled={isSubmitting}
             >
               <option value="daily">Daily Habit (Returns each day)</option>
               <option value="once">Single Milestone (One-time accomplishment)</option>
@@ -243,15 +268,15 @@ export const QuestCreateDialog: React.FC<QuestCreateDialogProps> = ({
           {/* Dialog Action Buttons */}
           <div className="dialog-actions">
             <Button variant="ghost" onClick={onClose} disabled={isSubmitting}>
-              Discard
+              Discard Changes
             </Button>
             <Button
               variant="primary"
               type="submit"
               pending={isSubmitting}
-              pendingText="Inscribing..."
+              pendingText="Saving..."
             >
-              Inscribe in Journal
+              Save Revision
             </Button>
           </div>
         </form>

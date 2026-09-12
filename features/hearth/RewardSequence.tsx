@@ -15,6 +15,12 @@ export interface RewardSequenceProps {
  * Owned by: Deeptiman (Experience / Frontend Lead)
  * Visual Direction: Illuminated Field Journal
  * Specification: docs/UI_UX_BRIEF.md § "Motion Choreography"
+ * 
+ * Invariants:
+ * - Strictly non-blocking
+ * - Reduced-motion immediate fallback
+ * - ZERO database writes or mutations from animation callbacks
+ * - Semantic aria-live announcements for screen readers
  */
 export const RewardSequence: React.FC<RewardSequenceProps> = ({
   activeEvent,
@@ -24,7 +30,7 @@ export const RewardSequence: React.FC<RewardSequenceProps> = ({
   showPathReadyNotice = false,
 }) => {
   const [announcement, setAnnouncement] = useState<string>('');
-  const [isLightMoving, setIsLightMoving] = useState<boolean>(false);
+  const [isLightActive, setIsLightActive] = useState<boolean>(false);
   const [levelUpText, setLevelUpText] = useState<string | null>(null);
 
   useEffect(() => {
@@ -34,10 +40,10 @@ export const RewardSequence: React.FC<RewardSequenceProps> = ({
       typeof window !== 'undefined' &&
       window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    const { xpAwarded = 20, attribute = 'mind', previousLevel, newLevel } = activeEvent;
+    const { xpAwarded = 20, sparksAwarded = 4, attribute = 'mind', previousLevel, newLevel } = activeEvent;
 
     // 1. Prepare accessible announcement
-    const text = `${questTitle} complete. +${xpAwarded} XP awarded. ${attribute} branch grows.`;
+    const text = `${questTitle} sealed. +${xpAwarded} XP awarded, +${sparksAwarded} Sparks gathered. ${attribute} branch grows.`;
     setAnnouncement(text);
 
     // 2. Check for level advancement
@@ -47,9 +53,9 @@ export const RewardSequence: React.FC<RewardSequenceProps> = ({
 
     // 3. XP Light Trace animation (skips if reduced motion)
     if (!prefersReducedMotion) {
-      setIsLightMoving(true);
+      setIsLightActive(true);
       const timer = setTimeout(() => {
-        setIsLightMoving(false);
+        setIsLightActive(false);
         if (onSequenceComplete) onSequenceComplete();
       }, 700);
       return () => clearTimeout(timer);
@@ -65,24 +71,23 @@ export const RewardSequence: React.FC<RewardSequenceProps> = ({
         {announcement}
       </div>
 
-      {/* Transient XP Light Traveling to Root */}
-      {isLightMoving && (
+      {/* Transient XP Light Traveling toward Root */}
+      {isLightActive && (
         <div
           className="xp-light-trace"
-          style={{
-            top: '45%',
-            left: '48%',
-          }}
           aria-hidden="true"
         />
       )}
 
-      {/* In-place Level-up notice */}
+      {/* Level-up Notice Banner (Non-blocking, dismissible) */}
       {levelUpText && (
         <div className="hearth-notice-banner notice-level" role="status">
           <div className="hearth-notice-content">
-            <span className="hearth-notice-title">✦ Level Up!</span>
-            <span>{levelUpText}</span>
+            <span className="hearth-notice-icon" aria-hidden="true">✦</span>
+            <div>
+              <strong className="hearth-notice-title">Level Up! </strong>
+              <span>{levelUpText}</span>
+            </div>
           </div>
           <button
             type="button"
@@ -95,12 +100,15 @@ export const RewardSequence: React.FC<RewardSequenceProps> = ({
         </div>
       )}
 
-      {/* "A path is ready" banner (non-blocking, persistent until dismissed or navigated) */}
+      {/* "A path is ready" banner (non-blocking, invites player to Root) */}
       {showPathReadyNotice && (
         <div className="hearth-notice-banner notice-path" role="status">
           <div className="hearth-notice-content">
-            <span className="hearth-notice-title">✦ A path is ready:</span>
-            <span>A branch has reached maturity. Choose your specialization on the Root.</span>
+            <span className="hearth-notice-icon" aria-hidden="true">✦</span>
+            <div>
+              <strong className="hearth-notice-title">A path is ready: </strong>
+              <span>A branch has reached maturity. Choose your specialization on the Root.</span>
+            </div>
           </div>
           {onDismissPathNotice && (
             <button

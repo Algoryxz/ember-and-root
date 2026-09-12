@@ -5,7 +5,7 @@
    Specification: docs/UI_UX_BRIEF.md
    ========================================================================== */
 
-.hearth-wrapper {
+.hearth-shell {
   min-height: 100vh;
   background-color: var(--color-bg);
   color: var(--color-text-primary);
@@ -14,220 +14,278 @@
   box-sizing: border-box;
 }
 
-/* Skip link for accessibility */
+/* --------------------------------------------------------------------------
+   Accessible Skip Link
+   -------------------------------------------------------------------------- */
 .skip-link {
   position: absolute;
-  top: -40px;
-  left: 0;
+  top: -60px;
+  left: var(--space-16);
   background: var(--color-ember);
   color: var(--color-bg);
   padding: var(--space-8) var(--space-16);
   z-index: 9999;
-  font-weight: bold;
+  font-weight: 600;
+  border-radius: var(--radius-btn);
   transition: top 150ms ease;
+  text-decoration: none;
 }
 
 .skip-link:focus {
-  top: 0;
+  top: var(--space-16);
 }
 
 /* --------------------------------------------------------------------------
-   Top Navigation Strip (Horizontal, restrained fantasy artifact, not SaaS)
+   App Shell Header
+   Restrained fantasy field journal atmosphere, not corporate dashboard
    -------------------------------------------------------------------------- */
-.hearth-nav-strip {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: var(--space-16) var(--space-32);
+.hearth-app-header {
   background-color: var(--color-surface);
   border-bottom: 1px solid rgba(185, 190, 172, 0.15);
+  padding: var(--space-12) var(--space-24);
   box-sizing: border-box;
 }
 
+.hearth-header-inner {
+  max-width: 1080px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-16);
+  flex-wrap: wrap;
+}
+
+/* Brand Identifier */
 .hearth-brand {
   display: flex;
   align-items: center;
   gap: var(--space-12);
 }
 
-.hearth-brand-title {
-  font-family: var(--font-display);
-  font-size: var(--text-2xl);
-  color: var(--color-text-primary);
-  letter-spacing: 0.02em;
-}
-
-.hearth-brand-mark {
+.hearth-brand-flame {
   width: 14px;
   height: 14px;
   border-radius: var(--radius-circle);
   background-color: var(--color-ember);
-  box-shadow: 0 0 8px var(--color-ember);
+  box-shadow: 0 0 10px var(--color-ember);
 }
 
-.hearth-nav-links {
+.hearth-brand-name {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  color: var(--color-text-primary);
+  letter-spacing: 0.02em;
+}
+
+/* Main Navigation Destinations */
+.hearth-main-nav {
   display: flex;
   align-items: center;
-  gap: var(--space-8);
-  list-style: none;
 }
 
-.hearth-nav-item a,
-.hearth-nav-item button {
+.hearth-nav-list {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.hearth-nav-item a {
   font-family: var(--font-body);
   font-size: var(--text-sm);
   color: var(--color-text-secondary);
   text-decoration: none;
-  padding: var(--space-8) var(--space-16);
+  padding: var(--space-8) var(--space-12);
   border-radius: var(--radius-btn);
-  transition: color 150ms ease, background-color 150ms ease;
   min-height: var(--min-touch-target);
   display: inline-flex;
   align-items: center;
+  transition: color 150ms ease, background-color 150ms ease;
 }
 
-.hearth-nav-item a:hover,
-.hearth-nav-item button:hover {
+.hearth-nav-item a:hover {
   color: var(--color-text-primary);
-  background-color: rgba(255, 255, 255, 0.03);
+  background-color: rgba(255, 255, 255, 0.04);
 }
 
 .hearth-nav-item.is-active a {
   color: var(--color-ember);
   font-weight: 600;
-  background-color: rgba(233, 138, 75, 0.1);
+  background-color: rgba(233, 138, 75, 0.12);
 }
 
-/* --------------------------------------------------------------------------
-   Status Strip: Level · Sparks · Streak
-   -------------------------------------------------------------------------- */
+/* Character Status Strip */
 .hearth-status-strip {
   display: flex;
   align-items: center;
-  justify-content: flex-start;
-  gap: var(--space-24);
-  padding: var(--space-12) var(--space-32);
-  background-color: rgba(20, 23, 19, 0.85);
-  border-bottom: 1px solid rgba(185, 190, 172, 0.1);
-  box-sizing: border-box;
+  gap: var(--space-8);
+  background: rgba(20, 23, 19, 0.65);
+  border: 1px solid rgba(185, 190, 172, 0.12);
+  border-radius: var(--radius-panel);
+  padding: var(--space-4) var(--space-16);
+  font-size: var(--text-xs);
 }
 
-.status-stat {
+.status-item {
   display: flex;
   align-items: center;
-  gap: var(--space-8);
-  font-size: var(--text-sm);
+  gap: var(--space-4);
+}
+
+.status-label {
   color: var(--color-text-secondary);
 }
 
 .status-value {
   font-family: var(--font-display);
-  font-size: var(--text-base);
   color: var(--color-text-primary);
   font-weight: 600;
 }
 
-.status-icon {
-  font-size: var(--text-base);
-  line-height: 1;
+.status-divider {
+  color: rgba(185, 190, 172, 0.3);
 }
 
-.status-sparks-icon {
+.sparks-icon {
   color: var(--color-ember-core);
 }
 
-.status-streak-icon {
+.streak-icon {
   color: var(--color-ember);
 }
 
 /* --------------------------------------------------------------------------
-   Main Hearth Grid: Desktop (~40% Left Journal, ~60% Right Ember/Root scene)
-   Target: 1440px
+   Main Field Journal Canvas
+   Centered, grounded, intentional hierarchy
    -------------------------------------------------------------------------- */
-.hearth-main-content {
+.hearth-canvas {
   flex: 1;
-  max-width: 1440px;
+  max-width: 1040px;
   width: 100%;
   margin: 0 auto;
-  padding: var(--space-32);
+  padding: var(--space-32) var(--space-24);
   box-sizing: border-box;
-  display: grid;
-  grid-template-columns: 4fr 6fr;
+  display: flex;
+  flex-direction: column;
   gap: var(--space-32);
-  align-items: start;
 }
 
-/* Left Column: Journal */
-.hearth-left-column {
+/* --------------------------------------------------------------------------
+   Hero Heading Block: HEARTH
+   "Today is where the path begins."
+   -------------------------------------------------------------------------- */
+.hearth-hero-section {
   display: flex;
   flex-direction: column;
-  gap: var(--space-24);
+  align-items: center;
+  text-align: center;
+  gap: var(--space-8);
 }
 
-/* Right Column: Ember & Root scene */
-.hearth-right-column {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-24);
+.hearth-hero-title {
+  font-family: var(--font-display);
+  font-size: var(--text-4xl);
+  color: var(--color-text-primary);
+  letter-spacing: 0.08em;
+  margin: 0;
+  line-height: 1.1;
 }
 
-/* Testing / Demo Control Bar (Restrained, for verifying simulated failure/retry) */
-.hearth-demo-controls {
+.hearth-hero-subtitle {
+  font-family: var(--font-body);
+  font-style: italic;
+  font-size: var(--text-base);
+  color: var(--color-text-secondary);
+  letter-spacing: 0.02em;
+  margin: 0;
+}
+
+/* --------------------------------------------------------------------------
+   The Hearth Stage: Ember Momentum & Root Becoming
+   -------------------------------------------------------------------------- */
+.hearth-stage-duo {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-24);
+  align-items: stretch;
+}
+
+/* --------------------------------------------------------------------------
+   QA Diagnostic Tool
+   -------------------------------------------------------------------------- */
+.hearth-qa-diagnostic {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
-  gap: var(--space-12);
-  padding: var(--space-8) var(--space-16);
+  justify-content: center;
+  padding: var(--space-12) var(--space-16);
   background: rgba(29, 35, 29, 0.4);
-  border: 1px dashed rgba(185, 190, 172, 0.2);
+  border: 1px dashed rgba(185, 190, 172, 0.15);
   border-radius: var(--radius-card);
   font-size: var(--text-xs);
   color: var(--color-text-secondary);
+  margin-top: var(--space-16);
 }
 
-.hearth-demo-toggle {
+.qa-toggle-label {
   display: flex;
   align-items: center;
-  gap: var(--space-4);
+  gap: var(--space-8);
   cursor: pointer;
   user-select: none;
 }
 
+.qa-toggle-label input {
+  cursor: pointer;
+}
+
 /* --------------------------------------------------------------------------
-   Mobile Composition (320px, 375px, 390px)
-   Stacked: Status -> Ember -> Journal -> Safe-area bottom padding
-   No horizontal scroll, no clipped content
+   Mobile Safe Area & Responsiveness (320px, 375px, 390px, 768px)
    -------------------------------------------------------------------------- */
-@media (max-width: 960px) {
-  .hearth-main-content {
+.mobile-safe-bottom {
+  height: max(var(--space-24), env(safe-area-inset-bottom, 16px));
+}
+
+@media (max-width: 860px) {
+  .hearth-stage-duo {
     grid-template-columns: 1fr;
-    padding: var(--space-16);
     gap: var(--space-24);
   }
 
-  /* In mobile, Ember scene is placed first so player sees today's flame */
-  .hearth-right-column {
-    order: 1;
-  }
-
-  .hearth-left-column {
-    order: 2;
-  }
-
-  .hearth-nav-strip {
-    padding: var(--space-12) var(--space-16);
+  .hearth-header-inner {
     flex-direction: column;
+    align-items: flex-start;
     gap: var(--space-12);
   }
 
   .hearth-status-strip {
-    padding: var(--space-8) var(--space-16);
-    flex-wrap: wrap;
-    gap: var(--space-16);
+    width: 100%;
+    justify-content: space-around;
   }
 }
 
-/* Mobile Safe Bottom Padding */
-.mobile-safe-bottom {
-  height: max(var(--space-32), env(safe-area-inset-bottom, 24px));
+@media (max-width: 480px) {
+  .hearth-canvas {
+    padding: var(--space-16) var(--space-12);
+    gap: var(--space-24);
+  }
+
+  .hearth-hero-title {
+    font-size: var(--text-3xl);
+  }
+
+  .hearth-hero-subtitle {
+    font-size: var(--text-sm);
+  }
+
+  .hearth-nav-list {
+    flex-wrap: wrap;
+  }
+
+  .hearth-qa-diagnostic {
+    font-size: 0.7rem;
+    text-align: center;
+  }
 }

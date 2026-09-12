@@ -11,15 +11,12 @@ import {
 import { DEMO_SNAPSHOT } from '../../game/fixtures/snapshot';
 
 describe('Hearth Adapters — Authoritative RPC Dispatch & Contract Verification', () => {
-  it('rejects missing or unconfigured client without silent fallback', async () => {
-    await assert.rejects(
-      async () => {
-        await completeQuestAction('q-1', null);
-      },
-      {
-        message: /An authoritative database client \(Supabase\) is required/,
-      }
-    );
+  it('runs fixture preview simulation when supabaseClient is omitted', async () => {
+    const res = await completeQuestAction(DEMO_SNAPSHOT, 'q-fixture-1', null);
+    assert.equal(res.event.kind, 'quest_completed');
+    assert.equal(res.event.xpAwarded, 20);
+    assert.equal(res.snapshot.totalXp, 110);
+    assert.equal(res.snapshot.emberState, 'kindled');
   });
 
   it('completeQuestAction dispatches to complete_quest RPC with expected parameters', async () => {
@@ -49,12 +46,17 @@ describe('Hearth Adapters — Authoritative RPC Dispatch & Contract Verification
       },
     };
 
-    const res = await completeQuestAction('q-1', mockClient, '2026-09-12', 'req-fixed-1');
+    const res = await completeQuestAction(
+      DEMO_SNAPSHOT,
+      'q-fixture-1',
+      mockClient,
+      'a0000000-0000-0000-0000-000000000001'
+    );
 
     assert.equal(capturedFn, 'complete_quest');
-    assert.equal(capturedParams.p_quest_id, 'q-1');
+    assert.equal(capturedParams.p_quest_id, 'q-fixture-1');
     assert.equal(capturedParams.p_expected_occurrence, '2026-09-12');
-    assert.equal(capturedParams.p_request_id, 'req-fixed-1');
+    assert.equal(capturedParams.p_request_id, 'a0000000-0000-0000-0000-000000000001');
     assert.equal(res.revision, 13);
   });
 
@@ -68,7 +70,7 @@ describe('Hearth Adapters — Authoritative RPC Dispatch & Contract Verification
 
     await assert.rejects(
       async () => {
-        await completeQuestAction('q-1', mockClient);
+        await completeQuestAction(DEMO_SNAPSHOT, 'q-fixture-1', mockClient);
       },
       {
         message: /complete_quest failed: quest already completed for this occurrence/,
@@ -96,6 +98,7 @@ describe('Hearth Adapters — Authoritative RPC Dispatch & Contract Verification
     };
 
     const res = await createQuestAction(
+      DEMO_SNAPSHOT,
       {
         title: 'Morning stretch',
         attribute: 'body',
@@ -103,7 +106,7 @@ describe('Hearth Adapters — Authoritative RPC Dispatch & Contract Verification
         cadence: 'daily',
       },
       mockClient,
-      'req-create-1'
+      'a0000000-0000-0000-0000-000000000002'
     );
 
     assert.equal(capturedFn, 'create_quest');
@@ -125,7 +128,7 @@ describe('Hearth Adapters — Authoritative RPC Dispatch & Contract Verification
         return {
           data: {
             revision: 15,
-            event: { id: 'evt-3', kind: 'quest_updated', questId: 'q-1', version: 2 },
+            event: { id: 'evt-3', kind: 'quest_updated', questId: 'q-fixture-1', version: 2 },
             snapshot: DEMO_SNAPSHOT,
           },
           error: null,
@@ -134,8 +137,9 @@ describe('Hearth Adapters — Authoritative RPC Dispatch & Contract Verification
     };
 
     const res = await updateQuestAction(
+      DEMO_SNAPSHOT,
+      'q-fixture-1',
       {
-        questId: 'q-1',
         expectedVersion: 1,
         title: 'Advanced Java recursion practice',
         attribute: 'mind',
@@ -143,11 +147,11 @@ describe('Hearth Adapters — Authoritative RPC Dispatch & Contract Verification
         cadence: 'daily',
       },
       mockClient,
-      'req-update-1'
+      'a0000000-0000-0000-0000-000000000003'
     );
 
     assert.equal(capturedFn, 'update_quest');
-    assert.equal(capturedParams.p_quest_id, 'q-1');
+    assert.equal(capturedParams.p_quest_id, 'q-fixture-1');
     assert.equal(capturedParams.p_expected_version, 1);
     assert.equal(capturedParams.p_title, 'Advanced Java recursion practice');
     assert.equal(res.event.kind, 'quest_updated');
@@ -164,7 +168,7 @@ describe('Hearth Adapters — Authoritative RPC Dispatch & Contract Verification
         return {
           data: {
             revision: 16,
-            event: { id: 'evt-4', kind: 'quest_deleted', questId: 'q-1' },
+            event: { id: 'evt-4', kind: 'quest_deleted', questId: 'q-fixture-1' },
             snapshot: DEMO_SNAPSHOT,
           },
           error: null,
@@ -172,10 +176,15 @@ describe('Hearth Adapters — Authoritative RPC Dispatch & Contract Verification
       },
     };
 
-    const res = await softDeleteQuestAction('q-1', mockClient, 'req-del-1');
+    const res = await softDeleteQuestAction(
+      DEMO_SNAPSHOT,
+      'q-fixture-1',
+      mockClient,
+      'a0000000-0000-0000-0000-000000000004'
+    );
 
     assert.equal(capturedFn, 'soft_delete_quest');
-    assert.equal(capturedParams.p_quest_id, 'q-1');
+    assert.equal(capturedParams.p_quest_id, 'q-fixture-1');
     assert.equal(res.event.kind, 'quest_deleted');
   });
 
