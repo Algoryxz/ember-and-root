@@ -1,6 +1,6 @@
 import React from 'react';
 import { createClient } from '@/lib/supabase/server';
-import { levelFromTotalXp } from '@/game/progression';
+import type { GameSnapshot } from '@/game/contracts';
 
 export const metadata = {
   title: 'Chronicle — Ember & Root',
@@ -18,35 +18,30 @@ export default async function ChroniclePage({ searchParams }: ChroniclePageProps
   const requestedLimit = parseInt(searchParams?.limit ?? '20', 10);
   const limit = Math.min(200, Math.max(20, isNaN(requestedLimit) ? 20 : requestedLimit));
 
-  const [profileRes, completionsRes, branchesRes] = await Promise.all([
-    supabase
-      .from('profiles')
-      .select('total_xp, current_streak, longest_streak, last_activity_date')
-      .single(),
+  // Fetch authoritative snapshot via RPC and permanent quest completion history in parallel
+  const [snapshotRes, completionsRes] = await Promise.all([
+    supabase.rpc('get_game_snapshot'),
     supabase
       .from('quest_completions')
       .select('id, quest_title_snapshot, quest_attribute_snapshot, xp_awarded, sparks_awarded, local_date, completed_at')
       .order('completed_at', { ascending: false })
       .limit(limit),
-    supabase
-      .from('branches')
-      .select('attribute, selected_specialization'),
   ]);
 
-  const profile = profileRes.data;
+  const snapshot = (snapshotRes.data as GameSnapshot | null) ?? null;
   const completions = completionsRes.data ?? [];
-  const branches = branchesRes.data ?? [];
 
-  const totalXp = profile?.total_xp ?? 0;
-  const currentStreak = profile?.current_streak ?? 0;
-  const longestStreak = profile?.longest_streak ?? 0;
+  // All progression statistics consumed directly from authoritative server snapshot
+  const totalXp = snapshot?.totalXp ?? 0;
+  const currentStreak = snapshot?.currentStreak ?? 0;
+  const longestStreak = snapshot?.longestStreak ?? 0;
+  const level = snapshot?.level ?? 1;
 
-  // Authoritative character level derived from canonical progression rules
-  const level = levelFromTotalXp(totalXp);
-
-  // Derived Achievements
+  // Derived Achievements based on authoritative server state
   const hasFirstLight = completions.length > 0;
-  const hasChosenPath = branches.some((b) => b.selected_specialization !== null);
+  const hasChosenPath = snapshot?.branches
+    ? Object.values(snapshot.branches).some((b) => b.specialization !== null)
+    : false;
   const hasReturned = longestStreak >= 2 || currentStreak > 0;
 
   const hasMore = completions.length >= limit;
