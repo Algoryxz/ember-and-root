@@ -5,7 +5,7 @@
 **Branch:** `feat/smarak-core`  
 **Database Stack:** Supabase Local Stack / PostgreSQL 17  
 **Validation Date:** 2026-09-12  
-**Status:** **PASSED (156 / 156 Live Verification Checks Succeeded)**  
+**Status:** **PASSED (204 / 204 Live Verification Checks Succeeded)**  
 
 ---
 
@@ -33,7 +33,7 @@ The database was initialized and migrated cleanly through the standard Supabase 
    - Strict `auth.uid() = user_id` row-level isolation on all selects, inserts, and updates.
 3. **`20260912122500_complete_quest_rpc.sql`**
    - Helper functions: `level_from_total_xp(integer)`, `ember_state_from_count(integer)`.
-   - RPC: `get_game_snapshot()` (parameterless, derives caller from `auth.uid()`, returns canonical `GameSnapshot`).
+   - RPC: `get_game_snapshot()` (parameterless, derives caller from `auth.uid()`, returns canonical `GameSnapshot` with occurrence derivation).
    - RPC: `update_profile_preferences(jsonb, text)` (validates timezone strictly against `pg_catalog.pg_timezone_names`).
    - RPC: `complete_quest(uuid, uuid, text)` (atomic transaction enforcing 140 daily XP cap, integer Sparks calculation `xp / 5`, streak progression, Ember state elevation, and idempotency receipts).
 4. **`20260912123000_root_progression_rpcs.sql`**
@@ -43,6 +43,10 @@ The database was initialized and migrated cleanly through the standard Supabase 
    - RPC: `progress_trial(uuid, text)` (enforces distinct local calendar date tracking in user profile timezone, records event, updates distinct days, marks trial complete at 5 days).
    - RPC: `record_trial_milestone(uuid, text, text)` (validates non-empty reflection up to 500 chars, completes trial, stores text).
    - RPC: `claim_trial(uuid, text)` (validates trial completed, branch XP >= 160, marks crest claimed, updates snapshot).
+5. **`20260912123500_quest_crud_rpcs.sql`**
+   - RPC: `create_quest(uuid, text, text, text, text, uuid)` (authenticated, title trimmed 1-120, canonical attribute/effort/cadence, version = 1, increments revision, returns MutationResult with `quest_created` event).
+   - RPC: `update_quest(uuid, uuid, integer, text, text, text, text, uuid)` (authenticated owner only, optimistic locking via `expectedVersion`, increments version and revision, rejects deleted quests, returns `quest_updated` event).
+   - RPC: `soft_delete_quest(uuid, uuid)` (authenticated owner only, sets `deleted_at = now()`, increments version and revision, keeps `quest_completions` intact, returns fresh snapshot excluding deleted quest with `quest_deleted` event).
 
 ---
 
@@ -251,6 +255,22 @@ The live test suite was executed by [`scripts/test-live-db.mjs`](file:///C:/User
   - Cross-user isolation: User B snapshot excludes User A quests; User B quest with identical title and cadence is uncompleted (`completedForCurrentOccurrence = false`).
 - **Status:** PASS (26 checks)
 
+### Step 21: Authoritative Quest CRUD RPCs
+- **Checks:**
+  - `create_quest`, `update_quest`, `soft_delete_quest` reject unauthenticated callers.
+  - `create_quest` input validation: rejects whitespace-only title, >120 char title, non-canonical attribute, non-canonical effort, non-canonical cadence.
+  - `create_quest` succeeds with valid inputs: owner derived from `auth.uid()`, initial `version = 1`, `deletedAt = null`, `completedForCurrentOccurrence = false`, profile revision incremented, returns `quest_created` event and fresh snapshot.
+  - `create_quest` idempotency: replay returns prior result; reused request ID with different payload rejects.
+  - Cross-user isolation: User B cannot call `update_quest` or `soft_delete_quest` on User A's quest.
+  - `update_quest` optimistic concurrency: rejects stale `expectedVersion` with `stale_version_conflict` (`P0015`). Matching version succeeds, updates title/effort/attribute, increments `version` (1 -> 2) and profile revision, returns `quest_updated` event.
+  - `update_quest` idempotency: replay returns prior result; reused request ID with different payload rejects.
+  - `quest_completions` preservation: quest completed before deletion has its completion record fully retained in `quest_completions` after soft deletion.
+  - `soft_delete_quest`: sets `deleted_at = now()`, increments `version` (2 -> 3) and profile revision, returns `quest_deleted` event and fresh snapshot excluding the deleted quest.
+  - Re-deleting already deleted quest with new request ID rejects; replay with original request ID returns prior result.
+  - Updating a soft-deleted quest rejects with `'Cannot update deleted quest'`.
+  - Concurrency safety: 5 parallel `update_quest` calls with same `expectedVersion` results in exactly 1 success and 4 `stale_version_conflict` rejections.
+- **Status:** PASS (48 checks)
+
 ---
 
 ## 4. Summary of Verification Checks
@@ -277,7 +297,8 @@ The live test suite was executed by [`scripts/test-live-db.mjs`](file:///C:/User
 | Cross-User Root Isolation | 4 | 4 | **PASS** |
 | Root Concurrency Safety | 4 | 4 | **PASS** |
 | Authoritative Quest Occurrence State (Hearth) | 26 | 26 | **PASS** |
-| **Total** | **156** | **156** | **100% PASS** |
+| Authoritative Quest CRUD RPCs (Step 21) | 48 | 48 | **PASS** |
+| **Total** | **204** | **204** | **100% PASS** |
 
 ---
 
@@ -288,5 +309,7 @@ The live test suite was executed by [`scripts/test-live-db.mjs`](file:///C:/User
 3. **Daily XP Cap:** 140 XP per local day was verified with exact boundary and partial award arithmetic.
 4. **Authoritative Root Progression:** Specialization eligibility (80 XP), trial configuration, distinct day counting, milestone length, and crest availability (160 XP + completed + unclaimed) are enforced strictly on PostgreSQL.
 5. **Authoritative Quest Occurrence:** Quests returned in `GameSnapshot.quests` evaluate `currentOccurrenceKey` and `completedForCurrentOccurrence` server-side matching the exact same occurrence semantics as `complete_quest`. The client does not maintain completion truth in local state.
-6. **Idempotency Guarantee:** Every mutation receipt is fingerprinted by request ID and canonical payload hash.
-7. **No Package.json Alterations:** Root project dependencies were left untouched; all operations used native Node 24 and Supabase CLI.
+6. **Authoritative Quest CRUD & Concurrency:** `create_quest`, `update_quest`, and `soft_delete_quest` derive identity from `auth.uid()`, enforce optimistic concurrency via `expectedVersion`, preserve immutable history in `quest_completions`, and filter soft-deleted quests from snapshots.
+7. **Idempotency Guarantee:** Every mutation receipt is fingerprinted by request ID and canonical payload hash.
+8. **No Package.json Alterations:** Root project dependencies were left untouched; all operations used native Node 24 and Supabase CLI.
+

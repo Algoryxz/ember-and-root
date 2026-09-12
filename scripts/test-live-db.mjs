@@ -1179,6 +1179,427 @@ async function main() {
   }
 
   // -------------------------------------------------------------------------
+  // 21. QUEST CRUD RPCs (create_quest, update_quest, soft_delete_quest)
+  // -------------------------------------------------------------------------
+  console.log('\n--- Step 21: Authoritative Quest CRUD RPCs ---');
+  {
+    // 1. Unauthenticated caller rejection
+    const unauthCreate = await api('/rest/v1/rpc/create_quest', {
+      method: 'POST',
+      body: JSON.stringify({
+        p_request_id: crypto.randomUUID(),
+        p_title: 'Unauthenticated Quest',
+        p_attribute: 'mind',
+        p_effort: 'standard',
+        p_cadence: 'daily'
+      })
+    });
+    assert(unauthCreate.status === 401 || unauthCreate.status === 403 || !unauthCreate.ok,
+      'create_quest rejects unauthenticated caller');
+
+    const unauthUpdate = await api('/rest/v1/rpc/update_quest', {
+      method: 'POST',
+      body: JSON.stringify({
+        p_request_id: crypto.randomUUID(),
+        p_quest_id: crypto.randomUUID(),
+        p_expected_version: 1,
+        p_title: 'Unauthenticated Update',
+        p_attribute: 'mind',
+        p_effort: 'standard',
+        p_cadence: 'daily'
+      })
+    });
+    assert(unauthUpdate.status === 401 || unauthUpdate.status === 403 || !unauthUpdate.ok,
+      'update_quest rejects unauthenticated caller');
+
+    const unauthDelete = await api('/rest/v1/rpc/soft_delete_quest', {
+      method: 'POST',
+      body: JSON.stringify({
+        p_request_id: crypto.randomUUID(),
+        p_quest_id: crypto.randomUUID()
+      })
+    });
+    assert(unauthDelete.status === 401 || unauthDelete.status === 403 || !unauthDelete.ok,
+      'soft_delete_quest rejects unauthenticated caller');
+
+    // 2. Input validation rejections
+    const emptyTitleRes = await api('/rest/v1/rpc/create_quest', {
+      method: 'POST',
+      body: JSON.stringify({
+        p_request_id: crypto.randomUUID(),
+        p_title: '   ',
+        p_attribute: 'mind',
+        p_effort: 'standard',
+        p_cadence: 'daily'
+      })
+    }, userA.token);
+    assert(!emptyTitleRes.ok && /Quest title must be between 1 and 120 characters/i.test(JSON.stringify(emptyTitleRes.data)),
+      'create_quest rejects whitespace-only title');
+
+    const longTitleRes = await api('/rest/v1/rpc/create_quest', {
+      method: 'POST',
+      body: JSON.stringify({
+        p_request_id: crypto.randomUUID(),
+        p_title: 'A'.repeat(121),
+        p_attribute: 'mind',
+        p_effort: 'standard',
+        p_cadence: 'daily'
+      })
+    }, userA.token);
+    assert(!longTitleRes.ok && /Quest title must be between 1 and 120 characters/i.test(JSON.stringify(longTitleRes.data)),
+      'create_quest rejects title exceeding 120 characters');
+
+    const invalidAttrRes = await api('/rest/v1/rpc/create_quest', {
+      method: 'POST',
+      body: JSON.stringify({
+        p_request_id: crypto.randomUUID(),
+        p_title: 'Valid Title',
+        p_attribute: 'intellect',
+        p_effort: 'standard',
+        p_cadence: 'daily'
+      })
+    }, userA.token);
+    assert(!invalidAttrRes.ok && /Invalid attribute/i.test(JSON.stringify(invalidAttrRes.data)),
+      'create_quest rejects non-canonical attribute');
+
+    const invalidEffortRes = await api('/rest/v1/rpc/create_quest', {
+      method: 'POST',
+      body: JSON.stringify({
+        p_request_id: crypto.randomUUID(),
+        p_title: 'Valid Title',
+        p_attribute: 'mind',
+        p_effort: 'mega',
+        p_cadence: 'daily'
+      })
+    }, userA.token);
+    assert(!invalidEffortRes.ok && /Invalid effort/i.test(JSON.stringify(invalidEffortRes.data)),
+      'create_quest rejects non-canonical effort');
+
+    const invalidCadenceRes = await api('/rest/v1/rpc/create_quest', {
+      method: 'POST',
+      body: JSON.stringify({
+        p_request_id: crypto.randomUUID(),
+        p_title: 'Valid Title',
+        p_attribute: 'mind',
+        p_effort: 'standard',
+        p_cadence: 'weekly'
+      })
+    }, userA.token);
+    assert(!invalidCadenceRes.ok && /Invalid cadence/i.test(JSON.stringify(invalidCadenceRes.data)),
+      'create_quest rejects non-canonical cadence');
+
+    // 3. create_quest authoritative creation
+    const snapBeforeCreate = await api('/rest/v1/rpc/get_game_snapshot', { method: 'POST', body: '{}' }, userA.token);
+    const revisionBeforeCreate = snapBeforeCreate.data.revision;
+
+    const createReqId = crypto.randomUUID();
+    const createRes = await api('/rest/v1/rpc/create_quest', {
+      method: 'POST',
+      body: JSON.stringify({
+        p_request_id: createReqId,
+        p_title: 'Master PL/pgSQL RPC Architecture',
+        p_attribute: 'mind',
+        p_effort: 'deep',
+        p_cadence: 'daily'
+      })
+    }, userA.token);
+
+    assert(createRes.ok, 'create_quest succeeds with valid parameters');
+    const createdQuestId = createRes.data?.event?.questId;
+    assert(createRes.data?.event?.kind === 'quest_created' && typeof createdQuestId === 'string',
+      'create_quest returns quest_created event with questId');
+    assert(createRes.data.revision > revisionBeforeCreate,
+      'create_quest increments profile revision');
+
+    const createdInSnap = createRes.data?.snapshot?.quests?.find(q => q.id === createdQuestId);
+    assert(createdInSnap != null, 'Newly created quest is present in returned snapshot');
+    assert(createdInSnap.title === 'Master PL/pgSQL RPC Architecture',
+      'Created quest title matches trimmed input');
+    assert(createdInSnap.attribute === 'mind' && createdInSnap.effort === 'deep' && createdInSnap.cadence === 'daily',
+      'Created quest fields match input');
+    assert(createdInSnap.version === 1, 'Created quest initial version is 1');
+    assert(createdInSnap.deletedAt === null, 'Created quest deletedAt is null');
+    assert(createdInSnap.completedForCurrentOccurrence === false,
+      'Created quest completedForCurrentOccurrence is initially false');
+
+    // 4. create_quest idempotency
+    const createReplayRes = await api('/rest/v1/rpc/create_quest', {
+      method: 'POST',
+      body: JSON.stringify({
+        p_request_id: createReqId,
+        p_title: 'Master PL/pgSQL RPC Architecture',
+        p_attribute: 'mind',
+        p_effort: 'deep',
+        p_cadence: 'daily'
+      })
+    }, userA.token);
+    assert(createReplayRes.ok && createReplayRes.data.event.questId === createdQuestId,
+      'create_quest idempotent replay returns prior result');
+    assert(createReplayRes.data.revision === createRes.data.revision,
+      'create_quest idempotent replay preserves revision');
+
+    const createConflictRes = await api('/rest/v1/rpc/create_quest', {
+      method: 'POST',
+      body: JSON.stringify({
+        p_request_id: createReqId,
+        p_title: 'Different Title With Reused ID',
+        p_attribute: 'mind',
+        p_effort: 'deep',
+        p_cadence: 'daily'
+      })
+    }, userA.token);
+    assert(!createConflictRes.ok && /request_id_reuse/i.test(JSON.stringify(createConflictRes.data)),
+      'create_quest rejects reused request ID with different payload');
+
+    // 5. Cross-user isolation on quest mutations
+    const crossUpdateRes = await api('/rest/v1/rpc/update_quest', {
+      method: 'POST',
+      body: JSON.stringify({
+        p_request_id: crypto.randomUUID(),
+        p_quest_id: createdQuestId,
+        p_expected_version: 1,
+        p_title: 'Hacked Quest Title',
+        p_attribute: 'craft',
+        p_effort: 'quick',
+        p_cadence: 'once'
+      })
+    }, userB.token);
+    assert(!crossUpdateRes.ok && /Quest not found/i.test(JSON.stringify(crossUpdateRes.data)),
+      'User B cannot update User A quest (ownership isolation)');
+
+    const crossDeleteRes = await api('/rest/v1/rpc/soft_delete_quest', {
+      method: 'POST',
+      body: JSON.stringify({
+        p_request_id: crypto.randomUUID(),
+        p_quest_id: createdQuestId
+      })
+    }, userB.token);
+    assert(!crossDeleteRes.ok && /Quest not found/i.test(JSON.stringify(crossDeleteRes.data)),
+      'User B cannot soft-delete User A quest (ownership isolation)');
+
+    // 6. update_quest authoritative mutation & optimistic version check
+    // Stale version conflict check (pass expected_version = 99 when current = 1)
+    const staleVersionRes = await api('/rest/v1/rpc/update_quest', {
+      method: 'POST',
+      body: JSON.stringify({
+        p_request_id: crypto.randomUUID(),
+        p_quest_id: createdQuestId,
+        p_expected_version: 99,
+        p_title: 'Advanced PL/pgSQL Architecture',
+        p_attribute: 'mind',
+        p_effort: 'deep',
+        p_cadence: 'daily'
+      })
+    }, userA.token);
+    assert(!staleVersionRes.ok && /stale_version_conflict/i.test(JSON.stringify(staleVersionRes.data)),
+      'update_quest rejects stale version conflict with P0015');
+
+    // Valid update from version 1 -> 2
+    const updateReqId = crypto.randomUUID();
+    const updateRes = await api('/rest/v1/rpc/update_quest', {
+      method: 'POST',
+      body: JSON.stringify({
+        p_request_id: updateReqId,
+        p_quest_id: createdQuestId,
+        p_expected_version: 1,
+        p_title: 'Advanced PL/pgSQL Architecture',
+        p_attribute: 'craft',
+        p_effort: 'standard',
+        p_cadence: 'daily'
+      })
+    }, userA.token);
+    assert(updateRes.ok, 'update_quest succeeds with matching expected version');
+    assert(updateRes.data?.event?.kind === 'quest_updated' && updateRes.data?.event?.version === 2,
+      'update_quest returns quest_updated event with version = 2');
+    assert(updateRes.data.revision > createRes.data.revision,
+      'update_quest increments profile revision');
+
+    const updatedInSnap = updateRes.data?.snapshot?.quests?.find(q => q.id === createdQuestId);
+    assert(updatedInSnap != null && updatedInSnap.version === 2,
+      'Updated quest in snapshot reflects version = 2');
+    assert(updatedInSnap.title === 'Advanced PL/pgSQL Architecture',
+      'Updated quest in snapshot reflects new title');
+    assert(updatedInSnap.attribute === 'craft' && updatedInSnap.effort === 'standard',
+      'Updated quest in snapshot reflects updated attribute and effort');
+
+    // Stale version conflict: trying to update with expected_version = 1 now that it is version 2
+    const nowStaleRes = await api('/rest/v1/rpc/update_quest', {
+      method: 'POST',
+      body: JSON.stringify({
+        p_request_id: crypto.randomUUID(),
+        p_quest_id: createdQuestId,
+        p_expected_version: 1,
+        p_title: 'Another Title',
+        p_attribute: 'craft',
+        p_effort: 'standard',
+        p_cadence: 'daily'
+      })
+    }, userA.token);
+    assert(!nowStaleRes.ok && /stale_version_conflict/i.test(JSON.stringify(nowStaleRes.data)),
+      'update_quest rejects expected_version = 1 when version is 2');
+
+    // update_quest idempotency
+    const updateReplayRes = await api('/rest/v1/rpc/update_quest', {
+      method: 'POST',
+      body: JSON.stringify({
+        p_request_id: updateReqId,
+        p_quest_id: createdQuestId,
+        p_expected_version: 1,
+        p_title: 'Advanced PL/pgSQL Architecture',
+        p_attribute: 'craft',
+        p_effort: 'standard',
+        p_cadence: 'daily'
+      })
+    }, userA.token);
+    assert(updateReplayRes.ok && updateReplayRes.data.event.version === 2,
+      'update_quest idempotent replay returns prior result');
+
+    const updateConflictRes = await api('/rest/v1/rpc/update_quest', {
+      method: 'POST',
+      body: JSON.stringify({
+        p_request_id: updateReqId,
+        p_quest_id: createdQuestId,
+        p_expected_version: 1,
+        p_title: 'Different Title For Same Request ID',
+        p_attribute: 'craft',
+        p_effort: 'standard',
+        p_cadence: 'daily'
+      })
+    }, userA.token);
+    assert(!updateConflictRes.ok && /request_id_reuse/i.test(JSON.stringify(updateConflictRes.data)),
+      'update_quest rejects reused request ID with different payload');
+
+    // 7. Complete the quest to verify quest_completions preservation across soft delete
+    const completeReqId = crypto.randomUUID();
+    const completeRes = await api('/rest/v1/rpc/complete_quest', {
+      method: 'POST',
+      body: JSON.stringify({
+        p_request_id: completeReqId,
+        p_quest_id: createdQuestId
+      })
+    }, userA.token);
+    assert(completeRes.ok, 'complete_quest succeeds on updated quest');
+
+    // Verify completion record in quest_completions table
+    const completionsBeforeDelete = await api(`/rest/v1/quest_completions?quest_id=eq.${createdQuestId}&select=*`, {}, userA.token);
+    assert(completionsBeforeDelete.ok && completionsBeforeDelete.data.length === 1,
+      'Completion record exists in quest_completions before soft delete');
+
+    // 8. soft_delete_quest authoritative soft-deletion
+    const deleteReqId = crypto.randomUUID();
+    const deleteRes = await api('/rest/v1/rpc/soft_delete_quest', {
+      method: 'POST',
+      body: JSON.stringify({
+        p_request_id: deleteReqId,
+        p_quest_id: createdQuestId
+      })
+    }, userA.token);
+    assert(deleteRes.ok, 'soft_delete_quest succeeds');
+    assert(deleteRes.data?.event?.kind === 'quest_deleted' && deleteRes.data?.event?.questId === createdQuestId,
+      'soft_delete_quest returns quest_deleted event with questId');
+    assert(deleteRes.data.revision > updateRes.data.revision,
+      'soft_delete_quest increments profile revision');
+
+    // Snapshot excludes deleted quest
+    const deletedInSnap = deleteRes.data?.snapshot?.quests?.find(q => q.id === createdQuestId);
+    assert(deletedInSnap == null, 'Snapshot returned by soft_delete_quest excludes deleted quest');
+
+    // Fresh snapshot also excludes deleted quest
+    const freshSnap = await api('/rest/v1/rpc/get_game_snapshot', { method: 'POST', body: '{}' }, userA.token);
+    const freshInSnap = freshSnap.data?.quests?.find(q => q.id === createdQuestId);
+    assert(freshInSnap == null, 'Fresh get_game_snapshot excludes deleted quest');
+
+    // Direct DB inspection confirms quest row has deleted_at NOT NULL and version incremented (2 -> 3)
+    const dbQuest = await adminApi(`/rest/v1/quests?id=eq.${createdQuestId}&select=*`);
+    assert(dbQuest.ok && dbQuest.data.length === 1, 'Quest row remains in database');
+    assert(dbQuest.data[0].deleted_at != null, 'Quest row has deleted_at timestamp populated');
+    assert(dbQuest.data[0].version === 3, 'Quest row version incremented to 3 upon soft deletion');
+
+    // CRITICAL: Immutable completion history in quest_completions is preserved!
+    const completionsAfterDelete = await api(`/rest/v1/quest_completions?quest_id=eq.${createdQuestId}&select=*`, {}, userA.token);
+    assert(completionsAfterDelete.ok && completionsAfterDelete.data.length === 1,
+      'Completion history in quest_completions remains intact after soft-delete');
+
+    // Repeat soft-delete with new request ID rejects
+    const repeatDeleteRes = await api('/rest/v1/rpc/soft_delete_quest', {
+      method: 'POST',
+      body: JSON.stringify({
+        p_request_id: crypto.randomUUID(),
+        p_quest_id: createdQuestId
+      })
+    }, userA.token);
+    assert(!repeatDeleteRes.ok && /Quest is already deleted/i.test(JSON.stringify(repeatDeleteRes.data)),
+      'soft_delete_quest rejects already deleted quest with fresh request ID');
+
+    // Idempotent replay of soft_delete_quest returns identical prior result
+    const deleteReplayRes = await api('/rest/v1/rpc/soft_delete_quest', {
+      method: 'POST',
+      body: JSON.stringify({
+        p_request_id: deleteReqId,
+        p_quest_id: createdQuestId
+      })
+    }, userA.token);
+    assert(deleteReplayRes.ok && deleteReplayRes.data.event.questId === createdQuestId,
+      'soft_delete_quest idempotent replay returns prior result');
+
+    // Updating a deleted quest is rejected
+    const updateDeletedRes = await api('/rest/v1/rpc/update_quest', {
+      method: 'POST',
+      body: JSON.stringify({
+        p_request_id: crypto.randomUUID(),
+        p_quest_id: createdQuestId,
+        p_expected_version: 3,
+        p_title: 'Cannot Update This',
+        p_attribute: 'mind',
+        p_effort: 'quick',
+        p_cadence: 'daily'
+      })
+    }, userA.token);
+    assert(!updateDeletedRes.ok && /Cannot update deleted quest/i.test(JSON.stringify(updateDeletedRes.data)),
+      'update_quest rejects updating a soft-deleted quest');
+
+    // 9. Concurrency & Race Condition Safety on Optimistic Versioning
+    // Create a quest for concurrent update testing
+    const concurrentCreate = await api('/rest/v1/rpc/create_quest', {
+      method: 'POST',
+      body: JSON.stringify({
+        p_request_id: crypto.randomUUID(),
+        p_title: 'Concurrent Race Quest',
+        p_attribute: 'will',
+        p_effort: 'quick',
+        p_cadence: 'daily'
+      })
+    }, userA.token);
+    const concurrentQuestId = concurrentCreate.data.event.questId;
+
+    // Launch 5 simultaneous update_quest calls with same expected_version = 1 but distinct request IDs
+    const parallelUpdates = await Promise.all(
+      Array.from({ length: 5 }, (_, i) =>
+        api('/rest/v1/rpc/update_quest', {
+          method: 'POST',
+          body: JSON.stringify({
+            p_request_id: crypto.randomUUID(),
+            p_quest_id: concurrentQuestId,
+            p_expected_version: 1,
+            p_title: `Parallel Update Attempt ${i + 1}`,
+            p_attribute: 'will',
+            p_effort: 'quick',
+            p_cadence: 'daily'
+          })
+        }, userA.token)
+      )
+    );
+
+    const successfulUpdates = parallelUpdates.filter(r => r.ok);
+    const failedUpdates = parallelUpdates.filter(r => !r.ok && /stale_version_conflict/i.test(JSON.stringify(r.data)));
+
+    assert(successfulUpdates.length === 1,
+      `Exactly 1 parallel update request succeeded (actual: ${successfulUpdates.length})`);
+    assert(failedUpdates.length === 4,
+      `Remaining 4 parallel update requests failed with stale_version_conflict (actual: ${failedUpdates.length})`);
+  }
+
+  // -------------------------------------------------------------------------
   // SUMMARY
   // -------------------------------------------------------------------------
   console.log('\n======================================================================');

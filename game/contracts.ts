@@ -210,6 +210,10 @@ export type MutationEvent = {
 
   // Specialization/trial fields
   specialization?: Specialization;
+
+  // Quest CRUD fields
+  questId?: string;
+  version?: number;
 };
 
 export type MutationResult = {
