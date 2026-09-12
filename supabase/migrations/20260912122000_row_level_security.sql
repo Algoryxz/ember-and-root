@@ -3,7 +3,8 @@
 -- Ember & Root — Core Workstream
 --
 -- Restricts read and write operations on all tables.
--- Progression-changing writes must execute via SECURITY DEFINER RPC functions.
+-- Direct client mutation of progression, ledger, receipts, completions, and profiles
+-- is strictly denied. All progression changes must execute via SECURITY DEFINER RPCs.
 -- ==============================================================================
 
 -- 1. Profiles
@@ -14,36 +15,17 @@ CREATE POLICY "profiles_owner_select"
   TO authenticated
   USING (auth.uid() = user_id);
 
--- Direct client updates to profiles only allowed for preferences and timezone
-CREATE POLICY "profiles_owner_update_preferences"
+-- Direct client UPDATE on profiles is completely denied.
+-- Mutable settings (preferences, timezone) must be updated via update_profile_preferences RPC.
+CREATE POLICY "profiles_no_client_update"
   ON public.profiles FOR UPDATE
   TO authenticated
-  USING (auth.uid() = user_id)
-  WITH CHECK (auth.uid() = user_id);
+  USING (false);
 
--- Trigger to guard against client tampering with progression columns via direct update
-CREATE OR REPLACE FUNCTION public.guard_profile_progression_columns()
-RETURNS trigger AS $$
-BEGIN
-  -- If invoked from regular authenticated context without bypass, reject direct progression changes
-  IF current_setting('ember.in_rpc', true) IS NULL OR current_setting('ember.in_rpc', true) != 'true' THEN
-    IF NEW.total_xp IS DISTINCT FROM OLD.total_xp OR
-       NEW.sparks_balance IS DISTINCT FROM OLD.sparks_balance OR
-       NEW.current_streak IS DISTINCT FROM OLD.current_streak OR
-       NEW.longest_streak IS DISTINCT FROM OLD.longest_streak OR
-       NEW.last_activity_date IS DISTINCT FROM OLD.last_activity_date OR
-       NEW.revision IS DISTINCT FROM OLD.revision THEN
-      RAISE EXCEPTION 'Direct updates to progression, streak, or balance columns are forbidden. Use RPCs.';
-    END IF;
-  END IF;
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-DROP TRIGGER IF EXISTS trg_guard_profile_progression ON public.profiles;
-CREATE TRIGGER trg_guard_profile_progression
-  BEFORE UPDATE ON public.profiles
-  FOR EACH ROW EXECUTE FUNCTION public.guard_profile_progression_columns();
+CREATE POLICY "profiles_no_client_delete"
+  ON public.profiles FOR DELETE
+  TO authenticated
+  USING (false);
 
 -- 2. Quests
 ALTER TABLE public.quests ENABLE ROW LEVEL SECURITY;
@@ -53,7 +35,6 @@ CREATE POLICY "quests_owner_select"
   TO authenticated
   USING (auth.uid() = user_id AND deleted_at IS NULL);
 
--- Quests can be managed by owner (or through RPC)
 CREATE POLICY "quests_owner_insert"
   ON public.quests FOR INSERT
   TO authenticated
@@ -66,12 +47,12 @@ CREATE POLICY "quests_owner_update"
   WITH CHECK (auth.uid() = user_id);
 
 -- Soft delete only; hard delete denied
-CREATE POLICY "quests_owner_delete"
+CREATE POLICY "quests_no_client_delete"
   ON public.quests FOR DELETE
   TO authenticated
   USING (false);
 
--- 3. Quest Completions (Immutable; direct client INSERT/UPDATE/DELETE denied)
+-- 3. Quest Completions (Immutable event history; direct client writes denied)
 ALTER TABLE public.quest_completions ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "completions_owner_select"
@@ -79,11 +60,20 @@ CREATE POLICY "completions_owner_select"
   TO authenticated
   USING (auth.uid() = user_id);
 
--- No direct client writes to completions
 CREATE POLICY "completions_no_client_insert"
   ON public.quest_completions FOR INSERT
   TO authenticated
   WITH CHECK (false);
+
+CREATE POLICY "completions_no_client_update"
+  ON public.quest_completions FOR UPDATE
+  TO authenticated
+  USING (false);
+
+CREATE POLICY "completions_no_client_delete"
+  ON public.quest_completions FOR DELETE
+  TO authenticated
+  USING (false);
 
 -- 4. Branches (Progression; direct client writes denied)
 ALTER TABLE public.branches ENABLE ROW LEVEL SECURITY;
@@ -100,6 +90,11 @@ CREATE POLICY "branches_no_client_insert"
 
 CREATE POLICY "branches_no_client_update"
   ON public.branches FOR UPDATE
+  TO authenticated
+  USING (false);
+
+CREATE POLICY "branches_no_client_delete"
+  ON public.branches FOR DELETE
   TO authenticated
   USING (false);
 
@@ -121,7 +116,12 @@ CREATE POLICY "trials_no_client_update"
   TO authenticated
   USING (false);
 
--- 6. Items (Catalog is readable by all authenticated users, client writes denied)
+CREATE POLICY "trials_no_client_delete"
+  ON public.trials FOR DELETE
+  TO authenticated
+  USING (false);
+
+-- 6. Items (Catalog is readable by all, client writes denied)
 ALTER TABLE public.items ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "items_read_all"
@@ -162,6 +162,11 @@ CREATE POLICY "inventory_no_client_update"
   TO authenticated
   USING (false);
 
+CREATE POLICY "inventory_no_client_delete"
+  ON public.inventory FOR DELETE
+  TO authenticated
+  USING (false);
+
 -- 8. Currency Ledger (Immutable history; client writes denied)
 ALTER TABLE public.currency_ledger ENABLE ROW LEVEL SECURITY;
 
@@ -175,10 +180,20 @@ CREATE POLICY "ledger_no_client_insert"
   TO authenticated
   WITH CHECK (false);
 
+CREATE POLICY "ledger_no_client_update"
+  ON public.currency_ledger FOR UPDATE
+  TO authenticated
+  USING (false);
+
+CREATE POLICY "ledger_no_client_delete"
+  ON public.currency_ledger FOR DELETE
+  TO authenticated
+  USING (false);
+
 -- 9. Mutation Receipts (Internal idempotency log; no direct client access)
 ALTER TABLE public.mutation_receipts ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "receipts_owner_select"
+CREATE POLICY "receipts_no_client_select"
   ON public.mutation_receipts FOR SELECT
   TO authenticated
   USING (false);
@@ -187,3 +202,13 @@ CREATE POLICY "receipts_no_client_insert"
   ON public.mutation_receipts FOR INSERT
   TO authenticated
   WITH CHECK (false);
+
+CREATE POLICY "receipts_no_client_update"
+  ON public.mutation_receipts FOR UPDATE
+  TO authenticated
+  USING (false);
+
+CREATE POLICY "receipts_no_client_delete"
+  ON public.mutation_receipts FOR DELETE
+  TO authenticated
+  USING (false);

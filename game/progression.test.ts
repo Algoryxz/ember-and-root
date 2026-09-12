@@ -12,6 +12,7 @@ import {
   emberStateFromTodayCompletionCount,
   specializationAvailable,
   crestAvailable,
+  canonicalCompleteQuestPayload,
   updateStreak,
   DAILY_XP_CAP,
 } from './progression.ts';
@@ -108,42 +109,53 @@ describe('Ember & Root — Progression Reference Math', () => {
   describe('Crest Availability', () => {
     it('requires 160 XP and completed, unclaimed Trial', () => {
       // Under 160 XP
-      assert.strictEqual(crestAvailable({ xp: 159 }, { isComplete: true }), false);
-
-      // 160 XP with incomplete trial
-      assert.strictEqual(crestAvailable({ xp: 160 }, { isComplete: false }), false);
-
-      // 160 XP with complete trial, unclaimed
-      assert.strictEqual(crestAvailable({ xp: 160 }, { isComplete: true }), true);
       assert.strictEqual(
-        crestAvailable({ xp: 160 }, { isComplete: true, claimedAt: null }),
+        crestAvailable({ xp: 159 }, { completedAt: '2026-09-12T00:00:00Z', claimedAt: null }),
+        false
+      );
+
+      // 160 XP with incomplete trial (completedAt is null)
+      assert.strictEqual(
+        crestAvailable({ xp: 160 }, { completedAt: null, claimedAt: null }),
+        false
+      );
+
+      // 160 XP with completed trial, unclaimed
+      assert.strictEqual(
+        crestAvailable({ xp: 160 }, { completedAt: '2026-09-12T00:00:00Z', claimedAt: null }),
         true
       );
 
-      // Already claimed crest/trial
+      // 160 XP with completed trial, already claimed
       assert.strictEqual(
         crestAvailable(
           { xp: 160 },
-          { isComplete: true, claimedAt: '2026-09-12T00:00:00Z' }
+          { completedAt: '2026-09-12T00:00:00Z', claimedAt: '2026-09-12T01:00:00Z' }
         ),
         false
       );
 
-      // Distinct days trial evaluator
-      assert.strictEqual(
-        crestAvailable(
-          { xp: 160 },
-          { distinctDaysCompleted: 4, requiredDays: 5, claimedAt: null }
-        ),
-        false
-      );
-      assert.strictEqual(
-        crestAvailable(
-          { xp: 160 },
-          { distinctDaysCompleted: 5, requiredDays: 5, claimedAt: null }
-        ),
-        true
-      );
+      // Missing trial record
+      assert.strictEqual(crestAvailable({ xp: 160 }, null), false);
+      assert.strictEqual(crestAvailable({ xp: 160 }, undefined), false);
+    });
+  });
+
+  describe('Idempotency Payload Fingerprint', () => {
+    it('generates deterministic JSON string for identical inputs', () => {
+      const p1 = canonicalCompleteQuestPayload('q-123', '2026-09-12', { note: 'reflection' });
+      const p2 = canonicalCompleteQuestPayload('q-123', '2026-09-12', { note: 'reflection' });
+      assert.strictEqual(p1, p2);
+    });
+
+    it('distinguishes different occurrences or evidence', () => {
+      const p1 = canonicalCompleteQuestPayload('q-123', '2026-09-12');
+      const p2 = canonicalCompleteQuestPayload('q-123', '2026-09-13');
+      assert.notStrictEqual(p1, p2);
+
+      const p3 = canonicalCompleteQuestPayload('q-123', '2026-09-12', { note: 'a' });
+      const p4 = canonicalCompleteQuestPayload('q-123', '2026-09-12', { note: 'b' });
+      assert.notStrictEqual(p3, p4);
     });
   });
 

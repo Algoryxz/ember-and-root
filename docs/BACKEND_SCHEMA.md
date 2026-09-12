@@ -137,11 +137,25 @@ One active Trial per (user, attribute) pair in this release.
 | `user_id` | `uuid` | `NOT NULL REFERENCES auth.users(id)` | |
 | `attribute` | `text` | `NOT NULL CHECK (attribute IN ('mind','body','will','craft'))` | |
 | `specialization` | `text` | `NOT NULL` | Must match valid specialization |
+| `kind` | `text` | `NOT NULL CHECK (kind IN ('distinct_days', 'milestone_reflection'))` | Evaluator type |
 | `started_at` | `timestamptz` | `NOT NULL DEFAULT now()` | Evidence must be after this timestamp |
-| `done_condition` | `text` | `NULL` | Stores milestone/reflection text for Courage/Builder Trials |
+| `required_days` | `integer` | `NULL` | Required days for distinct_days trial |
+| `distinct_days_completed` | `integer` | `NOT NULL DEFAULT 0` | Days completed for distinct_days trial |
+| `milestone_text` | `text` | `NULL` | Declared milestone text for milestone_reflection trial |
+| `completed_at` | `timestamptz` | `NULL` | Non-null when trial objective is completed |
 | `claimed_at` | `timestamptz` | `NULL` | Non-null means Trial claimed and Crest awarded |
 
 **Unique constraint:** `UNIQUE (user_id, attribute)` — one Trial per attribute per user in this release.
+
+**Kind constraint:**
+- `distinct_days`: `required_days > 0 AND milestone_text IS NULL`
+- `milestone_reflection`: `required_days IS NULL AND distinct_days_completed = 0`
+
+**Semantics:**
+- `trialStarted`: trial row exists
+- `trialComplete`: `completed_at IS NOT NULL`
+- `crestAvailable`: `branches.xp >= 160 AND completed_at IS NOT NULL AND claimed_at IS NULL`
+- `crestClaimed`: `claimed_at IS NOT NULL`
 
 **RLS:** Owner reads allowed. Mutations via RPC only.
 
@@ -242,7 +256,9 @@ The following are computed at read time from the tables above. Never store them 
 | Ember intensity / state | `quest_completions` count for current local day |
 | Sprout availability | `branches.xp > 0` |
 | Specialization availability | `branches.xp >= 80 AND selected_specialization IS NULL` |
-| Crest availability | `branches.xp >= 160 AND trials.claimed_at IS NOT NULL` |
+| Trial complete | `trials.completed_at IS NOT NULL` |
+| Crest availability | `branches.xp >= 160 AND trials.completed_at IS NOT NULL AND trials.claimed_at IS NULL` |
+| Crest claimed | `trials.claimed_at IS NOT NULL` |
 | Trial session count (distinct-day) | Count of distinct `local_date` values in `quest_completions` WHERE `completed_at > trials.started_at` |
 | Achievement state | Derived from `quest_completions`, `branches`, `profiles` |
 

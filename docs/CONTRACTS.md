@@ -113,12 +113,12 @@ export type BranchState = {
   selectedAt: string | null;    // ISO datetime string when specialization was chosen
 
   // Derived fields (computed server-side and included in snapshot)
-  sproutAvailable: boolean;     // xp > 0
+  sproutAvailable: boolean;          // xp > 0
   specializationAvailable: boolean;  // xp >= 80 && specialization === null
-  crestAvailable: boolean;      // xp >= 160 && trialComplete
-  trialStarted: boolean;
-  trialComplete: boolean;
-  crestClaimed: boolean;
+  crestAvailable: boolean;           // xp >= 160 && trialComplete && !crestClaimed
+  trialStarted: boolean;             // trial row exists
+  trialComplete: boolean;            // trial.completedAt !== null
+  crestClaimed: boolean;             // trial.claimedAt !== null
 };
 ```
 
@@ -143,7 +143,8 @@ export type TrialState = {
   // For milestone_reflection trials
   milestoneText?: string;   // Player-declared milestone
 
-  claimedAt: string | null; // non-null when claimed
+  completedAt: string | null; // ISO datetime string when trial objective completed
+  claimedAt: string | null;   // ISO datetime string when claimed and crest awarded
 };
 ```
 

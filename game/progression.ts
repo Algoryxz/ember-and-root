@@ -142,19 +142,15 @@ export function specializationAvailable(branch: {
 }
 
 export type TrialStatusInput = {
-  isComplete: boolean;
+  completedAt?: string | null;
   claimedAt?: string | null;
-} | {
-  claimedAt?: string | null;
-  distinctDaysCompleted?: number;
-  requiredDays?: number;
 } | null | undefined;
 
 /**
  * Crest claim becomes available when:
  * - Branch XP >= 160
- * - Trial objective is complete
- * - Crest/Trial has not already been claimed
+ * - Trial objective is complete (completedAt IS NOT NULL)
+ * - Crest/Trial has not already been claimed (claimedAt IS NULL)
  */
 export function crestAvailable(
   branch: { xp: number },
@@ -162,21 +158,22 @@ export function crestAvailable(
 ): boolean {
   if (branch.xp < 160) return false;
   if (!trial) return false;
-  if (trial.claimedAt != null) return false;
+  return trial.completedAt != null && trial.claimedAt == null;
+}
 
-  if ('isComplete' in trial && typeof trial.isComplete === 'boolean') {
-    return trial.isComplete;
-  }
-
-  if (
-    'distinctDaysCompleted' in trial &&
-    trial.distinctDaysCompleted != null &&
-    trial.requiredDays != null
-  ) {
-    return trial.distinctDaysCompleted >= trial.requiredDays;
-  }
-
-  return false;
+/**
+ * Canonical payload serializer for completeQuest idempotency fingerprinting.
+ */
+export function canonicalCompleteQuestPayload(
+  questId: string,
+  expectedOccurrence: string | null = null,
+  trialEvidence: Record<string, unknown> = {}
+): string {
+  return JSON.stringify({
+    questId,
+    expectedOccurrence: expectedOccurrence ?? '',
+    trialEvidence: trialEvidence ?? {},
+  });
 }
 
 export type StreakResult = {

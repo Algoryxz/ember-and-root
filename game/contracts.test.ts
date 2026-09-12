@@ -1,10 +1,18 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert';
 import { SPECIALIZATIONS_BY_ATTRIBUTE } from './contracts.ts';
+import type { AttributeId, TrialState, BranchState } from './contracts.ts';
 import { DEMO_SNAPSHOT } from './fixtures/snapshot.ts';
+import { crestAvailable, canonicalCompleteQuestPayload } from './progression.ts';
 
 describe('Ember & Root — Shared Contracts & Fixtures', () => {
-  describe('Canonical Specialization Mapping', () => {
+  describe('Canonical Identifier System', () => {
+    it('enforces exact canonical attribute IDs', () => {
+      const canonicalAttrs: AttributeId[] = ['mind', 'body', 'will', 'craft'];
+      assert.strictEqual(canonicalAttrs.length, 4);
+      assert.deepStrictEqual(Object.keys(SPECIALIZATIONS_BY_ATTRIBUTE), canonicalAttrs);
+    });
+
     it('maps mind to scholar and explorer', () => {
       assert.deepStrictEqual(SPECIALIZATIONS_BY_ATTRIBUTE.mind, ['scholar', 'explorer']);
     });
@@ -19,6 +27,87 @@ describe('Ember & Root — Shared Contracts & Fixtures', () => {
 
     it('maps craft to builder and artisan', () => {
       assert.deepStrictEqual(SPECIALIZATIONS_BY_ATTRIBUTE.craft, ['builder', 'artisan']);
+    });
+  });
+
+  describe('TrialState Contract Shape', () => {
+    it('adheres to distinct_days TrialState schema', () => {
+      const distinctDaysTrial: TrialState = {
+        id: 'trial-scholar-1',
+        attribute: 'mind',
+        specialization: 'scholar',
+        startedAt: '2026-09-12T00:00:00.000Z',
+        kind: 'distinct_days',
+        requiredDays: 5,
+        distinctDaysCompleted: 5,
+        completedAt: '2026-09-17T12:00:00.000Z',
+        claimedAt: null,
+      };
+
+      assert.strictEqual(distinctDaysTrial.kind, 'distinct_days');
+      assert.strictEqual(distinctDaysTrial.requiredDays, 5);
+      assert.strictEqual(distinctDaysTrial.distinctDaysCompleted, 5);
+      assert.ok(distinctDaysTrial.completedAt !== null);
+      assert.strictEqual(distinctDaysTrial.claimedAt, null);
+    });
+
+    it('adheres to milestone_reflection TrialState schema', () => {
+      const milestoneTrial: TrialState = {
+        id: 'trial-courage-1',
+        attribute: 'will',
+        specialization: 'courage',
+        startedAt: '2026-09-12T00:00:00.000Z',
+        kind: 'milestone_reflection',
+        milestoneText: 'Completed public presentation',
+        completedAt: '2026-09-13T10:00:00.000Z',
+        claimedAt: '2026-09-13T10:05:00.000Z',
+      };
+
+      assert.strictEqual(milestoneTrial.kind, 'milestone_reflection');
+      assert.strictEqual(milestoneTrial.milestoneText, 'Completed public presentation');
+      assert.ok(milestoneTrial.completedAt !== null);
+      assert.ok(milestoneTrial.claimedAt !== null);
+    });
+  });
+
+  describe('Branch & Crest State Transitions', () => {
+    it('verifies crest availability before vs after claim', () => {
+      const branch: BranchState = {
+        attribute: 'mind',
+        xp: 160,
+        specialization: 'scholar',
+        selectedAt: '2026-09-12T00:00:00.000Z',
+        sproutAvailable: true,
+        specializationAvailable: false,
+        crestAvailable: true,
+        trialStarted: true,
+        trialComplete: true,
+        crestClaimed: false,
+      };
+
+      const unclaimedTrial = {
+        completedAt: '2026-09-15T00:00:00.000Z',
+        claimedAt: null,
+      };
+
+      // Before claim: crest is available
+      assert.strictEqual(crestAvailable(branch, unclaimedTrial), true);
+
+      // After claim: crest is no longer available, and crestClaimed is true
+      const claimedTrial = {
+        completedAt: '2026-09-15T00:00:00.000Z',
+        claimedAt: '2026-09-15T00:05:00.000Z',
+      };
+      assert.strictEqual(crestAvailable(branch, claimedTrial), false);
+    });
+  });
+
+  describe('Idempotency Payload Normalization', () => {
+    it('normalizes null or undefined expectedOccurrence and trialEvidence', () => {
+      const p1 = canonicalCompleteQuestPayload('q-1');
+      const p2 = canonicalCompleteQuestPayload('q-1', null, {});
+      assert.strictEqual(p1, p2);
+      assert.strictEqual(p1, JSON.stringify({ questId: 'q-1', expectedOccurrence: '', trialEvidence: {} }));
     });
   });
 
@@ -37,6 +126,10 @@ describe('Ember & Root — Shared Contracts & Fixtures', () => {
       assert.strictEqual(DEMO_SNAPSHOT.branches.mind.specialization, null);
       assert.strictEqual(DEMO_SNAPSHOT.branches.mind.sproutAvailable, true);
       assert.strictEqual(DEMO_SNAPSHOT.branches.mind.specializationAvailable, false);
+      assert.strictEqual(DEMO_SNAPSHOT.branches.mind.trialStarted, false);
+      assert.strictEqual(DEMO_SNAPSHOT.branches.mind.trialComplete, false);
+      assert.strictEqual(DEMO_SNAPSHOT.branches.mind.crestAvailable, false);
+      assert.strictEqual(DEMO_SNAPSHOT.branches.mind.crestClaimed, false);
 
       assert.strictEqual(DEMO_SNAPSHOT.branches.body.xp, 20);
       assert.strictEqual(DEMO_SNAPSHOT.branches.body.specialization, null);

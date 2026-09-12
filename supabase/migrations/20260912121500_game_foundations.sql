@@ -25,23 +25,23 @@ CREATE TABLE IF NOT EXISTS public.profiles (
   last_activity_date date NULL,
   revision bigint NOT NULL DEFAULT 0 CHECK (revision >= 0),
   preferences jsonb NOT NULL DEFAULT '{"sound": true, "reducedMotion": false}'::jsonb,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now()
+  created_at timestamptz NOT NULL DEFAULT pg_catalog.now(),
+  updated_at timestamptz NOT NULL DEFAULT pg_catalog.now()
 );
 
 -- 2. Quests
 CREATE TABLE IF NOT EXISTS public.quests (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  id uuid PRIMARY KEY DEFAULT pg_catalog.gen_random_uuid(),
   user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  title text NOT NULL CHECK (char_length(trim(title)) BETWEEN 1 AND 120),
+  title text NOT NULL CHECK (pg_catalog.char_length(pg_catalog.trim(title)) BETWEEN 1 AND 120),
   attribute text NOT NULL CHECK (attribute IN ('mind', 'body', 'will', 'craft')),
   effort text NOT NULL CHECK (effort IN ('quick', 'standard', 'deep')),
   cadence text NOT NULL CHECK (cadence IN ('once', 'daily')),
   trial_id uuid NULL,
   version integer NOT NULL DEFAULT 1 CHECK (version >= 1),
   deleted_at timestamptz NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now()
+  created_at timestamptz NOT NULL DEFAULT pg_catalog.now(),
+  updated_at timestamptz NOT NULL DEFAULT pg_catalog.now()
 );
 
 CREATE INDEX IF NOT EXISTS idx_quests_user_deleted
@@ -52,11 +52,11 @@ CREATE INDEX IF NOT EXISTS idx_quests_user_attr_deleted
 
 -- 3. Quest Completions (Immutable event history)
 CREATE TABLE IF NOT EXISTS public.quest_completions (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  id uuid PRIMARY KEY DEFAULT pg_catalog.gen_random_uuid(),
   user_id uuid NOT NULL REFERENCES auth.users(id),
   quest_id uuid NOT NULL REFERENCES public.quests(id),
   occurrence_key text NOT NULL,
-  completed_at timestamptz NOT NULL DEFAULT now(),
+  completed_at timestamptz NOT NULL DEFAULT pg_catalog.now(),
   local_date date NOT NULL,
   quest_title_snapshot text NOT NULL,
   quest_attribute_snapshot text NOT NULL CHECK (quest_attribute_snapshot IN ('mind', 'body', 'will', 'craft')),
@@ -75,11 +75,17 @@ CREATE INDEX IF NOT EXISTS idx_quest_completions_user_completed
 
 -- Enforce immutability on quest_completions
 CREATE OR REPLACE FUNCTION public.prevent_completion_modifications()
-RETURNS trigger AS $$
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = ''
+AS $$
 BEGIN
   RAISE EXCEPTION 'quest_completions rows are immutable and cannot be updated or deleted';
 END;
-$$ LANGUAGE plpgsql;
+$$;
+
+REVOKE ALL ON FUNCTION public.prevent_completion_modifications() FROM PUBLIC;
 
 DROP TRIGGER IF EXISTS trg_prevent_completion_modifications ON public.quest_completions;
 CREATE TRIGGER trg_prevent_completion_modifications
@@ -105,14 +111,20 @@ CREATE TABLE IF NOT EXISTS public.branches (
 
 -- Enforce finality of specialization selection
 CREATE OR REPLACE FUNCTION public.prevent_specialization_change()
-RETURNS trigger AS $$
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = ''
+AS $$
 BEGIN
   IF OLD.selected_specialization IS NOT NULL AND NEW.selected_specialization IS DISTINCT FROM OLD.selected_specialization THEN
     RAISE EXCEPTION 'Specialization choice is final and cannot be altered';
   END IF;
   RETURN NEW;
 END;
-$$ LANGUAGE plpgsql;
+$$;
+
+REVOKE ALL ON FUNCTION public.prevent_specialization_change() FROM PUBLIC;
 
 DROP TRIGGER IF EXISTS trg_prevent_specialization_change ON public.branches;
 CREATE TRIGGER trg_prevent_specialization_change
@@ -121,13 +133,16 @@ CREATE TRIGGER trg_prevent_specialization_change
 
 -- 5. Trials
 CREATE TABLE IF NOT EXISTS public.trials (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  id uuid PRIMARY KEY DEFAULT pg_catalog.gen_random_uuid(),
   user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   attribute text NOT NULL CHECK (attribute IN ('mind', 'body', 'will', 'craft')),
   specialization text NOT NULL,
   kind text NOT NULL CHECK (kind IN ('distinct_days', 'milestone_reflection')),
-  started_at timestamptz NOT NULL DEFAULT now(),
-  done_condition text NULL,
+  started_at timestamptz NOT NULL DEFAULT pg_catalog.now(),
+  required_days integer NULL,
+  distinct_days_completed integer NOT NULL DEFAULT 0,
+  milestone_text text NULL,
+  completed_at timestamptz NULL,
   claimed_at timestamptz NULL,
   CONSTRAINT uq_trials_user_attribute UNIQUE (user_id, attribute),
   CONSTRAINT valid_trial_specialization CHECK (
@@ -135,6 +150,10 @@ CREATE TABLE IF NOT EXISTS public.trials (
     (attribute = 'body' AND specialization IN ('endurance', 'mobility')) OR
     (attribute = 'will' AND specialization IN ('focus', 'courage')) OR
     (attribute = 'craft' AND specialization IN ('builder', 'artisan'))
+  ),
+  CONSTRAINT valid_trial_kind_shape CHECK (
+    (kind = 'distinct_days' AND required_days IS NOT NULL AND required_days > 0 AND distinct_days_completed >= 0 AND milestone_text IS NULL) OR
+    (kind = 'milestone_reflection' AND required_days IS NULL AND distinct_days_completed = 0)
   )
 );
 
@@ -169,7 +188,7 @@ ON CONFLICT (id) DO NOTHING;
 CREATE TABLE IF NOT EXISTS public.inventory (
   user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   item_id text NOT NULL REFERENCES public.items(id),
-  acquired_at timestamptz NOT NULL DEFAULT now(),
+  acquired_at timestamptz NOT NULL DEFAULT pg_catalog.now(),
   equipped boolean NOT NULL DEFAULT false,
   PRIMARY KEY (user_id, item_id)
 );
@@ -180,21 +199,27 @@ CREATE UNIQUE INDEX IF NOT EXISTS inventory_one_equipped_per_user
 
 -- 8. Currency Ledger (Immutable)
 CREATE TABLE IF NOT EXISTS public.currency_ledger (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  id uuid PRIMARY KEY DEFAULT pg_catalog.gen_random_uuid(),
   user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   amount integer NOT NULL,
   source_kind text NOT NULL CHECK (source_kind IN ('quest_reward', 'item_purchase')),
   source_id text NOT NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
+  created_at timestamptz NOT NULL DEFAULT pg_catalog.now(),
   CONSTRAINT uq_currency_ledger_source UNIQUE (user_id, source_kind, source_id)
 );
 
 CREATE OR REPLACE FUNCTION public.prevent_ledger_modifications()
-RETURNS trigger AS $$
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = ''
+AS $$
 BEGIN
   RAISE EXCEPTION 'currency_ledger rows are immutable and cannot be updated or deleted';
 END;
-$$ LANGUAGE plpgsql;
+$$;
+
+REVOKE ALL ON FUNCTION public.prevent_ledger_modifications() FROM PUBLIC;
 
 DROP TRIGGER IF EXISTS trg_prevent_ledger_modifications ON public.currency_ledger;
 CREATE TRIGGER trg_prevent_ledger_modifications
@@ -208,14 +233,18 @@ CREATE TABLE IF NOT EXISTS public.mutation_receipts (
   operation text NOT NULL,
   payload_hash text NOT NULL,
   result_event jsonb NOT NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
+  created_at timestamptz NOT NULL DEFAULT pg_catalog.now(),
   PRIMARY KEY (user_id, request_id)
 );
 
 -- 10. Minimal Safe User Bootstrap
 -- Creates profile and four attribute branches upon authentication
 CREATE OR REPLACE FUNCTION public.handle_new_user()
-RETURNS trigger AS $$
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = ''
+AS $$
 BEGIN
   -- Insert base profile (timezone defaults to UTC until onboarding sets it)
   INSERT INTO public.profiles (user_id, timezone)
@@ -233,7 +262,10 @@ BEGIN
 
   RETURN NEW;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$;
+
+REVOKE ALL ON FUNCTION public.handle_new_user() FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.handle_new_user() TO authenticated, service_role, postgres;
 
 DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE TRIGGER on_auth_user_created
