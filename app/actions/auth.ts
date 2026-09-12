@@ -146,3 +146,47 @@ export async function completeOnboardingAction(
 
   redirect('/hearth');
 }
+
+export async function updatePreferencesAction(
+  _prevState: AuthActionResult | null,
+  formData: FormData
+): Promise<AuthActionResult> {
+  const sound = formData.get('sound') === 'on' || formData.get('sound') === 'true';
+  const reducedMotion =
+    formData.get('reducedMotion') === 'on' || formData.get('reducedMotion') === 'true';
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect('/login');
+  }
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('preferences')
+    .single();
+
+  const currentPrefs = (profile?.preferences as Record<string, unknown> | null) || {};
+  const updatedPrefs = {
+    ...currentPrefs,
+    sound,
+    reducedMotion,
+  };
+
+  const { error: rpcError } = await supabase.rpc('update_profile_preferences', {
+    p_preferences: updatedPrefs,
+  });
+
+  if (rpcError) {
+    return {
+      error: rpcError.message || 'Failed to update preferences.',
+    };
+  }
+
+  return {
+    successMessage: 'Preferences saved successfully.',
+  };
+}

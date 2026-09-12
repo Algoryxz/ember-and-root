@@ -153,6 +153,7 @@ export default function SignupPage() {
               <span>Already kindle your spark? </span>
               <Link
                 href="/login"
+                style={{ color: '#E98A4B' }}
                 className="text-[#E98A4B] hover:text-[#FFD38A] font-medium underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C4A96A] rounded"
               >
                 Sign in
