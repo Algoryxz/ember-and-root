@@ -5,7 +5,7 @@
 **Branch:** `feat/smarak-core`  
 **Database Stack:** Supabase Local Stack / PostgreSQL 17  
 **Validation Date:** 2026-09-12  
-**Status:** **PASSED (127 / 127 Live Verification Checks Succeeded)**  
+**Status:** **PASSED (156 / 156 Live Verification Checks Succeeded)**  
 
 ---
 
@@ -239,6 +239,18 @@ The live test suite was executed by [`scripts/test-live-db.mjs`](file:///C:/User
   - Dispatched 5 concurrent milestone record requests; exactly 1 succeeded, 4 rejected.
 - **Status:** PASS (4 checks)
 
+### Step 20: Authoritative Quest Occurrence State (Hearth Integration)
+- **Checks:**
+  - `once` cadence quest created, snapshot returns `currentOccurrenceKey = 'once'` and `completedForCurrentOccurrence = false`.
+  - `complete_quest` on `once` quest immediately returns `completedForCurrentOccurrence = true` in `MutationResult.snapshot`.
+  - Fresh snapshot confirms persistent `completedForCurrentOccurrence = true` for `once` quest and preserves `currentOccurrenceKey = 'once'`.
+  - `daily` cadence quest in `Asia/Kolkata` returns `currentOccurrenceKey` matching user local calendar date (`2026-09-12`) and `completedForCurrentOccurrence = false`.
+  - `complete_quest` on `daily` quest immediately returns `completedForCurrentOccurrence = true` in `MutationResult.snapshot`.
+  - Fresh snapshot confirms persistent `completedForCurrentOccurrence = true` for `daily` quest.
+  - Next local day simulation (controlled DB setup with historical completion for `2026-09-10`): snapshot for current day (`2026-09-12`) shows `completedForCurrentOccurrence = false` while preserving historical completion record in `quest_completions`.
+  - Cross-user isolation: User B snapshot excludes User A quests; User B quest with identical title and cadence is uncompleted (`completedForCurrentOccurrence = false`).
+- **Status:** PASS (26 checks)
+
 ---
 
 ## 4. Summary of Verification Checks
@@ -249,8 +261,8 @@ The live test suite was executed by [`scripts/test-live-db.mjs`](file:///C:/User
 | User Creation & Bootstrap Triggers | 10 | 10 | **PASS** |
 | Timezone Validation | 4 | 4 | **PASS** |
 | Quest CRUD & RLS Isolation | 3 | 3 | **PASS** |
-| `get_game_snapshot` Contract | 11 | 11 | **PASS** |
-| `complete_quest` First Mutation | 14 | 14 | **PASS** |
+| `get_game_snapshot` Contract | 13 | 13 | **PASS** |
+| `complete_quest` First Mutation | 15 | 15 | **PASS** |
 | Idempotent Replay | 5 | 5 | **PASS** |
 | Reused Request ID Conflict | 2 | 2 | **PASS** |
 | Duplicate Occurrence Rejection | 2 | 2 | **PASS** |
@@ -264,7 +276,8 @@ The live test suite was executed by [`scripts/test-live-db.mjs`](file:///C:/User
 | `claim_trial` RPC | 8 | 8 | **PASS** |
 | Cross-User Root Isolation | 4 | 4 | **PASS** |
 | Root Concurrency Safety | 4 | 4 | **PASS** |
-| **Total** | **127** | **127** | **100% PASS** |
+| Authoritative Quest Occurrence State (Hearth) | 26 | 26 | **PASS** |
+| **Total** | **156** | **156** | **100% PASS** |
 
 ---
 
@@ -274,5 +287,6 @@ The live test suite was executed by [`scripts/test-live-db.mjs`](file:///C:/User
 2. **Row-Level Security:** RLS policies were verified using actual cross-user requests and confirmed uncompromised across profiles, quests, branches, trials, and trial progress events.
 3. **Daily XP Cap:** 140 XP per local day was verified with exact boundary and partial award arithmetic.
 4. **Authoritative Root Progression:** Specialization eligibility (80 XP), trial configuration, distinct day counting, milestone length, and crest availability (160 XP + completed + unclaimed) are enforced strictly on PostgreSQL.
-5. **Idempotency Guarantee:** Every mutation receipt is fingerprinted by request ID and canonical payload hash.
-6. **No Package.json Alterations:** Root project dependencies were left untouched; all operations used native Node 24 and Supabase CLI.
+5. **Authoritative Quest Occurrence:** Quests returned in `GameSnapshot.quests` evaluate `currentOccurrenceKey` and `completedForCurrentOccurrence` server-side matching the exact same occurrence semantics as `complete_quest`. The client does not maintain completion truth in local state.
+6. **Idempotency Guarantee:** Every mutation receipt is fingerprinted by request ID and canonical payload hash.
+7. **No Package.json Alterations:** Root project dependencies were left untouched; all operations used native Node 24 and Supabase CLI.

@@ -5,8 +5,10 @@
  * Identity is derived server-side via auth.uid().
  */
 
-import type { GameSnapshot } from '../../game/contracts';
+import type { GameSnapshot, HearthQuest } from '../../game/contracts';
 import type { SupabaseServerClient } from '../supabase/server';
+
+export type { HearthQuest };
 
 export async function fetchGameSnapshot(
   supabase: SupabaseServerClient

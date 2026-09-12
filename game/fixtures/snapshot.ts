@@ -90,6 +90,8 @@ export const DEMO_SNAPSHOT: GameSnapshot = {
       deletedAt: null,
       createdAt: '2026-09-12T00:00:00.000Z',
       updatedAt: '2026-09-12T00:00:00.000Z',
+      currentOccurrenceKey: '2026-09-12',
+      completedForCurrentOccurrence: false,
     },
     {
       id: 'q-fixture-2',
@@ -103,6 +105,8 @@ export const DEMO_SNAPSHOT: GameSnapshot = {
       deletedAt: null,
       createdAt: '2026-09-12T00:00:00.000Z',
       updatedAt: '2026-09-12T00:00:00.000Z',
+      currentOccurrenceKey: '2026-09-12',
+      completedForCurrentOccurrence: false,
     },
   ],
 };

@@ -220,7 +220,22 @@ BEGIN
         'version', q.version,
         'deletedAt', CASE WHEN q.deleted_at IS NOT NULL THEN pg_catalog.to_char(q.deleted_at AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"') ELSE NULL END,
         'createdAt', pg_catalog.to_char(q.created_at AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"'),
-        'updatedAt', pg_catalog.to_char(q.updated_at AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"')
+        'updatedAt', pg_catalog.to_char(q.updated_at AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"'),
+        'currentOccurrenceKey', CASE
+          WHEN q.cadence = 'daily' THEN pg_catalog.to_char(v_current_local_date, 'YYYY-MM-DD')
+          ELSE 'once'
+        END,
+        'completedForCurrentOccurrence', EXISTS (
+          SELECT 1 FROM public.quest_completions qc
+          WHERE qc.user_id = v_user_id
+            AND qc.quest_id = q.id
+            AND qc.occurrence_key = (
+              CASE
+                WHEN q.cadence = 'daily' THEN pg_catalog.to_char(v_current_local_date, 'YYYY-MM-DD')
+                ELSE 'once'
+              END
+            )
+        )
       ) ORDER BY q.created_at ASC
     ),
     '[]'::jsonb

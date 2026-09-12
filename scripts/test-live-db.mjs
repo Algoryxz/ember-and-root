@@ -280,6 +280,7 @@ async function main() {
   // 5. GET_GAME_SNAPSHOT
   // -------------------------------------------------------------------------
   console.log('\n--- Step 5: get_game_snapshot Contract Validation ---');
+  const occurrenceToday = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata' }).format(new Date());
   {
     const snapRes = await api('/rest/v1/rpc/get_game_snapshot', {
       method: 'POST',
@@ -297,6 +298,8 @@ async function main() {
     assert(snap.branches && Object.keys(snap.branches).length === 4, 'Snapshot includes all 4 branches');
     assert(Array.isArray(snap.quests) && snap.quests.length === 1, 'Snapshot includes User A quest');
     assert(snap.quests[0].title === 'Morning Focus Meditation', 'Quest title preserved in snapshot');
+    assert(snap.quests[0].currentOccurrenceKey === occurrenceToday, 'Quest includes authoritative currentOccurrenceKey matching local date');
+    assert(snap.quests[0].completedForCurrentOccurrence === false, 'Quest completedForCurrentOccurrence starts as false before completion');
     assert(snap.inventory && Array.isArray(snap.inventory.items), 'Snapshot includes inventory array');
   }
 
@@ -305,7 +308,6 @@ async function main() {
   // -------------------------------------------------------------------------
   console.log('\n--- Step 6: complete_quest RPC (First Mutation) ---');
   const requestId1 = crypto.randomUUID();
-  const occurrenceToday = '2026-09-12';
   let firstResult = null;
   {
     const res = await api('/rest/v1/rpc/complete_quest', {
@@ -326,6 +328,8 @@ async function main() {
     assert(firstResult.snapshot.sparksBalance === 4, 'newSparksBalance in snapshot is 4');
     assert(firstResult.snapshot.currentStreak === 1, 'First day completion increments streak to 1');
     assert(firstResult.snapshot.emberState === 'kindled', 'First completion of the day elevates Ember to kindled');
+    assert(firstResult.snapshot.quests[0].completedForCurrentOccurrence === true,
+      'MutationResult.snapshot immediately shows completedForCurrentOccurrence = true');
 
     // Verify database state directly
     const profCheck = await api('/rest/v1/profiles?select=*', {}, userA.token);
@@ -998,6 +1002,180 @@ async function main() {
       assert(msFailures.length === 4,
         `Remaining 4 parallel milestone requests failed on completed trial (actual: ${msFailures.length})`);
     }
+  }
+
+  // -------------------------------------------------------------------------
+  // 20. AUTHORITATIVE QUEST OCCURRENCE STATE (HEARTH INTEGRATION)
+  // -------------------------------------------------------------------------
+  console.log('\n--- Step 20: Authoritative Quest Occurrence State ---');
+  {
+    // Part A: ONCE Cadence Quest
+    // 1. Create a once quest
+    const onceQuestRes = await api('/rest/v1/quests', {
+      method: 'POST',
+      headers: { 'Prefer': 'return=representation' },
+      body: JSON.stringify({
+        title: 'Read Field Primer',
+        attribute: 'mind',
+        effort: 'quick',
+        cadence: 'once'
+      })
+    }, userA.token);
+    assert(onceQuestRes.ok && onceQuestRes.data.length === 1, 'User A created once-cadence quest');
+    const onceQuestId = onceQuestRes.data[0].id;
+
+    // 2. Snapshot before completion
+    const snapBeforeOnce = await api('/rest/v1/rpc/get_game_snapshot', { method: 'POST', body: '{}' }, userA.token);
+    assert(snapBeforeOnce.ok, 'get_game_snapshot succeeded before once quest completion');
+    const onceInSnapBefore = snapBeforeOnce.data.quests.find(q => q.id === onceQuestId);
+    assert(onceInSnapBefore != null, 'Once quest found in snapshot before completion');
+    assert(onceInSnapBefore.currentOccurrenceKey === 'once',
+      'Once quest currentOccurrenceKey is strictly "once"');
+    assert(onceInSnapBefore.completedForCurrentOccurrence === false,
+      'Once quest completedForCurrentOccurrence is false before completion');
+
+    // 3. Complete once quest
+    const reqOnceId = crypto.randomUUID();
+    const resCompleteOnce = await api('/rest/v1/rpc/complete_quest', {
+      method: 'POST',
+      body: JSON.stringify({
+        p_request_id: reqOnceId,
+        p_quest_id: onceQuestId,
+        p_expected_occurrence: 'once'
+      })
+    }, userA.token);
+    assert(resCompleteOnce.ok, 'complete_quest succeeded for once-cadence quest');
+    const onceInMutationSnap = resCompleteOnce.data.snapshot.quests.find(q => q.id === onceQuestId);
+    assert(onceInMutationSnap != null && onceInMutationSnap.completedForCurrentOccurrence === true,
+      'MutationResult.snapshot immediately shows completedForCurrentOccurrence = true for once quest');
+
+    // 4. Fresh snapshot after once completion
+    const snapAfterOnce = await api('/rest/v1/rpc/get_game_snapshot', { method: 'POST', body: '{}' }, userA.token);
+    const onceInSnapAfter = snapAfterOnce.data.quests.find(q => q.id === onceQuestId);
+    assert(onceInSnapAfter != null && onceInSnapAfter.completedForCurrentOccurrence === true,
+      'Fresh get_game_snapshot shows completedForCurrentOccurrence = true for once quest');
+    assert(onceInSnapAfter.currentOccurrenceKey === 'once',
+      'Fresh snapshot preserves currentOccurrenceKey = "once"');
+
+    // Part B: DAILY Cadence Quest in Asia/Kolkata
+    const kolkataDate = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata' }).format(new Date());
+
+    // 1. Create a daily quest
+    const dailyQuestRes = await api('/rest/v1/quests', {
+      method: 'POST',
+      headers: { 'Prefer': 'return=representation' },
+      body: JSON.stringify({
+        title: 'Daily Hearth Reflection',
+        attribute: 'will',
+        effort: 'standard',
+        cadence: 'daily'
+      })
+    }, userA.token);
+    assert(dailyQuestRes.ok && dailyQuestRes.data.length === 1, 'User A created daily reflection quest');
+    const dailyQuestId = dailyQuestRes.data[0].id;
+
+    // 2. Snapshot before completion
+    const snapBeforeDaily = await api('/rest/v1/rpc/get_game_snapshot', { method: 'POST', body: '{}' }, userA.token);
+    const dailyInSnapBefore = snapBeforeDaily.data.quests.find(q => q.id === dailyQuestId);
+    assert(dailyInSnapBefore != null, 'Daily quest found in snapshot before completion');
+    assert(dailyInSnapBefore.currentOccurrenceKey === kolkataDate,
+      `Daily quest currentOccurrenceKey matches user local date in Asia/Kolkata (${kolkataDate})`);
+    assert(dailyInSnapBefore.completedForCurrentOccurrence === false,
+      'Daily quest completedForCurrentOccurrence is false before completion');
+
+    // 3. Complete daily quest
+    const reqDailyId = crypto.randomUUID();
+    const resCompleteDaily = await api('/rest/v1/rpc/complete_quest', {
+      method: 'POST',
+      body: JSON.stringify({
+        p_request_id: reqDailyId,
+        p_quest_id: dailyQuestId,
+        p_expected_occurrence: kolkataDate
+      })
+    }, userA.token);
+    assert(resCompleteDaily.ok, 'complete_quest succeeded for daily quest in Asia/Kolkata');
+    const dailyInMutationSnap = resCompleteDaily.data.snapshot.quests.find(q => q.id === dailyQuestId);
+    assert(dailyInMutationSnap != null && dailyInMutationSnap.completedForCurrentOccurrence === true,
+      'MutationResult.snapshot immediately shows completedForCurrentOccurrence = true for daily quest');
+
+    // 4. Fresh snapshot after daily completion
+    const snapAfterDaily = await api('/rest/v1/rpc/get_game_snapshot', { method: 'POST', body: '{}' }, userA.token);
+    const dailyInSnapAfter = snapAfterDaily.data.quests.find(q => q.id === dailyQuestId);
+    assert(dailyInSnapAfter != null && dailyInSnapAfter.completedForCurrentOccurrence === true,
+      'Fresh get_game_snapshot shows completedForCurrentOccurrence = true for daily quest');
+    assert(dailyInSnapAfter.currentOccurrenceKey === kolkataDate,
+      'Fresh snapshot preserves currentOccurrenceKey as current local date');
+
+    // Part C: Next Local Day / Date Rollover (Controlled DB Setup)
+    // 1. Create a daily quest with historical completion from previous calendar day
+    const rolloverQuestRes = await api('/rest/v1/quests', {
+      method: 'POST',
+      headers: { 'Prefer': 'return=representation' },
+      body: JSON.stringify({
+        title: 'Morning Breathwork',
+        attribute: 'body',
+        effort: 'quick',
+        cadence: 'daily'
+      })
+    }, userA.token);
+    const rolloverQuestId = rolloverQuestRes.data[0].id;
+    const previousDate = '2026-09-10';
+
+    // Insert historical completion for previousDate via adminApi
+    await adminApi('/rest/v1/quest_completions', {
+      method: 'POST',
+      body: JSON.stringify({
+        user_id: userA.userId,
+        quest_id: rolloverQuestId,
+        occurrence_key: previousDate,
+        local_date: previousDate,
+        quest_title_snapshot: 'Morning Breathwork',
+        quest_attribute_snapshot: 'body',
+        quest_effort_snapshot: 'quick',
+        xp_awarded: 10,
+        sparks_awarded: 2
+      })
+    });
+
+    // 2. Query snapshot for current date: should NOT be completed for today's occurrence
+    const snapRollover = await api('/rest/v1/rpc/get_game_snapshot', { method: 'POST', body: '{}' }, userA.token);
+    const rolloverInSnap = snapRollover.data.quests.find(q => q.id === rolloverQuestId);
+    assert(rolloverInSnap != null, 'Rollover quest found in snapshot');
+    assert(rolloverInSnap.currentOccurrenceKey === kolkataDate,
+      'Rollover quest currentOccurrenceKey is today in Asia/Kolkata');
+    assert(rolloverInSnap.completedForCurrentOccurrence === false,
+      'completedForCurrentOccurrence is false for new local day despite historical completion');
+
+    // 3. Confirm old completion history remains present in DB
+    const historyCheck = await api(`/rest/v1/quest_completions?quest_id=eq.${rolloverQuestId}&select=*`, {}, userA.token);
+    assert(historyCheck.ok && historyCheck.data.length === 1,
+      'Old completion history remains permanently present in quest_completions');
+    assert(historyCheck.data[0].occurrence_key === previousDate,
+      'Historical completion record retains original occurrence_key');
+
+    // Part D: Cross-User Isolation for Occurrence State
+    // User B must not see User A quests or their completion state
+    const snapUserB = await api('/rest/v1/rpc/get_game_snapshot', { method: 'POST', body: '{}' }, userB.token);
+    assert(snapUserB.ok, 'User B get_game_snapshot succeeded');
+    const userAQuestInB = snapUserB.data.quests.find(q => q.id === dailyQuestId || q.id === onceQuestId);
+    assert(userAQuestInB == null, 'User B snapshot excludes all of User A quests (cross-user isolation)');
+
+    // User B creates quest with identical title & cadence: its completed state is independent (false)
+    const userBQuestRes = await api('/rest/v1/quests', {
+      method: 'POST',
+      headers: { 'Prefer': 'return=representation' },
+      body: JSON.stringify({
+        title: 'Daily Hearth Reflection',
+        attribute: 'will',
+        effort: 'standard',
+        cadence: 'daily'
+      })
+    }, userB.token);
+    assert(userBQuestRes.ok && userBQuestRes.data.length === 1, 'User B created identical quest title');
+    const snapUserBAfter = await api('/rest/v1/rpc/get_game_snapshot', { method: 'POST', body: '{}' }, userB.token);
+    const userBDailyQuest = snapUserBAfter.data.quests.find(q => q.id === userBQuestRes.data[0].id);
+    assert(userBDailyQuest != null && userBDailyQuest.completedForCurrentOccurrence === false,
+      'User B quest is uncompleted (not affected by User A completion)');
   }
 
   // -------------------------------------------------------------------------

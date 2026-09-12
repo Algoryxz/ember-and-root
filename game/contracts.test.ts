@@ -151,6 +151,15 @@ describe('Ember & Root — Shared Contracts & Fixtures', () => {
       assert.ok(demoQuest, 'Demo quest must be present');
       assert.strictEqual(demoQuest.attribute, 'mind');
       assert.strictEqual(demoQuest.effort, 'standard');
+      assert.strictEqual(demoQuest.currentOccurrenceKey, '2026-09-12');
+      assert.strictEqual(demoQuest.completedForCurrentOccurrence, false);
+
+      for (const q of DEMO_SNAPSHOT.quests) {
+        assert.ok(typeof q.currentOccurrenceKey === 'string' && q.currentOccurrenceKey.length > 0,
+          'Every HearthQuest must contain a non-empty currentOccurrenceKey');
+        assert.strictEqual(typeof q.completedForCurrentOccurrence, 'boolean',
+          'Every HearthQuest must contain a boolean completedForCurrentOccurrence');
+      }
     });
   });
 });

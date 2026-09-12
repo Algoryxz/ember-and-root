@@ -324,6 +324,19 @@ All return a `MutationResult` JSON object unless noted.
 | `updatePreferences` | Update `profiles.preferences` JSONB |
 | `getGameSnapshot` | Return full `GameSnapshot` for the current user |
 
+### Authoritative Quest Occurrence Derivation (`get_game_snapshot`)
+
+When assembling `GameSnapshot.quests` (typed as `HearthQuest[]`), the database computes the occurrence completion state server-side for each active quest (`deleted_at IS NULL`):
+
+- **Cadence `once`**:
+  - `currentOccurrenceKey = 'once'`
+  - `completedForCurrentOccurrence = EXISTS(SELECT 1 FROM quest_completions WHERE user_id = auth.uid() AND quest_id = q.id AND occurrence_key = 'once')`
+- **Cadence `daily`**:
+  - `currentOccurrenceKey = to_char((now() AT TIME ZONE coalesce(profile.timezone, 'UTC'))::date, 'YYYY-MM-DD')`
+  - `completedForCurrentOccurrence = EXISTS(SELECT 1 FROM quest_completions WHERE user_id = auth.uid() AND quest_id = q.id AND occurrence_key = to_char((now() AT TIME ZONE coalesce(profile.timezone, 'UTC'))::date, 'YYYY-MM-DD'))`
+
+This ensures that upon page load, refresh, or mutation replay, Hearth consumes server-authoritative occurrence completion truth without local date recalculations or client-side completion sets.
+
 ---
 
 ## `completeQuest` Transaction (Canonical)
