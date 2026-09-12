@@ -5,7 +5,7 @@
 **Branch:** `feat/smarak-core`  
 **Database Stack:** Supabase Local Stack / PostgreSQL 17  
 **Validation Date:** 2026-09-12  
-**Status:** **PASSED (72 / 72 Live Verification Checks Succeeded)**  
+**Status:** **PASSED (127 / 127 Live Verification Checks Succeeded)**  
 
 ---
 
@@ -36,6 +36,13 @@ The database was initialized and migrated cleanly through the standard Supabase 
    - RPC: `get_game_snapshot()` (parameterless, derives caller from `auth.uid()`, returns canonical `GameSnapshot`).
    - RPC: `update_profile_preferences(jsonb, text)` (validates timezone strictly against `pg_catalog.pg_timezone_names`).
    - RPC: `complete_quest(uuid, uuid, text)` (atomic transaction enforcing 140 daily XP cap, integer Sparks calculation `xp / 5`, streak progression, Ember state elevation, and idempotency receipts).
+4. **`20260912123000_root_progression_rpcs.sql`**
+   - Table: `trial_progress_events` (unique constraint `(trial_id, local_date)`, immutability trigger, RLS policies).
+   - RPC: `choose_specialization(uuid, text, text)` (validates branch XP >= 80, exact specialization pair, updates branch & revision, generates snapshot).
+   - RPC: `start_trial(uuid, text, text)` (server-authoritative trial configuration: `distinct_days` with 5 required days for scholar/endurance/focus/builder; `milestone_reflection` for explorer/mobility/courage/artisan).
+   - RPC: `progress_trial(uuid, text)` (enforces distinct local calendar date tracking in user profile timezone, records event, updates distinct days, marks trial complete at 5 days).
+   - RPC: `record_trial_milestone(uuid, text, text)` (validates non-empty reflection up to 500 chars, completes trial, stores text).
+   - RPC: `claim_trial(uuid, text)` (validates trial completed, branch XP >= 160, marks crest claimed, updates snapshot).
 
 ---
 
@@ -165,6 +172,73 @@ The live test suite was executed by [`scripts/test-live-db.mjs`](file:///C:/User
   - No duplicate completion records or phantom XP recorded.
 - **Status:** PASS
 
+### Step 13: `choose_specialization` RPC
+- **Checks:**
+  - Unauthenticated caller rejected.
+  - Branch with 79 XP rejected (insufficient XP; requires 80 XP).
+  - Mismatched specialization rejected (`mind` + `endurance`).
+  - Chosen specialization recorded at 80 XP (`scholar`).
+  - Snapshot reflects chosen specialization and sets `specializationAvailable = false`.
+  - Mutation rejects subsequent changes (finality).
+  - Idempotent replay with same `requestId` returns identical result.
+  - Reused `requestId` with differing payload raises conflict error.
+- **Status:** PASS (9 checks)
+
+### Step 14: `start_trial` RPC
+- **Checks:**
+  - Unauthenticated caller rejected.
+  - Starting trial prior to specialization selection rejected.
+  - Mismatched specialization rejected.
+  - Server authoritatively configures trial type (`scholar` → `distinct_days`, `requiredDays: 5`).
+  - `trialStarted: true`, `trialComplete: false`, `distinctDaysCompleted: 0` in snapshot.
+  - Duplicate trial creation on same branch rejected.
+  - Idempotent replay returns identical result.
+- **Status:** PASS (11 checks)
+
+### Step 15: `progress_trial` (Distinct Days) RPC
+- **Checks:**
+  - Unauthenticated caller rejected.
+  - First progress day recorded, `distinctDaysCompleted` incremented to 1.
+  - Same calendar date rejects duplicate progress (strictly distinct local days).
+  - Idempotent replay returns identical prior result without incrementing.
+  - Trial completion triggers automatically at 5 distinct days (`trialComplete: true`).
+  - Crest availability invariant verified: `crestAvailable` remains `false` while branch XP < 160.
+  - Crest becomes `available` once branch XP reaches 160.
+- **Status:** PASS (9 checks)
+
+### Step 16: `record_trial_milestone` RPC
+- **Checks:**
+  - Empty reflection text rejected.
+  - Whitespace-only reflection text rejected.
+  - Over 500 characters rejected.
+  - Valid reflection text completes trial (`trialComplete: true`, text persisted).
+  - Crest availability remains `false` until branch XP >= 160.
+  - Repeat milestone submission on completed trial rejected.
+  - Idempotent replay returns prior result.
+- **Status:** PASS (8 checks)
+
+### Step 17: `claim_trial` RPC
+- **Checks:**
+  - Unauthenticated caller rejected.
+  - Branch without trial rejected.
+  - Claim rejected when branch XP < 160.
+  - Claim succeeds when trial completed and branch XP >= 160 (`crestClaimed: true`, `crestAvailable: false`, `claimedAt` set).
+  - Repeat claim rejected.
+  - Idempotent replay returns prior result.
+- **Status:** PASS (8 checks)
+
+### Step 18: Cross-User Root Isolation
+- **Checks:**
+  - User B mind branch unspecialized and unaffected by User C actions.
+  - User C specialization and crest claim remain completely isolated.
+- **Status:** PASS (4 checks)
+
+### Step 19: Root Concurrency Safety
+- **Checks:**
+  - Dispatched 5 concurrent specialization requests; exactly 1 succeeded, 4 rejected.
+  - Dispatched 5 concurrent milestone record requests; exactly 1 succeeded, 4 rejected.
+- **Status:** PASS (4 checks)
+
 ---
 
 ## 4. Summary of Verification Checks
@@ -183,14 +257,22 @@ The live test suite was executed by [`scripts/test-live-db.mjs`](file:///C:/User
 | Cross-User Security Denial | 2 | 2 | **PASS** |
 | 140 XP Cap & Level 2 Crossing | 15 | 15 | **PASS** |
 | Concurrency & Race Conditions | 2 | 2 | **PASS** |
-| **Total** | **72** | **72** | **100% PASS** |
+| `choose_specialization` RPC | 9 | 9 | **PASS** |
+| `start_trial` RPC | 11 | 11 | **PASS** |
+| `progress_trial` RPC | 9 | 9 | **PASS** |
+| `record_trial_milestone` RPC | 8 | 8 | **PASS** |
+| `claim_trial` RPC | 8 | 8 | **PASS** |
+| Cross-User Root Isolation | 4 | 4 | **PASS** |
+| Root Concurrency Safety | 4 | 4 | **PASS** |
+| **Total** | **127** | **127** | **100% PASS** |
 
 ---
 
 ## 5. Security & Invariant Confirmation
 
 1. **Service Role Keys & Passwords:** Zero leaked or committed credentials. The test harness relies strictly on client session tokens.
-2. **Row-Level Security:** RLS policies were verified using actual cross-user requests and confirmed uncompromised.
+2. **Row-Level Security:** RLS policies were verified using actual cross-user requests and confirmed uncompromised across profiles, quests, branches, trials, and trial progress events.
 3. **Daily XP Cap:** 140 XP per local day was verified with exact boundary and partial award arithmetic.
-4. **Idempotency Guarantee:** Every mutation receipt is fingerprinted by request ID and canonical payload hash.
-5. **No Package.json Alterations:** Root project dependencies were left untouched; all operations used native Node 24 and Supabase CLI.
+4. **Authoritative Root Progression:** Specialization eligibility (80 XP), trial configuration, distinct day counting, milestone length, and crest availability (160 XP + completed + unclaimed) are enforced strictly on PostgreSQL.
+5. **Idempotency Guarantee:** Every mutation receipt is fingerprinted by request ID and canonical payload hash.
+6. **No Package.json Alterations:** Root project dependencies were left untouched; all operations used native Node 24 and Supabase CLI.

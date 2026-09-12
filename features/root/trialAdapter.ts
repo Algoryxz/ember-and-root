@@ -14,6 +14,7 @@ import type { AttributeId, GameSnapshot, MutationResult, Specialization } from '
  * - Silent local fallbacks are prohibited in production mutation actions.
  * - If an RPC fails, it surfaces the error and does NOT mutate GameSnapshot locally.
  * - complete_quest is strictly for quest completion and NO LONGER accepts p_trial_evidence.
+ * - All actions accept an optional `requestId` so retry flows preserve mutation identity for idempotency.
  * - For local visual mock and preview simulations, see `trialFixtureAdapter.ts`.
  */
 
@@ -30,17 +31,27 @@ function getRpcClient(client?: any): SupabaseRpcClient {
   return client as SupabaseRpcClient;
 }
 
+function resolveRequestId(requestId?: string, prefix: string = 'req'): string {
+  if (requestId && requestId.trim().length > 0) {
+    return requestId.trim();
+  }
+  return typeof crypto !== 'undefined' && crypto.randomUUID
+    ? crypto.randomUUID()
+    : `${prefix}-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+}
+
 export async function chooseSpecializationAction(
   _snapshot: GameSnapshot,
   attribute: AttributeId,
   specialization: Specialization,
-  supabaseClient?: any
+  supabaseClient?: any,
+  requestId?: string
 ): Promise<MutationResult> {
   const client = getRpcClient(supabaseClient);
-  const requestId = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `req-spec-${Date.now()}`;
+  const reqId = resolveRequestId(requestId, 'req-spec');
 
   const { data, error } = await client.rpc('choose_specialization', {
-    p_request_id: requestId,
+    p_request_id: reqId,
     p_attribute: attribute,
     p_specialization: specialization,
   });
@@ -60,13 +71,14 @@ export async function startTrialAction(
   _snapshot: GameSnapshot,
   attribute: AttributeId,
   specialization: Specialization,
-  supabaseClient?: any
+  supabaseClient?: any,
+  requestId?: string
 ): Promise<MutationResult> {
   const client = getRpcClient(supabaseClient);
-  const requestId = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `req-start-${Date.now()}`;
+  const reqId = resolveRequestId(requestId, 'req-start');
 
   const { data, error } = await client.rpc('start_trial', {
-    p_request_id: requestId,
+    p_request_id: reqId,
     p_attribute: attribute,
     p_specialization: specialization,
   });
@@ -85,14 +97,15 @@ export async function startTrialAction(
 export async function progressSessionTrialAction(
   _snapshot: GameSnapshot,
   attribute: AttributeId,
-  supabaseClient?: any
+  supabaseClient?: any,
+  requestId?: string
 ): Promise<MutationResult> {
   const client = getRpcClient(supabaseClient);
-  const requestId = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `req-prog-${Date.now()}`;
+  const reqId = resolveRequestId(requestId, 'req-prog');
 
   // Dedicated Trial mutation — complete_quest NO LONGER accepts p_trial_evidence
   const { data, error } = await client.rpc('progress_trial', {
-    p_request_id: requestId,
+    p_request_id: reqId,
     p_attribute: attribute,
   });
 
@@ -111,14 +124,15 @@ export async function recordMilestoneAction(
   _snapshot: GameSnapshot,
   attribute: AttributeId,
   milestoneText: string,
-  supabaseClient?: any
+  supabaseClient?: any,
+  requestId?: string
 ): Promise<MutationResult> {
   const client = getRpcClient(supabaseClient);
-  const requestId = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `req-ms-${Date.now()}`;
+  const reqId = resolveRequestId(requestId, 'req-ms');
 
   // Dedicated Trial mutation — complete_quest NO LONGER accepts p_trial_evidence
   const { data, error } = await client.rpc('record_trial_milestone', {
-    p_request_id: requestId,
+    p_request_id: reqId,
     p_attribute: attribute,
     p_milestone_text: milestoneText,
   });
@@ -137,13 +151,14 @@ export async function recordMilestoneAction(
 export async function claimCrestAction(
   _snapshot: GameSnapshot,
   attribute: AttributeId,
-  supabaseClient?: any
+  supabaseClient?: any,
+  requestId?: string
 ): Promise<MutationResult> {
   const client = getRpcClient(supabaseClient);
-  const requestId = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `req-claim-${Date.now()}`;
+  const reqId = resolveRequestId(requestId, 'req-claim');
 
   const { data, error } = await client.rpc('claim_trial', {
-    p_request_id: requestId,
+    p_request_id: reqId,
     p_attribute: attribute,
   });
 

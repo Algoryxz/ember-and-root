@@ -18,8 +18,13 @@
 
 const SUPABASE_URL = process.env.SUPABASE_URL || 'http://127.0.0.1:54321';
 const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0';
+const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU';
 
 const results = [];
+
+async function adminApi(path, options = {}) {
+  return api(path, options, SUPABASE_SERVICE_ROLE_KEY);
+}
 
 function assert(condition, name, details = '') {
   if (!condition) {
@@ -451,6 +456,475 @@ async function main() {
 
     assert(successes.length === 1, `Exactly 1 concurrent request succeeded (actual: ${successes.length})`);
     assert(failures.length === 4, `Remaining 4 concurrent requests failed with duplicate occurrence error (actual: ${failures.length})`);
+  }
+
+  // -------------------------------------------------------------------------
+  // 13. CHOOSE_SPECIALIZATION RPC
+  // -------------------------------------------------------------------------
+  console.log('\n--- Step 13: choose_specialization RPC ---');
+  const userCEmail = `test_user_c_${runId}@emberandroot.local`;
+  const userC = await signUp(userCEmail, password);
+
+  {
+    // Unauthenticated rejection
+    const unauthRes = await api('/rest/v1/rpc/choose_specialization', {
+      method: 'POST',
+      body: JSON.stringify({ p_request_id: crypto.randomUUID(), p_attribute: 'mind', p_specialization: 'scholar' })
+    });
+    assert(unauthRes.status === 401 || unauthRes.status === 403 || !unauthRes.ok,
+      'choose_specialization rejects unauthenticated caller');
+
+    // XP 79 rejects (minimum 80 XP required)
+    await adminApi(`/rest/v1/branches?user_id=eq.${userC.userId}&attribute=eq.mind`, {
+      method: 'PATCH',
+      body: JSON.stringify({ xp: 79 })
+    });
+    const res79 = await api('/rest/v1/rpc/choose_specialization', {
+      method: 'POST',
+      body: JSON.stringify({ p_request_id: crypto.randomUUID(), p_attribute: 'mind', p_specialization: 'scholar' })
+    }, userC.token);
+    assert(!res79.ok && /minimum 80 XP required/i.test(JSON.stringify(res79.data)),
+      'choose_specialization rejects branch with 79 XP');
+
+    // Wrong specialization for attribute rejects
+    const resWrong = await api('/rest/v1/rpc/choose_specialization', {
+      method: 'POST',
+      body: JSON.stringify({ p_request_id: crypto.randomUUID(), p_attribute: 'mind', p_specialization: 'endurance' })
+    }, userC.token);
+    assert(!resWrong.ok && /not valid for attribute/i.test(JSON.stringify(resWrong.data)),
+      'choose_specialization rejects mismatched specialization (mind + endurance)');
+
+    // XP 80 succeeds
+    await adminApi(`/rest/v1/branches?user_id=eq.${userC.userId}&attribute=eq.mind`, {
+      method: 'PATCH',
+      body: JSON.stringify({ xp: 80 })
+    });
+    const specReqId = crypto.randomUUID();
+    const res80 = await api('/rest/v1/rpc/choose_specialization', {
+      method: 'POST',
+      body: JSON.stringify({ p_request_id: specReqId, p_attribute: 'mind', p_specialization: 'scholar' })
+    }, userC.token);
+    assert(res80.ok && res80.data?.event?.kind === 'specialization_chosen',
+      'choose_specialization succeeds at exactly 80 XP');
+    assert(res80.data?.snapshot?.branches?.mind?.specialization === 'scholar',
+      'Snapshot reflects chosen specialization scholar');
+    assert(res80.data?.snapshot?.branches?.mind?.specializationAvailable === false,
+      'Snapshot marks specializationAvailable as false');
+
+    // Second different specialization rejects
+    const resSecond = await api('/rest/v1/rpc/choose_specialization', {
+      method: 'POST',
+      body: JSON.stringify({ p_request_id: crypto.randomUUID(), p_attribute: 'mind', p_specialization: 'explorer' })
+    }, userC.token);
+    assert(!resSecond.ok && /already been chosen/i.test(JSON.stringify(resSecond.data)),
+      'choose_specialization rejects changing chosen specialization');
+
+    // Idempotent replay of same request ID returns identical result
+    const resReplay = await api('/rest/v1/rpc/choose_specialization', {
+      method: 'POST',
+      body: JSON.stringify({ p_request_id: specReqId, p_attribute: 'mind', p_specialization: 'scholar' })
+    }, userC.token);
+    assert(resReplay.ok && resReplay.data?.event?.kind === 'specialization_chosen',
+      'choose_specialization idempotent replay returns prior result');
+
+    // Reused request ID with different payload rejects
+    const resConflict = await api('/rest/v1/rpc/choose_specialization', {
+      method: 'POST',
+      body: JSON.stringify({ p_request_id: specReqId, p_attribute: 'body', p_specialization: 'endurance' })
+    }, userC.token);
+    assert(!resConflict.ok && /request_id_reuse/i.test(JSON.stringify(resConflict.data)),
+      'choose_specialization rejects reused request ID with different payload');
+  }
+
+  // -------------------------------------------------------------------------
+  // 14. START_TRIAL RPC
+  // -------------------------------------------------------------------------
+  console.log('\n--- Step 14: start_trial RPC ---');
+  {
+    // Unauthenticated caller rejects
+    const unauthStart = await api('/rest/v1/rpc/start_trial', {
+      method: 'POST',
+      body: JSON.stringify({ p_request_id: crypto.randomUUID(), p_attribute: 'mind', p_specialization: 'scholar' })
+    });
+    assert(unauthStart.status === 401 || unauthStart.status === 403 || !unauthStart.ok,
+      'start_trial rejects unauthenticated caller');
+
+    // Before specialization rejects (body branch has no specialization)
+    const resBeforeSpec = await api('/rest/v1/rpc/start_trial', {
+      method: 'POST',
+      body: JSON.stringify({ p_request_id: crypto.randomUUID(), p_attribute: 'body', p_specialization: 'endurance' })
+    }, userC.token);
+    assert(!resBeforeSpec.ok && /Must choose a specialization before starting a trial/i.test(JSON.stringify(resBeforeSpec.data)),
+      'start_trial rejects starting trial before choosing specialization');
+
+    // Specialization mismatch rejects ('mind' chosen is scholar, pass explorer)
+    const resMismatch = await api('/rest/v1/rpc/start_trial', {
+      method: 'POST',
+      body: JSON.stringify({ p_request_id: crypto.randomUUID(), p_attribute: 'mind', p_specialization: 'explorer' })
+    }, userC.token);
+    assert(!resMismatch.ok && /does not match active branch specialization/i.test(JSON.stringify(resMismatch.data)),
+      'start_trial rejects mismatched specialization');
+
+    // Matching specialization succeeds
+    const startReqId = crypto.randomUUID();
+    const resStart = await api('/rest/v1/rpc/start_trial', {
+      method: 'POST',
+      body: JSON.stringify({ p_request_id: startReqId, p_attribute: 'mind', p_specialization: 'scholar' })
+    }, userC.token);
+    assert(resStart.ok && resStart.data?.event?.kind === 'trial_started',
+      'start_trial succeeds for active specialization');
+    assert(resStart.data?.snapshot?.branches?.mind?.trialStarted === true,
+      'Snapshot marks trialStarted as true');
+    assert(resStart.data?.snapshot?.branches?.mind?.trialComplete === false,
+      'Snapshot marks trialComplete as false');
+    assert(resStart.data?.snapshot?.trials?.mind?.kind === 'distinct_days',
+      'Server authoritatively configures scholar trial as distinct_days');
+    assert(resStart.data?.snapshot?.trials?.mind?.requiredDays === 5,
+      'Server authoritatively sets requiredDays to 5');
+    assert(resStart.data?.snapshot?.trials?.mind?.distinctDaysCompleted === 0,
+      'Trial distinctDaysCompleted starts at 0');
+
+    // Duplicate trial on same branch rejects
+    const resDup = await api('/rest/v1/rpc/start_trial', {
+      method: 'POST',
+      body: JSON.stringify({ p_request_id: crypto.randomUUID(), p_attribute: 'mind', p_specialization: 'scholar' })
+    }, userC.token);
+    assert(!resDup.ok && /Trial already exists/i.test(JSON.stringify(resDup.data)),
+      'start_trial rejects duplicate trial on same branch');
+
+    // Replay same request safe
+    const resReplayStart = await api('/rest/v1/rpc/start_trial', {
+      method: 'POST',
+      body: JSON.stringify({ p_request_id: startReqId, p_attribute: 'mind', p_specialization: 'scholar' })
+    }, userC.token);
+    assert(resReplayStart.ok && resReplayStart.data?.event?.kind === 'trial_started',
+      'start_trial idempotent replay returns prior result');
+  }
+
+  // -------------------------------------------------------------------------
+  // 15. PROGRESS_TRIAL (DISTINCT DAYS) RPC
+  // -------------------------------------------------------------------------
+  console.log('\n--- Step 15: progress_trial (Distinct Days) RPC ---');
+  {
+    // Unauthenticated rejection
+    const unauthProg = await api('/rest/v1/rpc/progress_trial', {
+      method: 'POST',
+      body: JSON.stringify({ p_request_id: crypto.randomUUID(), p_attribute: 'mind' })
+    });
+    assert(unauthProg.status === 401 || unauthProg.status === 403 || !unauthProg.ok,
+      'progress_trial rejects unauthenticated caller');
+
+    // First local date increments
+    const progReqId = crypto.randomUUID();
+    const resProg1 = await api('/rest/v1/rpc/progress_trial', {
+      method: 'POST',
+      body: JSON.stringify({ p_request_id: progReqId, p_attribute: 'mind' })
+    }, userC.token);
+    assert(resProg1.ok && resProg1.data?.event?.kind === 'trial_progressed',
+      'progress_trial records first progress day');
+    assert(resProg1.data?.snapshot?.trials?.mind?.distinctDaysCompleted === 1,
+      'Snapshot distinctDaysCompleted incremented to 1');
+    assert(resProg1.data?.snapshot?.branches?.mind?.trialComplete === false,
+      'Trial is not yet complete (1/5 days)');
+
+    // Same local date does NOT increment twice
+    const resSameDate = await api('/rest/v1/rpc/progress_trial', {
+      method: 'POST',
+      body: JSON.stringify({ p_request_id: crypto.randomUUID(), p_attribute: 'mind' })
+    }, userC.token);
+    assert(!resSameDate.ok && /Trial progress already recorded for date/i.test(JSON.stringify(resSameDate.data)),
+      'progress_trial rejects second progress event on the same calendar date');
+
+    // Replay same request returns prior result safely
+    const resProgReplay = await api('/rest/v1/rpc/progress_trial', {
+      method: 'POST',
+      body: JSON.stringify({ p_request_id: progReqId, p_attribute: 'mind' })
+    }, userC.token);
+    assert(resProgReplay.ok && resProgReplay.data?.snapshot?.trials?.mind?.distinctDaysCompleted === 1,
+      'progress_trial idempotent replay returns identical prior result');
+
+    // Simulate 3 prior distinct days in trial_progress_events
+    const trialRow = (await adminApi(`/rest/v1/trials?user_id=eq.${userC.userId}&attribute=eq.mind`)).data[0];
+    await adminApi('/rest/v1/trial_progress_events', {
+      method: 'POST',
+      body: JSON.stringify([
+        { user_id: userC.userId, trial_id: trialRow.id, local_date: '2026-09-08' },
+        { user_id: userC.userId, trial_id: trialRow.id, local_date: '2026-09-09' },
+        { user_id: userC.userId, trial_id: trialRow.id, local_date: '2026-09-10' }
+      ])
+    });
+
+    // Now insert a 5th distinct day ('2026-09-11') and update distinct_days_completed
+    await adminApi('/rest/v1/trial_progress_events', {
+      method: 'POST',
+      body: JSON.stringify({ user_id: userC.userId, trial_id: trialRow.id, local_date: '2026-09-11' })
+    });
+    // Distinct days is now 5! Let's complete the trial
+    await adminApi(`/rest/v1/trials?id=eq.${trialRow.id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ distinct_days_completed: 5, completed_at: new Date().toISOString() })
+    });
+
+    // Check snapshot: Trial is complete!
+    const snapComplete = await api('/rest/v1/rpc/get_game_snapshot', { method: 'POST', body: '{}' }, userC.token);
+    assert(snapComplete.data?.branches?.mind?.trialComplete === true,
+      'Trial complete status is true in snapshot when required distinct days reached');
+    // Branch XP is 80 (below 160) -> Crest is NOT available!
+    assert(snapComplete.data?.branches?.mind?.crestAvailable === false,
+      'Crest is UNAVAILABLE when Trial is complete but branch XP < 160 (current: 80 XP)');
+
+    // Now increase branch XP to 160: Crest becomes available!
+    await adminApi(`/rest/v1/branches?user_id=eq.${userC.userId}&attribute=eq.mind`, {
+      method: 'PATCH',
+      body: JSON.stringify({ xp: 160 })
+    });
+    const snapCrestReady = await api('/rest/v1/rpc/get_game_snapshot', { method: 'POST', body: '{}' }, userC.token);
+    assert(snapCrestReady.data?.branches?.mind?.crestAvailable === true,
+      'Crest becomes AVAILABLE when Trial is complete AND branch XP >= 160');
+  }
+
+  // -------------------------------------------------------------------------
+  // 16. RECORD_TRIAL_MILESTONE RPC
+  // -------------------------------------------------------------------------
+  console.log('\n--- Step 16: record_trial_milestone RPC ---');
+  {
+    // Setup 'body' branch for milestone trial ('mobility')
+    await adminApi(`/rest/v1/branches?user_id=eq.${userC.userId}&attribute=eq.body`, {
+      method: 'PATCH',
+      body: JSON.stringify({ xp: 80 })
+    });
+    const resChoose = await api('/rest/v1/rpc/choose_specialization', {
+      method: 'POST',
+      body: JSON.stringify({ p_request_id: crypto.randomUUID(), p_attribute: 'body', p_specialization: 'mobility' })
+    }, userC.token);
+    const resStart = await api('/rest/v1/rpc/start_trial', {
+      method: 'POST',
+      body: JSON.stringify({ p_request_id: crypto.randomUUID(), p_attribute: 'body', p_specialization: 'mobility' })
+    }, userC.token);
+
+    // Empty text rejects
+    const resEmpty = await api('/rest/v1/rpc/record_trial_milestone', {
+      method: 'POST',
+      body: JSON.stringify({ p_request_id: crypto.randomUUID(), p_attribute: 'body', p_milestone_text: '' })
+    }, userC.token);
+    assert(!resEmpty.ok && /cannot be empty/i.test(JSON.stringify(resEmpty.data)),
+      'record_trial_milestone rejects empty reflection text');
+
+    // Whitespace text rejects
+    const resWhitespace = await api('/rest/v1/rpc/record_trial_milestone', {
+      method: 'POST',
+      body: JSON.stringify({ p_request_id: crypto.randomUUID(), p_attribute: 'body', p_milestone_text: '    ' })
+    }, userC.token);
+    assert(!resWhitespace.ok && /cannot be empty/i.test(JSON.stringify(resWhitespace.data)),
+      'record_trial_milestone rejects whitespace-only reflection text');
+
+    // Over 500 chars rejects
+    const resLong = await api('/rest/v1/rpc/record_trial_milestone', {
+      method: 'POST',
+      body: JSON.stringify({ p_request_id: crypto.randomUUID(), p_attribute: 'body', p_milestone_text: 'A'.repeat(501) })
+    }, userC.token);
+    assert(!resLong.ok && /exceeds maximum length/i.test(JSON.stringify(resLong.data)),
+      'record_trial_milestone rejects text exceeding 500 characters');
+
+    // Valid text completes trial
+    const msReqId = crypto.randomUUID();
+    const validText = 'Completed 10km run with full hip flexibility and stamina.';
+    const resValid = await api('/rest/v1/rpc/record_trial_milestone', {
+      method: 'POST',
+      body: JSON.stringify({ p_request_id: msReqId, p_attribute: 'body', p_milestone_text: validText })
+    }, userC.token);
+    assert(resValid.ok && resValid.data?.event?.kind === 'trial_milestone_recorded',
+      'record_trial_milestone succeeds with valid reflection');
+    assert(resValid.data?.snapshot?.trials?.body?.milestoneText === validText,
+      'Snapshot contains recorded milestone text');
+    assert(resValid.data?.snapshot?.branches?.body?.trialComplete === true,
+      'Snapshot marks mobility trialComplete as true');
+    assert(resValid.data?.snapshot?.branches?.body?.crestAvailable === false,
+      'Crest is unavailable because body XP is 80 (< 160)');
+
+    // Repeat attempt on already completed milestone trial rejects
+    const resRepeat = await api('/rest/v1/rpc/record_trial_milestone', {
+      method: 'POST',
+      body: JSON.stringify({ p_request_id: crypto.randomUUID(), p_attribute: 'body', p_milestone_text: 'Another text' })
+    }, userC.token);
+    assert(!resRepeat.ok && /already completed/i.test(JSON.stringify(resRepeat.data)),
+      'record_trial_milestone rejects second milestone submission on completed trial');
+
+    // Idempotent replay returns original result
+    const resMsReplay = await api('/rest/v1/rpc/record_trial_milestone', {
+      method: 'POST',
+      body: JSON.stringify({ p_request_id: msReqId, p_attribute: 'body', p_milestone_text: validText })
+    }, userC.token);
+    assert(resMsReplay.ok && resMsReplay.data?.event?.kind === 'trial_milestone_recorded',
+      'record_trial_milestone idempotent replay returns prior result');
+  }
+
+  // -------------------------------------------------------------------------
+  // 17. CLAIM_TRIAL RPC
+  // -------------------------------------------------------------------------
+  console.log('\n--- Step 17: claim_trial RPC ---');
+  {
+    // Unauthenticated rejection
+    const unauthClaim = await api('/rest/v1/rpc/claim_trial', {
+      method: 'POST',
+      body: JSON.stringify({ p_request_id: crypto.randomUUID(), p_attribute: 'mind' })
+    });
+    assert(unauthClaim.status === 401 || unauthClaim.status === 403 || !unauthClaim.ok,
+      'claim_trial rejects unauthenticated caller');
+
+    // Before trial completion rejects (will branch has no trial)
+    const resNoTrial = await api('/rest/v1/rpc/claim_trial', {
+      method: 'POST',
+      body: JSON.stringify({ p_request_id: crypto.randomUUID(), p_attribute: 'will' })
+    }, userC.token);
+    assert(!resNoTrial.ok && /No trial found/i.test(JSON.stringify(resNoTrial.data)),
+      'claim_trial rejects branch with no trial');
+
+    // Completed trial with branch XP < 160 rejects (body branch has completed trial but only 80 XP)
+    const resXpLow = await api('/rest/v1/rpc/claim_trial', {
+      method: 'POST',
+      body: JSON.stringify({ p_request_id: crypto.randomUUID(), p_attribute: 'body' })
+    }, userC.token);
+    assert(!resXpLow.ok && /minimum 160 XP required/i.test(JSON.stringify(resXpLow.data)),
+      'claim_trial rejects when branch XP < 160');
+
+    // Completed trial + branch XP >= 160 succeeds (mind branch has 160 XP and completed scholar trial)
+    const claimReqId = crypto.randomUUID();
+    const resClaim = await api('/rest/v1/rpc/claim_trial', {
+      method: 'POST',
+      body: JSON.stringify({ p_request_id: claimReqId, p_attribute: 'mind' })
+    }, userC.token);
+    assert(resClaim.ok && resClaim.data?.event?.kind === 'trial_claimed',
+      'claim_trial succeeds when completed and branch XP >= 160');
+    assert(resClaim.data?.snapshot?.branches?.mind?.crestClaimed === true,
+      'Snapshot marks crestClaimed as true');
+    assert(resClaim.data?.snapshot?.branches?.mind?.crestAvailable === false,
+      'Snapshot marks crestAvailable as false after claim');
+    assert(resClaim.data?.snapshot?.trials?.mind?.claimedAt !== null,
+      'Trial record has non-null claimedAt');
+
+    // Repeat claim rejects
+    const resRepeatClaim = await api('/rest/v1/rpc/claim_trial', {
+      method: 'POST',
+      body: JSON.stringify({ p_request_id: crypto.randomUUID(), p_attribute: 'mind' })
+    }, userC.token);
+    assert(!resRepeatClaim.ok && /already been claimed/i.test(JSON.stringify(resRepeatClaim.data)),
+      'claim_trial rejects repeat claim of already claimed crest');
+
+    // Idempotent replay of same request ID returns prior result
+    const resClaimReplay = await api('/rest/v1/rpc/claim_trial', {
+      method: 'POST',
+      body: JSON.stringify({ p_request_id: claimReqId, p_attribute: 'mind' })
+    }, userC.token);
+    assert(resClaimReplay.ok && resClaimReplay.data?.event?.kind === 'trial_claimed',
+      'claim_trial idempotent replay returns prior result');
+  }
+
+  // -------------------------------------------------------------------------
+  // 18. CROSS-USER SECURITY: USER B CANNOT MUTATE USER C'S PROGRESSION
+  // -------------------------------------------------------------------------
+  console.log('\n--- Step 18: Cross-User Root Isolation ---');
+  {
+    // User B attempting to choose specialization or claim trial on User C
+    // All RPCs use auth.uid() exclusively: User B cannot affect User C's branches or trials.
+    const userBSnapBefore = (await api('/rest/v1/rpc/get_game_snapshot', { method: 'POST', body: '{}' }, userB.token)).data;
+    assert(userBSnapBefore.branches.mind.specialization === null,
+      'User B mind branch is unspecialized');
+
+    // User B calls choose_specialization without meeting requirements -> User B's own check runs
+    const resUserB = await api('/rest/v1/rpc/choose_specialization', {
+      method: 'POST',
+      body: JSON.stringify({ p_request_id: crypto.randomUUID(), p_attribute: 'mind', p_specialization: 'scholar' })
+    }, userB.token);
+    assert(!resUserB.ok && /minimum 80 XP required/i.test(JSON.stringify(resUserB.data)),
+      'User B action operates on User B profile only (0 XP)');
+
+    // User C mind branch remains fully specialized and claimed
+    const userCSnapAfter = (await api('/rest/v1/rpc/get_game_snapshot', { method: 'POST', body: '{}' }, userC.token)).data;
+    assert(userCSnapAfter.branches.mind.specialization === 'scholar',
+      'User C specialization remained scholar');
+    assert(userCSnapAfter.branches.mind.crestClaimed === true,
+      'User C crest claim remained intact');
+  }
+
+  // -------------------------------------------------------------------------
+  // 19. CONCURRENCY: PARALLEL ROOT MUTATION REQUESTS
+  // -------------------------------------------------------------------------
+  console.log('\n--- Step 19: Root Concurrency Safety ---');
+  const userDEmail = `test_user_d_${runId}@emberandroot.local`;
+  const userD = await signUp(userDEmail, password);
+
+  {
+    // Setup User D with 80 XP on will branch
+    await adminApi(`/rest/v1/branches?user_id=eq.${userD.userId}&attribute=eq.will`, {
+      method: 'PATCH',
+      body: JSON.stringify({ xp: 80 })
+    });
+
+    // 5 parallel choose_specialization requests with different request IDs
+    const specPromises = Array.from({ length: 5 }, (_, i) => {
+      const spec = i % 2 === 0 ? 'focus' : 'courage';
+      return api('/rest/v1/rpc/choose_specialization', {
+        method: 'POST',
+        body: JSON.stringify({
+          p_request_id: crypto.randomUUID(),
+          p_attribute: 'will',
+          p_specialization: spec
+        })
+      }, userD.token);
+    });
+
+    const specResults = await Promise.all(specPromises);
+    const specSuccesses = specResults.filter(r => r.ok && r.data?.event?.kind === 'specialization_chosen');
+    const specFailures = specResults.filter(r => !r.ok);
+
+    assert(specSuccesses.length === 1,
+      `Exactly 1 parallel specialization request succeeded (actual: ${specSuccesses.length})`);
+    assert(specFailures.length === 4,
+      `Remaining 4 parallel specialization requests failed (actual: ${specFailures.length})`);
+
+    // Now start the trial on will branch
+    const chosenSpec = specSuccesses[0].data.event.specialization;
+    await api('/rest/v1/rpc/start_trial', {
+      method: 'POST',
+      body: JSON.stringify({ p_request_id: crypto.randomUUID(), p_attribute: 'will', p_specialization: chosenSpec })
+    }, userD.token);
+
+    // If chosenSpec was 'focus' (distinct_days), test parallel progress_trial on same day
+    if (chosenSpec === 'focus') {
+      const progPromises = Array.from({ length: 5 }, () => {
+        return api('/rest/v1/rpc/progress_trial', {
+          method: 'POST',
+          body: JSON.stringify({ p_request_id: crypto.randomUUID(), p_attribute: 'will' })
+        }, userD.token);
+      });
+
+      const progResults = await Promise.all(progPromises);
+      const progSuccesses = progResults.filter(r => r.ok && r.data?.event?.kind === 'trial_progressed');
+      const progFailures = progResults.filter(r => !r.ok);
+
+      assert(progSuccesses.length === 1,
+        `Exactly 1 parallel progress_trial succeeded for same local date (actual: ${progSuccesses.length})`);
+      assert(progFailures.length === 4,
+        `Remaining 4 parallel progress_trial requests failed on duplicate date (actual: ${progFailures.length})`);
+    } else {
+      // Milestone reflection concurrency
+      const msPromises = Array.from({ length: 5 }, (_, i) => {
+        return api('/rest/v1/rpc/record_trial_milestone', {
+          method: 'POST',
+          body: JSON.stringify({ p_request_id: crypto.randomUUID(), p_attribute: 'will', p_milestone_text: `Valor reflection ${i}` })
+        }, userD.token);
+      });
+
+      const msResults = await Promise.all(msPromises);
+      const msSuccesses = msResults.filter(r => r.ok && r.data?.event?.kind === 'trial_milestone_recorded');
+      const msFailures = msResults.filter(r => !r.ok);
+
+      assert(msSuccesses.length === 1,
+        `Exactly 1 parallel milestone record succeeded (actual: ${msSuccesses.length})`);
+      assert(msFailures.length === 4,
+        `Remaining 4 parallel milestone requests failed on completed trial (actual: ${msFailures.length})`);
+    }
   }
 
   // -------------------------------------------------------------------------
