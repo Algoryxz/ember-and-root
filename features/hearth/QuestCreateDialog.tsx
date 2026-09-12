@@ -10,9 +10,16 @@ export interface QuestCreateDialogProps {
 }
 
 /**
- * QuestCreateDialog — Accessible dialog for crafting new journal tasks
+ * QuestCreateDialog — Accessible field-journal modal for inscribing new tasks
  * Owned by: Deeptiman (Experience / Frontend Lead)
  * Visual Direction: Illuminated Field Journal
+ * 
+ * Invariants:
+ * - Field journal atmosphere (not a corporate SaaS form)
+ * - Accessible dialog semantics (role="dialog", aria-modal="true", Escape key)
+ * - Focus trapping and sensible autofocus
+ * - Minimum 44px touch targets
+ * - NO local XP / progression calculations
  */
 export const QuestCreateDialog: React.FC<QuestCreateDialogProps> = ({
   isOpen,
@@ -26,22 +33,49 @@ export const QuestCreateDialog: React.FC<QuestCreateDialogProps> = ({
   const [error, setError] = useState<string | null>(null);
 
   const inputRef = useRef<HTMLInputElement>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
 
-  // Accessibility: Handle Escape key & auto-focus input
+  // Accessibility: Escape key handling and focus management
   useEffect(() => {
     if (!isOpen) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         onClose();
+        return;
+      }
+
+      // Simple focus trap
+      if (e.key === 'Tab' && dialogRef.current) {
+        const focusableElements = dialogRef.current.querySelectorAll<HTMLElement>(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        );
+        const firstElement = focusableElements[0];
+        const lastElement = focusableElements[focusableElements.length - 1];
+
+        if (e.shiftKey) {
+          if (document.activeElement === firstElement) {
+            lastElement.focus();
+            e.preventDefault();
+          }
+        } else {
+          if (document.activeElement === lastElement) {
+            firstElement.focus();
+            e.preventDefault();
+          }
+        }
       }
     };
 
     document.addEventListener('keydown', handleKeyDown);
-    inputRef.current?.focus();
+    // Autofocus input
+    const timer = setTimeout(() => {
+      inputRef.current?.focus();
+    }, 50);
 
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
+      clearTimeout(timer);
     };
   }, [isOpen, onClose]);
 
@@ -49,18 +83,20 @@ export const QuestCreateDialog: React.FC<QuestCreateDialogProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const trimmedTitle = title.trim();
-    if (!trimmedTitle) {
-      setError('Title cannot be blank.');
+    const trimmed = title.trim();
+
+    if (!trimmed) {
+      setError('A quest title is required before it can be inscribed.');
       return;
     }
-    if (trimmedTitle.length > 120) {
-      setError('Title must be 120 characters or fewer.');
+
+    if (trimmed.length > 120) {
+      setError('Quest titles must be concise (120 characters or fewer).');
       return;
     }
 
     onCreateQuest({
-      title: trimmedTitle,
+      title: trimmed,
       attribute,
       effort,
       cadence,
@@ -76,30 +112,41 @@ export const QuestCreateDialog: React.FC<QuestCreateDialogProps> = ({
       className="dialog-backdrop"
       role="dialog"
       aria-modal="true"
-      aria-labelledby="dialog-title"
+      aria-labelledby="inscribe-title"
+      aria-describedby="inscribe-desc"
       onClick={onClose}
     >
       <div
+        ref={dialogRef}
         className="dialog-window"
         onClick={(e) => e.stopPropagation()}
         role="document"
       >
+        {/* Field Journal Header */}
         <div className="dialog-header">
-          <h2 id="dialog-title" className="dialog-title">Declare a Quest</h2>
+          <div>
+            <h2 id="inscribe-title" className="dialog-title">
+              Inscribe a Quest
+            </h2>
+            <p id="inscribe-desc" className="dialog-subtitle">
+              Declare today’s intention. What you do becomes who you are.
+            </p>
+          </div>
           <button
             type="button"
             className="dialog-close-btn"
             onClick={onClose}
-            aria-label="Close dialog"
+            aria-label="Close inscription dialog"
           >
             ✕
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="quest-form">
+        <form onSubmit={handleSubmit} className="quest-inscribe-form">
+          {/* Quest Title */}
           <div className="form-field">
             <label htmlFor="quest-title-input" className="form-label">
-              Quest Title
+              Quest Title <span className="label-required">*</span>
             </label>
             <input
               ref={inputRef}
@@ -107,21 +154,22 @@ export const QuestCreateDialog: React.FC<QuestCreateDialogProps> = ({
               type="text"
               className="form-input"
               value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="e.g., Read two chapters of literature"
+              onChange={(e) => {
+                setTitle(e.target.value);
+                if (error) setError(null);
+              }}
+              placeholder="e.g., Read two chapters of classical literature"
               maxLength={120}
               required
             />
             {error && (
-              <span
-                style={{ color: 'var(--color-error)', fontSize: 'var(--text-xs)' }}
-                role="alert"
-              >
-                {error}
+              <span className="form-error-text" role="alert">
+                ⚠ {error}
               </span>
             )}
           </div>
 
+          {/* Attribute Domain */}
           <div className="form-field">
             <label htmlFor="quest-attribute-select" className="form-label">
               Attribute Domain
@@ -132,13 +180,14 @@ export const QuestCreateDialog: React.FC<QuestCreateDialogProps> = ({
               value={attribute}
               onChange={(e) => setAttribute(e.target.value as AttributeId)}
             >
-              <option value="mind">Mind (Intellect, Study, Curiosity)</option>
-              <option value="body">Body (Movement, Endurance, Physical)</option>
-              <option value="will">Will (Discipline, Focus, Courage)</option>
-              <option value="craft">Craft (Building, Artistry, Creating)</option>
+              <option value="mind">Mind — Intellect, study, deep curiosity</option>
+              <option value="body">Body — Movement, endurance, physical vitality</option>
+              <option value="will">Will — Discipline, focus, courageous action</option>
+              <option value="craft">Craft — Artistry, building, practical creation</option>
             </select>
           </div>
 
+          {/* Effort Level */}
           <div className="form-field">
             <label htmlFor="quest-effort-select" className="form-label">
               Effort Level
@@ -149,12 +198,13 @@ export const QuestCreateDialog: React.FC<QuestCreateDialogProps> = ({
               value={effort}
               onChange={(e) => setEffort(e.target.value as Effort)}
             >
-              <option value="quick">Quick (10 XP, ~15 mins)</option>
-              <option value="standard">Standard (20 XP, ~45 mins)</option>
-              <option value="deep">Deep (35 XP, ~90+ mins)</option>
+              <option value="quick">Quick — ~15 mins (10 XP reference)</option>
+              <option value="standard">Standard — ~45 mins (20 XP reference)</option>
+              <option value="deep">Deep — ~90+ mins (35 XP reference)</option>
             </select>
           </div>
 
+          {/* Cadence */}
           <div className="form-field">
             <label htmlFor="quest-cadence-select" className="form-label">
               Cadence
@@ -165,14 +215,15 @@ export const QuestCreateDialog: React.FC<QuestCreateDialogProps> = ({
               value={cadence}
               onChange={(e) => setCadence(e.target.value as Cadence)}
             >
-              <option value="daily">Daily Habit</option>
-              <option value="once">Once (Single milestone)</option>
+              <option value="daily">Daily Habit (Returns each day)</option>
+              <option value="once">Single Milestone (One-time accomplishment)</option>
             </select>
           </div>
 
+          {/* Dialog Action Buttons */}
           <div className="dialog-actions">
             <Button variant="ghost" onClick={onClose}>
-              Cancel
+              Discard
             </Button>
             <Button variant="primary" type="submit">
               Inscribe in Journal

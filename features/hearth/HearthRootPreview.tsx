@@ -5,26 +5,34 @@ import './HearthRootPreview.css';
 export interface HearthRootPreviewProps {
   branches: Record<AttributeId, BranchState>;
   highlightAttribute?: AttributeId | null;
+  onNavigateToRoot?: () => void;
   className?: string;
 }
 
 const ATTRIBUTES: AttributeId[] = ['mind', 'body', 'will', 'craft'];
 
-function getMilestoneText(branch: BranchState): { text: string; isReady: boolean } {
+const ATTRIBUTE_LABELS: Record<AttributeId, string> = {
+  mind: 'Mind',
+  body: 'Body',
+  will: 'Will',
+  craft: 'Craft',
+};
+
+function getMilestoneNotice(branch: BranchState): { text: string; isReady: boolean } {
   if (branch.xp === 0) {
-    return { text: 'Sprout awakens at 1 XP', isReady: false };
+    return { text: 'Sprout dormant (awakens at 1 XP)', isReady: false };
   }
   if (branch.specializationAvailable) {
-    return { text: '✦ Specialization ready to choose', isReady: true };
+    return { text: '✦ Specialization fork ready to choose', isReady: true };
   }
   if (branch.specialization) {
     if (branch.crestClaimed) {
-      return { text: 'Crest of Mastery claimed', isReady: false };
+      return { text: `Mastery Crest claimed (${branch.specialization})`, isReady: false };
     }
     if (branch.crestAvailable) {
-      return { text: '✦ Crest available to claim', isReady: true };
+      return { text: '✦ Mastery Crest ready to claim', isReady: true };
     }
-    return { text: `Path: ${branch.specialization} (Next: 160 XP)`, isReady: false };
+    return { text: `Path: ${branch.specialization} (160 XP to Crest)`, isReady: false };
   }
   return { text: `${80 - branch.xp} XP until specialization fork`, isReady: false };
 }
@@ -33,22 +41,48 @@ function getMilestoneText(branch: BranchState): { text: string; isReady: boolean
  * HearthRootPreview — Compact Root advancement preview
  * Owned by: Deeptiman (Experience / Frontend Lead)
  * Visual Direction: Illuminated Field Journal
+ * 
+ * Invariants:
+ * - Presentation boundary only: consumes authoritative branches from GameSnapshot
+ * - Does NOT compute Root SVG geometry (owned by Akriti)
+ * - Highlights active branch advancement after quest completion
  */
 export const HearthRootPreview: React.FC<HearthRootPreviewProps> = ({
   branches,
   highlightAttribute = null,
+  onNavigateToRoot,
   className = '',
 }) => {
   return (
-    <div className={`root-preview-container ${className}`}>
+    <section
+      className={`root-preview-container ${className}`}
+      aria-labelledby="root-preview-heading"
+    >
       <div className="root-preview-header">
-        <h3 className="root-preview-title">Root Growth</h3>
-        <span className="root-preview-subtitle">Permanent Growth</span>
+        <div>
+          <h3 id="root-preview-heading" className="root-preview-title">
+            Root Growth
+          </h3>
+          <span className="root-preview-subtitle">Permanent Becoming</span>
+        </div>
+        {onNavigateToRoot ? (
+          <button
+            type="button"
+            className="root-preview-link-btn"
+            onClick={onNavigateToRoot}
+          >
+            Explore Root →
+          </button>
+        ) : (
+          <a href="#root" className="root-preview-link">
+            Explore Root →
+          </a>
+        )}
       </div>
 
       <p className="root-motto">“What you do becomes who you are.”</p>
 
-      <div className="root-branches-list" role="list">
+      <div className="root-branches-grid" role="list">
         {ATTRIBUTES.map((attr) => {
           const branch = branches[attr] || {
             attribute: attr,
@@ -63,33 +97,40 @@ export const HearthRootPreview: React.FC<HearthRootPreviewProps> = ({
             crestClaimed: false,
           };
 
-          const milestone = getMilestoneText(branch);
+          const milestone = getMilestoneNotice(branch);
           // 80 XP is fork, 160 XP is Crest
           const maxTarget = branch.specialization ? 160 : 80;
           const progressPercent = Math.min(100, Math.round((branch.xp / maxTarget) * 100));
           const isHighlighted = highlightAttribute === attr;
 
           return (
-            <div key={attr} className="root-branch-row" role="listitem">
-              <div className="root-branch-meta">
-                <span className="root-branch-name">{attr}</span>
-                <span className="root-branch-xp">{branch.xp} XP</span>
+            <div
+              key={attr}
+              className={`root-branch-card ${isHighlighted ? 'is-highlighted' : ''}`}
+              role="listitem"
+            >
+              <div className="branch-meta-row">
+                <span className={`branch-name-label branch-${attr}`}>
+                  {ATTRIBUTE_LABELS[attr]}
+                </span>
+                <span className="branch-xp-value">{branch.xp} XP</span>
               </div>
 
-              <div className="root-progress-track" aria-hidden="true">
+              {/* Progress track */}
+              <div className="branch-progress-track" aria-hidden="true">
                 <div
-                  className={`root-progress-bar ${isHighlighted ? 'root-advance-flash' : ''}`}
+                  className={`branch-progress-bar bar-${attr}`}
                   style={{ width: `${progressPercent}%` }}
                 />
               </div>
 
-              <div className={`root-branch-milestone ${milestone.isReady ? 'is-ready' : ''}`}>
+              <div className={`branch-milestone-text ${milestone.isReady ? 'is-ready' : ''}`}>
                 <span>{milestone.text}</span>
               </div>
             </div>
           );
         })}
       </div>
-    </div>
+    </section>
   );
 };

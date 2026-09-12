@@ -17,18 +17,21 @@
   position: relative;
   overflow: hidden;
   box-sizing: border-box;
+  text-align: center;
 }
 
-/* Subtle parchment atmosphere backdrop overlay */
-.ember-container::before {
-  content: '';
+/* Background parchment warmth overlay */
+.ember-chamber-aura {
   position: absolute;
   inset: 0;
-  background: radial-gradient(circle at 50% 45%, rgba(233, 138, 75, 0.08), transparent 70%);
   pointer-events: none;
+  background: radial-gradient(circle at 50% 40%, rgba(233, 138, 75, 0.08), transparent 70%);
+  transition: opacity 400ms ease;
 }
 
-/* The Hearth Vessel / Brazier Circle */
+/* --------------------------------------------------------------------------
+   The Brazier Vessel
+   -------------------------------------------------------------------------- */
 .ember-brazier {
   position: relative;
   width: 140px;
@@ -37,247 +40,337 @@
   align-items: center;
   justify-content: center;
   border-radius: var(--radius-circle);
-  background: radial-gradient(circle, var(--color-surface) 0%, var(--color-bg) 100%);
-  border: 1px solid rgba(233, 138, 75, 0.25);
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.45);
+  background: radial-gradient(circle at 50% 65%, var(--color-surface) 0%, var(--color-bg) 100%);
+  border: 1px solid rgba(185, 190, 172, 0.15);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.5);
   margin-bottom: var(--space-16);
+  transition: transform 300ms ease, box-shadow 300ms ease, border-color 300ms ease;
 }
 
-/* Outer Atmosphere Halo */
+.ember-basin-rim {
+  position: absolute;
+  inset: -1px;
+  border-radius: var(--radius-circle);
+  border: 1px solid rgba(233, 138, 75, 0.25);
+  pointer-events: none;
+}
+
+/* Halo of atmospheric heat */
 .ember-halo {
   position: absolute;
-  inset: -12px;
+  inset: -16px;
   border-radius: var(--radius-circle);
   pointer-events: none;
-  opacity: 0.4;
+  opacity: 0.3;
   transition: opacity 400ms ease, transform 400ms ease;
 }
 
-/* Ember Living Core */
-.ember-core {
-  width: 54px;
-  height: 54px;
-  border-radius: var(--radius-circle);
-  position: relative;
-  transition: transform 300ms ease, background-color 300ms ease, box-shadow 300ms ease;
+/* SVG flame container */
+.ember-flame-svg {
+  width: 100px;
+  height: 100px;
+  overflow: visible;
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.4));
 }
 
-/* Inner Golden Spark */
-.ember-inner-spark {
-  position: absolute;
-  inset: var(--space-12);
-  border-radius: var(--radius-circle);
-  background-color: var(--color-ember-core);
-  filter: blur(1px);
-  opacity: 0.6;
-  transition: opacity 300ms ease, transform 300ms ease;
+.ember-basin-base {
+  fill: rgba(20, 23, 19, 0.9);
+  stroke: rgba(185, 190, 172, 0.1);
+  stroke-width: 1;
+}
+
+.ember-flame-path {
+  transform-origin: 50px 80px;
+  transition: d 300ms ease;
+}
+
+.ember-inner-core {
+  transform-origin: 50px 60px;
 }
 
 /* --------------------------------------------------------------------------
-   State: Resting (Quiet, dim, subtle pulse)
+   Ember State 1: Resting (0 completed today)
+   Quiet, slumbering, minimal ember spark
    -------------------------------------------------------------------------- */
-.ember-resting .ember-core {
-  background: radial-gradient(circle, rgba(233, 138, 75, 0.55) 0%, rgba(20, 23, 19, 0.95) 100%);
-  box-shadow: 0 0 12px rgba(233, 138, 75, 0.2);
-  animation: pulse-resting 4s ease-in-out infinite;
+.ember-resting .ember-brazier {
+  border-color: rgba(185, 190, 172, 0.12);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
 }
 
 .ember-resting .ember-halo {
-  opacity: 0.15;
+  opacity: 0.1;
   background: radial-gradient(circle, rgba(233, 138, 75, 0.15) 0%, transparent 70%);
 }
 
-.ember-resting .ember-inner-spark {
-  opacity: 0.3;
+.ember-resting .ember-flame-path {
+  opacity: 0.6;
+  animation: pulse-resting-flame 4s ease-in-out infinite;
 }
 
-@keyframes pulse-resting {
+.ember-resting .ember-inner-core {
+  opacity: 0.35;
+  animation: pulse-resting-spark 4s ease-in-out infinite;
+}
+
+@keyframes pulse-resting-flame {
   0%, 100% {
-    transform: scale(0.96);
-    opacity: 0.75;
+    transform: scale(0.92);
+    opacity: 0.5;
   }
   50% {
     transform: scale(1.02);
-    opacity: 0.95;
+    opacity: 0.7;
+  }
+}
+
+@keyframes pulse-resting-spark {
+  0%, 100% {
+    transform: scale(0.85);
+    opacity: 0.25;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.45;
   }
 }
 
 /* --------------------------------------------------------------------------
-   State: Kindled (Warm copper presence)
+   Ember State 2: Kindled (1 completed today)
+   Single rising warm flame tongue
    -------------------------------------------------------------------------- */
-.ember-kindled .ember-core {
-  background: radial-gradient(circle, var(--color-ember) 0%, rgba(20, 23, 19, 0.8) 100%);
-  box-shadow: 0 0 20px rgba(233, 138, 75, 0.45);
-  animation: pulse-kindled 3s ease-in-out infinite;
+.ember-kindled .ember-brazier {
+  border-color: rgba(233, 138, 75, 0.35);
+  box-shadow: 0 0 20px rgba(233, 138, 75, 0.25);
 }
 
 .ember-kindled .ember-halo {
   opacity: 0.35;
-  background: radial-gradient(circle, rgba(233, 138, 75, 0.25) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(233, 138, 75, 0.3) 0%, transparent 70%);
 }
 
-.ember-kindled .ember-inner-spark {
-  opacity: 0.65;
-  animation: inner-kindled 3s ease-in-out infinite;
+.ember-kindled .ember-flame-path {
+  opacity: 0.9;
+  animation: pulse-kindled-flame 3s ease-in-out infinite;
 }
 
-@keyframes pulse-kindled {
+.ember-kindled .ember-inner-core {
+  opacity: 0.7;
+  animation: pulse-kindled-spark 3s ease-in-out infinite;
+}
+
+@keyframes pulse-kindled-flame {
   0%, 100% {
-    transform: scale(0.98);
+    transform: scale(0.96) rotate(-1deg);
   }
   50% {
-    transform: scale(1.04);
+    transform: scale(1.04) rotate(1deg);
   }
 }
 
-@keyframes inner-kindled {
+@keyframes pulse-kindled-spark {
   0%, 100% {
-    transform: scale(0.92);
-    opacity: 0.55;
+    transform: scale(0.9);
+    opacity: 0.6;
   }
   50% {
-    transform: scale(1.08);
-    opacity: 0.8;
+    transform: scale(1.1);
+    opacity: 0.85;
   }
 }
 
 /* --------------------------------------------------------------------------
-   State: Steady (Brighter copper illumination, clear core)
+   Ember State 3: Steady (2 completed today)
+   Vigorous dual-tiered flame body, radiating amber halo
    -------------------------------------------------------------------------- */
-.ember-steady .ember-core {
-  background: radial-gradient(circle, var(--color-ember-core) 0%, var(--color-ember) 65%, var(--color-bg) 100%);
-  box-shadow: 0 0 28px rgba(233, 138, 75, 0.65), 0 0 10px rgba(255, 211, 138, 0.4);
-  animation: pulse-steady 2.4s ease-in-out infinite;
+.ember-steady .ember-brazier {
+  border-color: rgba(233, 138, 75, 0.5);
+  box-shadow: 0 0 28px rgba(233, 138, 75, 0.35);
 }
 
 .ember-steady .ember-halo {
   opacity: 0.55;
-  background: radial-gradient(circle, rgba(233, 138, 75, 0.4) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(233, 138, 75, 0.45) 0%, transparent 70%);
 }
 
-.ember-steady .ember-inner-spark {
+.ember-steady .ember-flame-path {
+  opacity: 1;
+  animation: pulse-steady-flame 2.4s ease-in-out infinite;
+}
+
+.ember-steady .ember-inner-core {
   opacity: 0.85;
-  animation: inner-steady 2.4s ease-in-out infinite;
+  animation: pulse-steady-spark 2.4s ease-in-out infinite;
 }
 
-@keyframes pulse-steady {
+@keyframes pulse-steady-flame {
   0%, 100% {
-    transform: scale(0.98);
+    transform: scale(0.97) rotate(-1.5deg);
   }
   50% {
-    transform: scale(1.07);
+    transform: scale(1.05) rotate(1.5deg);
   }
 }
 
-@keyframes inner-steady {
+@keyframes pulse-steady-spark {
   0%, 100% {
-    transform: scale(0.95);
+    transform: scale(0.92);
     opacity: 0.75;
   }
   50% {
-    transform: scale(1.12);
-    opacity: 0.95;
+    transform: scale(1.15);
+    opacity: 1;
   }
 }
 
 /* --------------------------------------------------------------------------
-   State: Bright (Full brightness, warm golden core)
+   Ember State 4: Bright (3+ completed today)
+   Radiant triple-crowned corona with high vitality
    -------------------------------------------------------------------------- */
-.ember-bright .ember-core {
-  background: radial-gradient(circle, var(--color-ember-core) 0%, var(--color-ember) 60%, rgba(20, 23, 19, 0.9) 100%);
-  box-shadow: 0 0 36px rgba(233, 138, 75, 0.8), 0 0 18px rgba(255, 211, 138, 0.6);
-  animation: pulse-bright 1.8s ease-in-out infinite;
+.ember-bright .ember-brazier {
+  border-color: var(--color-ember-core);
+  box-shadow: 0 0 36px rgba(255, 211, 138, 0.45), 0 0 16px rgba(233, 138, 75, 0.4);
 }
 
 .ember-bright .ember-halo {
   opacity: 0.75;
-  background: radial-gradient(circle, rgba(255, 211, 138, 0.3) 0%, rgba(233, 138, 75, 0.35) 40%, transparent 70%);
+  background: radial-gradient(circle, rgba(255, 211, 138, 0.4) 0%, rgba(233, 138, 75, 0.3) 45%, transparent 75%);
 }
 
-.ember-bright .ember-inner-spark {
+.ember-bright .ember-flame-path {
   opacity: 1;
-  transform: scale(1.1);
-  box-shadow: 0 0 12px var(--color-ember-core);
+  animation: pulse-bright-flame 1.8s ease-in-out infinite;
 }
 
-@keyframes pulse-bright {
+.ember-bright .ember-inner-core {
+  opacity: 1;
+  animation: pulse-bright-spark 1.8s ease-in-out infinite;
+}
+
+@keyframes pulse-bright-flame {
   0%, 100% {
-    transform: scale(0.98);
+    transform: scale(0.98) rotate(-2deg);
   }
   50% {
-    transform: scale(1.1);
+    transform: scale(1.08) rotate(2deg);
   }
 }
 
-/* --------------------------------------------------------------------------
-   Ember Relights Restorative Welcoming Sequence
-   -------------------------------------------------------------------------- */
-.ember-relit-animation {
-  animation: ember-relit-surge 700ms cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
-}
-
-@keyframes ember-relit-surge {
-  0% {
-    transform: scale(0.85);
-    filter: brightness(0.6);
+@keyframes pulse-bright-spark {
+  0%, 100% {
+    transform: scale(0.95);
+    opacity: 0.85;
   }
   50% {
     transform: scale(1.22);
-    filter: brightness(1.5);
-    box-shadow: 0 0 45px var(--color-ember-core);
-  }
-  100% {
-    transform: scale(1);
-    filter: brightness(1);
+    opacity: 1;
   }
 }
 
 /* --------------------------------------------------------------------------
-   Ember Text & Metadata
+   Rekindle / Relit Momentary Flare
    -------------------------------------------------------------------------- */
-.ember-status-label {
-  font-family: var(--font-display);
-  font-size: var(--text-lg);
-  color: var(--color-text-primary);
-  text-transform: capitalize;
-  letter-spacing: 0.02em;
-  margin-bottom: var(--space-4);
+.ember-brazier.is-relit {
+  animation: flare-relit 900ms ease-out forwards;
 }
 
-.ember-status-description {
+@keyframes flare-relit {
+  0% {
+    transform: scale(1);
+  }
+  30% {
+    transform: scale(1.12);
+    box-shadow: 0 0 48px var(--color-ember-core);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Ember Information & Accessible Status
+   -------------------------------------------------------------------------- */
+.ember-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-8);
+  max-width: 380px;
+}
+
+.ember-header-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.ember-title {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  color: var(--color-text-primary);
+  letter-spacing: 0.01em;
+}
+
+.ember-stage-badge {
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
+  padding: var(--space-4) var(--space-8);
+  border-radius: var(--radius-btn);
+  background-color: rgba(20, 23, 19, 0.7);
+  border: 1px solid rgba(185, 190, 172, 0.15);
+  color: var(--color-text-secondary);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.ember-resting .ember-stage-badge {
+  color: var(--color-text-secondary);
+  border-color: rgba(185, 190, 172, 0.2);
+}
+
+.ember-kindled .ember-stage-badge {
+  color: var(--color-ember);
+  border-color: rgba(233, 138, 75, 0.35);
+}
+
+.ember-steady .ember-stage-badge {
+  color: var(--color-ember-core);
+  border-color: rgba(255, 211, 138, 0.35);
+}
+
+.ember-bright .ember-stage-badge {
+  color: var(--color-root-mature);
+  border-color: rgba(217, 227, 178, 0.4);
+}
+
+.ember-description {
   font-family: var(--font-body);
   font-size: var(--text-sm);
   color: var(--color-text-secondary);
-  text-align: center;
-  max-width: 240px;
+  line-height: 1.5;
+  margin: 0;
 }
 
-/* Pause animations when tab is hidden or user prefers reduced motion */
-.is-paused * {
+/* --------------------------------------------------------------------------
+   Visibility API: Paused in background tabs
+   -------------------------------------------------------------------------- */
+.ember-container.is-paused *,
+.ember-container.is-paused *::before,
+.ember-container.is-paused *::after {
   animation-play-state: paused !important;
 }
 
-/* Mobile adjustments (320px - 375px) */
-@media (max-width: 375px) {
-  .ember-brazier {
-    width: 120px;
-    height: 120px;
-    margin-bottom: var(--space-12);
-  }
-  .ember-core {
-    width: 46px;
-    height: 46px;
-  }
-  .ember-container {
-    padding: var(--space-16);
-  }
-}
-
+/* --------------------------------------------------------------------------
+   Reduced Motion Override
+   -------------------------------------------------------------------------- */
 @media (prefers-reduced-motion: reduce) {
-  .ember-core,
-  .ember-halo,
-  .ember-inner-spark {
+  .ember-flame-path,
+  .ember-inner-core,
+  .ember-brazier,
+  .ember-brazier.is-relit {
     animation: none !important;
-    transition: none !important;
+    transform: none !important;
   }
 }

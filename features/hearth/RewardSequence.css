@@ -5,18 +5,34 @@
    Specification: docs/UI_UX_BRIEF.md
    ========================================================================== */
 
-/* The XP light trace moving from journal to Root preview */
+/* The XP light trace moving from journal toward Root preview */
 .xp-light-trace {
   position: fixed;
+  top: 35%;
+  left: 50%;
   pointer-events: none;
   z-index: 1000;
   width: 10px;
   height: 10px;
   border-radius: var(--radius-circle);
   background: var(--color-ember-core);
-  box-shadow: 0 0 14px 4px var(--color-ember), 0 0 4px var(--color-ember-core);
-  transition: all 500ms cubic-bezier(0.22, 1, 0.36, 1);
-  opacity: 0.95;
+  box-shadow: 0 0 16px 4px var(--color-ember), 0 0 4px var(--color-ember-core);
+  animation: xp-trace-fly 680ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes xp-trace-fly {
+  0% {
+    transform: translate(0, 0) scale(0.8);
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+    transform: translate(15px, -15px) scale(1.3);
+  }
+  100% {
+    transform: translate(80px, -40px) scale(0.4);
+    opacity: 0;
+  }
 }
 
 /* In-place notices on Hearth */
@@ -29,18 +45,18 @@
   border-radius: var(--radius-card);
   margin-bottom: var(--space-16);
   box-sizing: border-box;
-  animation: notice-fade-in 300ms ease;
+  animation: notice-fade-in 240ms ease;
 }
 
 .hearth-notice-banner.notice-path {
   background-color: rgba(159, 186, 135, 0.12);
-  border: 1px solid rgba(159, 186, 135, 0.4);
+  border: 1px solid rgba(159, 186, 135, 0.35);
   color: var(--color-root-mature);
 }
 
 .hearth-notice-banner.notice-level {
   background-color: rgba(233, 138, 75, 0.12);
-  border: 1px solid rgba(233, 138, 75, 0.4);
+  border: 1px solid rgba(233, 138, 75, 0.35);
   color: var(--color-ember-core);
 }
 
@@ -50,7 +66,13 @@
   gap: var(--space-8);
   font-family: var(--font-body);
   font-size: var(--text-sm);
-  font-weight: 500;
+  line-height: 1.4;
+}
+
+.hearth-notice-icon {
+  font-size: var(--text-base);
+  line-height: 1;
+  flex-shrink: 0;
 }
 
 .hearth-notice-title {
@@ -60,18 +82,30 @@
 }
 
 .hearth-notice-dismiss {
-  background: none;
-  border: none;
+  background: transparent;
+  border: 1px solid transparent;
   color: var(--color-text-secondary);
   cursor: pointer;
-  padding: var(--space-4);
+  padding: var(--space-8);
   font-size: var(--text-base);
   line-height: 1;
   border-radius: var(--radius-btn);
+  min-height: var(--min-touch-target);
+  min-width: var(--min-touch-target);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: color 150ms ease, background-color 150ms ease;
 }
 
 .hearth-notice-dismiss:hover {
   color: var(--color-text-primary);
+  background-color: rgba(185, 190, 172, 0.1);
+}
+
+.hearth-notice-dismiss:focus-visible {
+  outline: 2px solid var(--color-focus);
 }
 
 @keyframes notice-fade-in {
@@ -85,6 +119,7 @@
   }
 }
 
+/* Reduced Motion Override */
 @media (prefers-reduced-motion: reduce) {
   .xp-light-trace {
     display: none !important;
