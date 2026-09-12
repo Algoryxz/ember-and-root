@@ -1,4 +1,5 @@
 import React from 'react';
+import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
 import { levelFromTotalXp } from '@/game/progression';
 
@@ -25,7 +26,7 @@ export default async function ChroniclePage({ searchParams }: ChroniclePageProps
       .single(),
     supabase
       .from('quest_completions')
-      .select('id, quest_title_snapshot, quest_attribute_snapshot, xp_awarded, sparks_awarded, local_date, completed_at')
+      .select('id, quest_title_snapshot, quest_attribute_snapshot, quest_effort_snapshot, xp_awarded, sparks_awarded, local_date, completed_at')
       .order('completed_at', { ascending: false })
       .limit(limit),
     supabase
@@ -45,9 +46,9 @@ export default async function ChroniclePage({ searchParams }: ChroniclePageProps
   const level = levelFromTotalXp(totalXp);
 
   // Derived Achievements
-  const hasFirstLight = completions.length > 0;
+  const hasFirstLight = totalXp > 0 || completions.length > 0;
   const hasChosenPath = branches.some((b) => b.selected_specialization !== null);
-  const hasReturned = longestStreak >= 2 || currentStreak > 0;
+  const hasReturned = longestStreak >= 2;
 
   const hasMore = completions.length >= limit;
 
@@ -226,12 +227,12 @@ export default async function ChroniclePage({ searchParams }: ChroniclePageProps
 
             {hasMore && (
               <div className="pt-4 text-center">
-                <a
+                <Link
                   href={`/chronicle?limit=${limit + 20}`}
-                  className="inline-block px-4 py-2 rounded-[6px] bg-[#1D231D] border border-[#2A332A] hover:border-[#9FBA87]/50 text-xs font-medium text-[#F0E7D3] transition-colors"
+                  className="min-h-[44px] min-w-[44px] inline-flex items-center justify-center px-4 py-2.5 rounded-[6px] bg-[#1D231D] border border-[#2A332A] hover:border-[#9FBA87]/50 text-xs font-medium text-[#F0E7D3] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C4A96A] focus-visible:ring-offset-2 focus-visible:ring-offset-[#141713]"
                 >
                   Load older entries →
-                </a>
+                </Link>
               </div>
             )}
           </div>
