@@ -286,6 +286,44 @@ export const RootBranch: React.FC<RootBranchProps> = ({
         </div>
       )}
 
+      {/* Crest Ready Reveal Banner (Server-Authoritative) */}
+      {isCrestAvailable && !crestClaimed && (
+        <div
+          role="status"
+          aria-live="polite"
+          className="crest-reveal-banner"
+          style={{
+            backgroundColor: '#263323',
+            border: '1px solid #9FBA87',
+            borderRadius: '8px',
+            padding: '12px 14px',
+            marginBottom: '12px',
+            color: '#D9E3B2',
+            fontSize: '13px',
+            lineHeight: '1.4',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '12px',
+            boxShadow: '0 0 16px rgba(159, 186, 135, 0.3)',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <span style={{ fontSize: '20px' }} aria-hidden="true">
+              👑
+            </span>
+            <div>
+              <strong style={{ color: '#F0E7D3', fontSize: '14px' }}>
+                Crest Ready for Claiming!
+              </strong>
+              <div style={{ fontSize: '12px', color: '#B9BEAC' }}>
+                Server confirmed your Trial completion. Claim your permanent Crest below.
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Main View Display */}
       {viewMode === 'visual' ? (
         <div className="root-svg-wrapper">

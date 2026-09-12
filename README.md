@@ -6,9 +6,9 @@ A Life RPG where real tasks kindle today's Ember and grow a permanent Root shape
 
 ---
 
-> ⚠️ **Status: Foundation / Bootstrap**
+> 🌿 **Status: Active Development / Root & Trial Features Integrated**
 >
-> This repository is in the bootstrapping phase. Documentation, agent rules, and project structure are established. Application implementation has **not started yet**. No feature described in the docs should be assumed to be working.
+> The Root system (all 4 branches, 8 specializations, Session & Milestone Trials, and Crest claims) and Hearth interface are implemented and integrated into `main`.
 
 ---
 

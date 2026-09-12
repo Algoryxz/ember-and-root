@@ -203,16 +203,35 @@
   font-style: italic;
 }
 
+/* Crest Reveal Banner Animation */
+.crest-reveal-banner {
+  animation: crestPulse 2.5s ease-in-out infinite alternate;
+}
+
+@keyframes crestPulse {
+  0% {
+    box-shadow: 0 0 8px rgba(159, 186, 135, 0.25);
+    border-color: #9fba87;
+  }
+  100% {
+    box-shadow: 0 0 22px rgba(217, 227, 178, 0.65);
+    border-color: #d9e3b2;
+  }
+}
+
 /* Reduced Motion Override */
 @media (prefers-reduced-motion: reduce) {
   .root-path,
-  .root-node-button {
+  .root-node-button,
+  .crest-reveal-banner {
     transition: none !important;
     animation: none !important;
   }
   
   .root-path-pulse,
-  .root-node-button.state-available {
+  .root-node-button.state-available,
+  .crest-reveal-banner {
     animation: none !important;
+    box-shadow: 0 0 10px rgba(159, 186, 135, 0.3) !important;
   }
 }
