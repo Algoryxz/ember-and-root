@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Button } from '../../components/ui/Button';
 import type { AttributeId, Cadence, Effort, Quest } from './contracts';
 import './QuestCreateDialog.css';
@@ -24,6 +24,26 @@ export const QuestCreateDialog: React.FC<QuestCreateDialogProps> = ({
   const [effort, setEffort] = useState<Effort>('standard');
   const [cadence, setCadence] = useState<Cadence>('daily');
   const [error, setError] = useState<string | null>(null);
+
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  // Accessibility: Handle Escape key & auto-focus input
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    inputRef.current?.focus();
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
@@ -59,7 +79,11 @@ export const QuestCreateDialog: React.FC<QuestCreateDialogProps> = ({
       aria-labelledby="dialog-title"
       onClick={onClose}
     >
-      <div className="dialog-window" onClick={(e) => e.stopPropagation()}>
+      <div
+        className="dialog-window"
+        onClick={(e) => e.stopPropagation()}
+        role="document"
+      >
         <div className="dialog-header">
           <h2 id="dialog-title" className="dialog-title">Declare a Quest</h2>
           <button
@@ -78,6 +102,7 @@ export const QuestCreateDialog: React.FC<QuestCreateDialogProps> = ({
               Quest Title
             </label>
             <input
+              ref={inputRef}
               id="quest-title-input"
               type="text"
               className="form-input"
@@ -86,9 +111,15 @@ export const QuestCreateDialog: React.FC<QuestCreateDialogProps> = ({
               placeholder="e.g., Read two chapters of literature"
               maxLength={120}
               required
-              autoFocus
             />
-            {error && <span style={{ color: 'var(--color-error)', fontSize: 'var(--text-xs)' }}>{error}</span>}
+            {error && (
+              <span
+                style={{ color: 'var(--color-error)', fontSize: 'var(--text-xs)' }}
+                role="alert"
+              >
+                {error}
+              </span>
+            )}
           </div>
 
           <div className="form-field">

@@ -73,9 +73,9 @@
 .quest-badge {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--space-4);
   font-size: var(--text-xs);
-  padding: 2px 8px;
+  padding: var(--space-4) var(--space-8);
   border-radius: var(--radius-btn);
   font-weight: 500;
   letter-spacing: 0.02em;
@@ -137,7 +137,10 @@
   text-decoration: underline;
   cursor: pointer;
   font-size: var(--text-xs);
-  padding: 2px 4px;
+  padding: var(--space-4) var(--space-8);
+  min-height: var(--min-touch-target);
+  display: inline-flex;
+  align-items: center;
 }
 
 .quest-retry-btn:hover {
