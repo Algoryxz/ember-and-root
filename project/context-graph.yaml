@@ -22,13 +22,13 @@ nodes:
   - id: REQ_NONLINEAR_LEVELS
     type: requirement
     label: "Nonlinear level formula: 100 + 50(L-1)"
-    status: planned
+    status: verified
     owner: smarak
 
   - id: REQ_ATTRIBUTES
     type: requirement
     label: "Four attributes with independent XP branches"
-    status: planned
+    status: verified
     owner: smarak
 
   - id: REQ_SPECIALIZATIONS
@@ -132,19 +132,19 @@ nodes:
   - id: MODULE_COMPLETE_QUEST
     type: module
     label: "completeQuest RPC (PostgreSQL function)"
-    status: planned
+    status: working
     owner: smarak
 
   - id: MODULE_GAME_CONTRACTS
     type: module
     label: "game/contracts.ts: GameSnapshot, MutationResult"
-    status: planned
+    status: verified
     owner: smarak
 
   - id: MODULE_GAME_FIXTURES
     type: module
     label: "game/fixtures/snapshot.ts: demo fixture data"
-    status: planned
+    status: verified
     owner: smarak
 
   - id: MODULE_REWARD_SEQUENCE
@@ -169,43 +169,43 @@ nodes:
   - id: DB_PROFILES
     type: database
     label: "profiles table"
-    status: planned
+    status: working
     owner: smarak
 
   - id: DB_QUESTS
     type: database
     label: "quests table (soft-delete)"
-    status: planned
+    status: working
     owner: smarak
 
   - id: DB_COMPLETIONS
     type: database
     label: "quest_completions table (immutable)"
-    status: planned
+    status: working
     owner: smarak
 
   - id: DB_BRANCHES
     type: database
     label: "branches table (user, attribute, xp)"
-    status: planned
+    status: working
     owner: smarak
 
   - id: DB_RECEIPTS
     type: database
     label: "mutation_receipts table (idempotency)"
-    status: planned
+    status: working
     owner: smarak
 
   - id: DB_TRIALS
     type: database
     label: "trials table"
-    status: planned
+    status: working
     owner: smarak
 
   - id: DB_INVENTORY
     type: database
     label: "inventory table (with partial unique index)"
-    status: planned
+    status: working
     owner: smarak
 
   # ── Tests ────────────────────────────────────────────────────
@@ -224,13 +224,13 @@ nodes:
   - id: TEST_LEVEL_BOUNDARY
     type: test
     label: "XP at/below/above level threshold (Vitest)"
-    status: planned
+    status: verified
     owner: smarak
 
   - id: TEST_STREAK_LOGIC
     type: test
     label: "Same/next/missed day streak behavior (Vitest)"
-    status: planned
+    status: verified
     owner: smarak
 
   - id: TEST_MOBILE_COMPLETION
