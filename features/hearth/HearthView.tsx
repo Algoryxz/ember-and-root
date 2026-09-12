@@ -114,7 +114,7 @@ export const HearthView: React.FC<HearthViewProps> = ({
       );
 
       // Transition to sealed state upon authoritative confirmation
-      setCompletedQuestIds((prev) => new Set([...prev, questId]));
+      setCompletedQuestIds((prev) => new Set([...Array.from(prev), questId]));
 
       // Apply authoritative snapshot from server mutation (NO local math)
       setSnapshot(result.snapshot);
@@ -123,8 +123,8 @@ export const HearthView: React.FC<HearthViewProps> = ({
       if (result.event) {
         setActiveQuestTitle(quest.title);
         setActiveEvent(result.event);
-        setHighlightAttribute(result.event.attribute);
-        setIsEmberRelit(result.event.emberRelit);
+        setHighlightAttribute(result.event.attribute ?? null);
+        setIsEmberRelit(result.event.emberRelit ?? false);
 
         // Check if milestone achieved
         if (result.event.specializationAvailable || result.event.crestAvailable) {
