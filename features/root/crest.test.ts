@@ -1,6 +1,7 @@
 // @ts-ignore
 import { describe, it, expect, vi } from 'vitest';
 import { claimCrestAction } from './trialAdapter';
+import { claimCrestFixtureAdapter } from './trialFixtureAdapter';
 import { GameSnapshot } from '../../game/contracts';
 import { INITIAL_TREE_STATE } from './fixtures';
 
@@ -19,6 +20,7 @@ describe('Crest Reveal & Claim Flow (Server-Authoritative)', () => {
       ...INITIAL_TREE_STATE.branches,
       mind: {
         ...INITIAL_TREE_STATE.branches.mind,
+        xp: 160,
         specialization: 'scholar',
         specializationAvailable: false,
         trialStarted: true,
@@ -63,10 +65,10 @@ describe('Crest Reveal & Claim Flow (Server-Authoritative)', () => {
     expect(branch.crestClaimed).toBe(false);
   });
 
-  it('3. claimCrestAction returns updated server snapshot with crestClaimed: true and crestAvailable: false', async () => {
+  it('3. claimCrestFixtureAdapter returns updated server snapshot with crestClaimed: true and crestAvailable: false', () => {
     const snapshot = createBaseSnapshot();
 
-    const result = await claimCrestAction(snapshot, 'mind');
+    const result = claimCrestFixtureAdapter(snapshot, 'mind');
 
     expect(result.event.kind).toBe('trial_claimed');
     expect(result.event.attribute).toBe('mind');
@@ -104,26 +106,24 @@ describe('Crest Reveal & Claim Flow (Server-Authoritative)', () => {
     expect(result.snapshot.branches.mind.crestClaimed).toBe(true);
   });
 
-  it('5. Handles RPC error gracefully by falling back to local calculation without corrupting state', async () => {
+  it('5. Rejects unauthenticated/missing Supabase client without silent fallback in production adapter', async () => {
     const snapshot = createBaseSnapshot();
-    const mockRpc = vi.fn().mockResolvedValue({
-      data: null,
-      error: { message: 'Database connection failed' },
-    });
-
-    const mockSupabase = { rpc: mockRpc };
-    const result = await claimCrestAction(snapshot, 'mind', mockSupabase);
-
-    expect(result.snapshot.branches.mind.crestClaimed).toBe(true);
+    let thrownError: any = null;
+    try {
+      await claimCrestAction(snapshot, 'mind');
+    } catch (err) {
+      thrownError = err;
+    }
+    expect(thrownError).not.toBeNull();
   });
 
-  it('6. Duplicate claim prevention: Re-running claim on an already claimed branch preserves claimed state', async () => {
+  it('6. Duplicate claim prevention: Re-running claim on an already claimed branch via fixture preserves claimed state', () => {
     const snapshot = createBaseSnapshot();
     snapshot.branches.mind.crestClaimed = true;
     snapshot.branches.mind.crestAvailable = false;
     snapshot.trials.mind!.claimedAt = new Date().toISOString();
 
-    const result = await claimCrestAction(snapshot, 'mind');
+    const result = claimCrestFixtureAdapter(snapshot, 'mind');
 
     expect(result.snapshot.branches.mind.crestClaimed).toBe(true);
     expect(result.snapshot.branches.mind.crestAvailable).toBe(false);

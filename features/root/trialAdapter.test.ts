@@ -1,19 +1,19 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import type { GameSnapshot } from '../../game/contracts.ts';
+import type { GameSnapshot } from '../../game/contracts';
 import {
   chooseSpecializationAction,
   startTrialAction,
   progressSessionTrialAction,
   recordMilestoneAction,
   claimCrestAction,
-} from './trialAdapter.ts';
+} from './trialAdapter';
 import {
   progressSessionTrialFixtureAdapter,
   recordMilestoneFixtureAdapter,
   claimCrestFixtureAdapter,
-} from './trialFixtureAdapter.ts';
-import { INITIAL_TREE_STATE } from './fixtures.ts';
+} from './trialFixtureAdapter';
+import { INITIAL_TREE_STATE } from './fixtures';
 
 const DEMO_SNAPSHOT: GameSnapshot = {
   revision: 1,
