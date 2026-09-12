@@ -8,7 +8,7 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   reporter: process.env.CI ? 'dot' : 'list',
   use: {
-    baseURL: process.env.PLAYWRIGHT_TEST_BASE_URL || 'http://localhost:3000',
+    baseURL: process.env.PLAYWRIGHT_TEST_BASE_URL || 'http://localhost:3005',
     trace: 'on-first-retry',
   },
   projects: [
@@ -22,8 +22,8 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: 'npm.cmd run start',
-    url: 'http://localhost:3000',
+    command: 'npm.cmd run start -- -p 3005',
+    url: 'http://localhost:3005',
     reuseExistingServer: !process.env.CI,
     timeout: 120000,
   },
