@@ -209,7 +209,7 @@ export const RootBranch: React.FC<RootBranchProps> = ({
             padding: '6px 10px',
             fontSize: '12px',
             cursor: 'pointer',
-            minHeight: '36px',
+            minHeight: '44px',
           }}
           aria-label={`Switch to ${viewMode === 'visual' ? 'Accessible List' : 'Visual SVG'} view for ${config.title}`}
         >
@@ -251,6 +251,8 @@ export const RootBranch: React.FC<RootBranchProps> = ({
       {/* Specialization Confirmation Badge */}
       {activeSpec && (
         <div
+          role="status"
+          aria-live="polite"
           style={{
             backgroundColor: TOKENS.color.surfaceHover,
             border: `1px solid ${config.accentColor}`,
