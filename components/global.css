@@ -1,11 +1,15 @@
+﻿@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import './tokens.css';
+
 /* ==========================================================================
    Ember & Root — Global Field Journal Stylesheet
    Owned by: Deeptiman (Experience / Frontend Lead)
    Visual Direction: Illuminated Field Journal
    Specification: docs/UI_UX_BRIEF.md
    ========================================================================== */
-
-@import './tokens.css';
 
 /* --------------------------------------------------------------------------
    1. Box-Sizing & Reset Defaults

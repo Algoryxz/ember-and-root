@@ -80,6 +80,21 @@ export type Quest = {
 
 ---
 
+## HearthQuest
+
+The view-model representation of a Quest returned in `GameSnapshot.quests` for Hearth. Extends the persisted `Quest` with authoritative occurrence-level completion state computed server-side.
+
+```typescript
+export interface HearthQuest extends Quest {
+  currentOccurrenceKey: string;
+  completedForCurrentOccurrence: boolean;
+}
+```
+
+> **Hearth Integration Rule:** Hearth displays quest completion status strictly from `quest.completedForCurrentOccurrence`. Frontend components must NOT maintain completion truth in a local Set, localStorage, or through optimistic client date calculations. Pending visual animations may be local; completion truth is authoritative server state.
+
+---
+
 ## QuestCompletion
 
 ```typescript
@@ -113,12 +128,12 @@ export type BranchState = {
   selectedAt: string | null;    // ISO datetime string when specialization was chosen
 
   // Derived fields (computed server-side and included in snapshot)
-  sproutAvailable: boolean;     // xp > 0
+  sproutAvailable: boolean;          // xp > 0
   specializationAvailable: boolean;  // xp >= 80 && specialization === null
-  crestAvailable: boolean;      // xp >= 160 && trialComplete
-  trialStarted: boolean;
-  trialComplete: boolean;
-  crestClaimed: boolean;
+  crestAvailable: boolean;           // xp >= 160 && trialComplete && !crestClaimed
+  trialStarted: boolean;             // trial row exists
+  trialComplete: boolean;            // trial.completedAt !== null
+  crestClaimed: boolean;             // trial.claimedAt !== null
 };
 ```
 
@@ -143,7 +158,8 @@ export type TrialState = {
   // For milestone_reflection trials
   milestoneText?: string;   // Player-declared milestone
 
-  claimedAt: string | null; // non-null when claimed
+  completedAt: string | null; // ISO datetime string when trial objective completed
+  claimedAt: string | null;   // ISO datetime string when claimed and crest awarded
 };
 ```
 
@@ -201,7 +217,7 @@ export type GameSnapshot = {
   inventory: InventoryState;
 
   // Quest list (today's active quests for Hearth; omit from other contexts)
-  quests?: Quest[];
+  quests?: HearthQuest[];
 };
 ```
 
@@ -244,6 +260,10 @@ export type MutationEvent = {
 
   // Specialization/trial fields
   specialization?: Specialization;
+
+  // Quest CRUD fields
+  questId?: string;
+  version?: number;
 };
 
 export type MutationResult = {
@@ -252,6 +272,33 @@ export type MutationResult = {
   snapshot: GameSnapshot;
 };
 ```
+
+---
+
+## Quest CRUD RPC Operation Contracts
+
+Hearth and server actions invoke these authoritative RPCs for quest lifecycle management:
+
+### `create_quest`
+- **Signature:** `create_quest(p_request_id uuid, p_title text, p_attribute text, p_effort text, p_cadence text, p_trial_id uuid DEFAULT NULL)`
+- **Caller:** Authenticated (`auth.uid()`).
+- **Validation:** Trimmed title 1–120 characters; attribute in `('mind','body','will','craft')`; effort in `('quick','standard','deep')`; cadence in `('once','daily')`.
+- **Behavior:** Inserts new quest with `version = 1`, `deleted_at = NULL`. Increments profile revision. Idempotent via `mutation_receipts`.
+- **Returns:** `MutationResult` with `kind: 'quest_created'`, `questId`, and fresh `GameSnapshot`.
+
+### `update_quest`
+- **Signature:** `update_quest(p_request_id uuid, p_quest_id uuid, p_expected_version integer, p_title text, p_attribute text, p_effort text, p_cadence text, p_trial_id uuid DEFAULT NULL)`
+- **Caller:** Authenticated owner only.
+- **Validation:** Rejects soft-deleted quests; validates canonical fields; enforces optimistic lock: `quest.version === p_expected_version` (rejects stale with error `stale_version_conflict` / `P0015`).
+- **Behavior:** Updates quest fields, server timestamp `updated_at = now()`, increments `version` (`version + 1`). Increments profile revision. Idempotent via `mutation_receipts`.
+- **Returns:** `MutationResult` with `kind: 'quest_updated'`, `questId`, `version`, and fresh `GameSnapshot`.
+
+### `soft_delete_quest`
+- **Signature:** `soft_delete_quest(p_request_id uuid, p_quest_id uuid)`
+- **Caller:** Authenticated owner only.
+- **Behavior:** Sets `deleted_at = now()`, increments `version`. Increments profile revision. **Preserves immutable completion history in `quest_completions`**. Excludes deleted quest from returned `GameSnapshot.quests`. Idempotent via `mutation_receipts`.
+- **Returns:** `MutationResult` with `kind: 'quest_deleted'`, `questId`, and fresh `GameSnapshot`.
+
 
 ---
 

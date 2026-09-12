@@ -44,3 +44,6 @@ Thumbs.db
 .idea/
 *.swp
 *.swo
+
+# Playwright MCP sessions
+.playwright-mcp/
