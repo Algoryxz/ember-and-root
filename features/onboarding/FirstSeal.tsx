@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { motion, useReducedMotion } from 'motion/react';
+import { useReducedMotion } from 'motion/react';
 import { createClient } from '@/lib/supabase/client';
 import type { MutationResult, AttributeId, Effort } from '@/game/contracts';
 import type { OnboardingPreferences, StarterQuestTemplate } from './types';
+import type { SealPending } from './recovery';
+import { updateRecovery, clearRecovery } from './recovery';
 
 export interface FirstSealProps {
   keptQuests: StarterQuestTemplate[];
@@ -15,6 +17,13 @@ export interface FirstSealProps {
     firstSealRequestId: string;
   };
   onSealed?: () => void;
+  /**
+   * When present, the component mounts directly in the climax+retry state —
+   * the Seal already completed on a prior page load, only the preference write
+   * needs to be retried. The component uses the stored timezone and preferences
+   * from this record instead of the props, which may be empty in recovery mode.
+   */
+  sealPending?: SealPending | null;
 }
 
 const ATTRIBUTE_LABELS: Record<AttributeId, { name: string; color: string }> = {
@@ -39,12 +48,16 @@ type MotionStage =
   | 'root_wake'
   | 'climax';
 
+/** Tracks whether the post-Seal preference write has been confirmed by the server. */
+type PrefUpdateStatus = 'idle' | 'pending' | 'confirmed' | 'failed';
+
 export const FirstSeal: React.FC<FirstSealProps> = ({
   keptQuests,
   selectedTimezone,
   onboardingPreferences,
   requestIds,
   onSealed,
+  sealPending,
 }) => {
   const router = useRouter();
   const shouldReduceMotion = useReducedMotion();
@@ -56,8 +69,79 @@ export const FirstSeal: React.FC<FirstSealProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [mutationResult, setMutationResult] = useState<MutationResult | null>(null);
 
-  const selectedQuest = keptQuests.find((q) => q.id === selectedQuestId) || keptQuests[0];
+  // Pref-update lifecycle — independent of the Seal transaction.
+  const [prefUpdateStatus, setPrefUpdateStatus] = useState<PrefUpdateStatus>('idle');
+  const [prefUpdateError, setPrefUpdateError] = useState<string | null>(null);
 
+  // ── Recovery Mode Initialization ───────────────────────────────────────────
+  // When sealPending is provided the component was mounted after a reload
+  // following a successful seal whose preference write did not complete.
+  // Skip directly to the climax panel in the retry state.
+  useEffect(() => {
+    if (sealPending) {
+      setMutationResult(sealPending.sealedResult);
+      setMotionStage('climax');
+      setPrefUpdateStatus('failed');
+      setPrefUpdateError('The previous finalization did not complete. Retry below.');
+    }
+  }, [sealPending]);
+
+  const selectedQuest = keptQuests.find((q) => q.id === selectedQuestId);
+
+  // ── Finalise Preferences ───────────────────────────────────────────────────
+  // Separated from handlePerformFirstSeal so it can be retried independently
+  // without re-running the Seal transaction.
+  const handleFinalizePref = async (
+    result: MutationResult,
+    timezone: string,
+    prefs: OnboardingPreferences
+  ): Promise<void> => {
+    setPrefUpdateStatus('pending');
+    setPrefUpdateError(null);
+
+    try {
+      const supabase = createClient();
+
+      // Re-read the current preferences to avoid overwriting any keys written
+      // between the seal and now.
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('preferences')
+        .single();
+
+      const currentPrefs = (profile?.preferences as Record<string, unknown> | null) || {};
+      const updatedPrefs = {
+        ...currentPrefs,
+        onboarding: prefs,
+        onboarded: true,
+      };
+
+      const { error: prefError } = await supabase.rpc('update_profile_preferences', {
+        p_timezone: timezone,
+        p_preferences: updatedPrefs,
+      });
+
+      if (prefError) {
+        // Persist the sealPending record so reload can resume here.
+        updateRecovery({ sealPending: { sealedResult: result, selectedTimezone: timezone, onboardingPreferences: prefs } });
+        setPrefUpdateStatus('failed');
+        setPrefUpdateError(prefError.message || 'Failed to finalise onboarding preferences.');
+        return;
+      }
+
+      // Server confirmed — remove the recovery record.
+      clearRecovery();
+      setPrefUpdateStatus('confirmed');
+      setPrefUpdateError(null);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Connection error.';
+      updateRecovery({ sealPending: { sealedResult: result, selectedTimezone: timezone, onboardingPreferences: prefs } });
+      setPrefUpdateStatus('failed');
+      setPrefUpdateError(msg);
+    }
+  };
+
+  // ── Main Seal Handler ──────────────────────────────────────────────────────
   const handlePerformFirstSeal = async () => {
     if (!selectedQuest) return;
 
@@ -128,34 +212,12 @@ export const FirstSeal: React.FC<FirstSealProps> = ({
       const confirmedResult = sealData as MutationResult;
       setMutationResult(confirmedResult);
 
-      // 3. ONLY after successful seal, mark preferences.onboarded = true
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('preferences')
-        .single();
-
-      const currentPrefs = (profile?.preferences as Record<string, unknown> | null) || {};
-      const updatedPrefs = {
-        ...currentPrefs,
-        onboarding: onboardingPreferences,
-        onboarded: true,
-      };
-
-      const { error: prefError } = await supabase.rpc('update_profile_preferences', {
-        p_timezone: selectedTimezone,
-        p_preferences: updatedPrefs,
-      });
-
-      if (prefError) {
-        console.warn('Profile preference update warning:', prefError.message);
-      }
-
-      // Notify parent to awaken OnboardingRoot
+      // 3. Notify parent and start choreography concurrently with preference write
       if (onSealed) {
         onSealed();
       }
 
-      // 4. Run First-Seal Motion Choreography
+      // 4. Run First-Seal Motion Choreography (~850ms total, overlapping causal phases)
       if (shouldReduceMotion) {
         setMotionStage('climax');
       } else {
@@ -168,11 +230,16 @@ export const FirstSeal: React.FC<FirstSealProps> = ({
               setMotionStage('root_wake');
               setTimeout(() => {
                 setMotionStage('climax');
-              }, 400);
-            }, 500);
+              }, 250);
+            }, 250);
           }, 250);
-        }, 120);
+        }, 100);
       }
+
+      // 5. Persist preferences (concurrent with choreography; failure shows retry UI)
+      //    Use the prefs and timezone from props — these are current values from the flow.
+      //    Not awaited so choreography and pref write run in parallel.
+      void handleFinalizePref(confirmedResult, selectedTimezone, onboardingPreferences);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An unexpected network error occurred.');
       setMotionStage('idle');
@@ -221,14 +288,56 @@ export const FirstSeal: React.FC<FirstSealProps> = ({
             </div>
           </div>
 
-          {/* Enter the Hearth CTA */}
-          <button
-            type="button"
-            onClick={() => router.push('/hearth')}
-            className="w-full min-h-[50px] px-6 py-3.5 rounded-lg bg-[#E98A4B] hover:bg-[#d87c3f] text-[#141713] font-semibold text-base transition-all duration-100 ease-in-out active:translate-y-[1px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C4A96A] shadow-xl"
-          >
-            Enter the Hearth →
-          </button>
+          {/* ── Enter / Finalize CTA ── */}
+          {/* Confirmed: server wrote preferences.onboarded = true. Safe to enter. */}
+          {prefUpdateStatus === 'confirmed' && (
+            <button
+              type="button"
+              onClick={() => router.push('/hearth')}
+              className="w-full min-h-[50px] px-6 py-3.5 rounded-lg bg-[#E98A4B] hover:bg-[#d87c3f] text-[#141713] font-semibold text-base transition-all duration-100 ease-in-out active:translate-y-[1px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C4A96A] shadow-xl"
+            >
+              Enter the Hearth →
+            </button>
+          )}
+
+          {/* Pending: pref write in-flight alongside choreography. */}
+          {(prefUpdateStatus === 'idle' || prefUpdateStatus === 'pending') && (
+            <button
+              type="button"
+              disabled
+              className="w-full min-h-[50px] px-6 py-3.5 rounded-lg bg-[#E98A4B] text-[#141713] font-semibold text-base disabled:opacity-50 shadow-xl cursor-wait"
+            >
+              Finalising your path…
+            </button>
+          )}
+
+          {/* Failed: display error and offer a retry. Does NOT re-run the Seal. */}
+          {prefUpdateStatus === 'failed' && (
+            <div className="space-y-3">
+              {prefUpdateError && (
+                <p
+                  role="alert"
+                  aria-live="polite"
+                  className="text-xs text-[#F0A79D] leading-relaxed"
+                >
+                  {prefUpdateError}
+                </p>
+              )}
+              <button
+                type="button"
+                onClick={() =>
+                  void handleFinalizePref(
+                    mutationResult,
+                    sealPending?.selectedTimezone ?? selectedTimezone,
+                    sealPending?.onboardingPreferences ?? onboardingPreferences
+                  )
+                }
+                className="w-full min-h-[50px] px-6 py-3.5 rounded-lg bg-[#E98A4B] hover:bg-[#d87c3f] text-[#141713] font-semibold text-base transition-all duration-100 ease-in-out active:translate-y-[1px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C4A96A] shadow-xl"
+              >
+                Retry Finalization
+              </button>
+            </div>
+          )}
         </div>
       ) : (
         /* CHOOSE FIRST QUEST & REAL SEAL */

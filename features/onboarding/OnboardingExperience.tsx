@@ -19,6 +19,8 @@ import type {
   StarterQuestTemplate,
   OnboardingStep,
 } from './types';
+import type { SealPending } from './recovery';
+import { readRecovery, writeRecovery, updateRecovery } from './recovery';
 import type { Effort } from '@/game/contracts';
 import './OnboardingExperience.css';
 
@@ -59,25 +61,51 @@ export const OnboardingExperience: React.FC = () => {
   const [timezoneError, setTimezoneError] = useState<string | null>(null);
   const [isSavingPreferences, setIsSavingPreferences] = useState<boolean>(false);
 
+  // ── Seal Recovery State (persisted across reloads) ────────────────────────
+  // Set when the first-Seal completes but the preference write has not yet
+  // been confirmed by the server. On the next mount, this causes the UI to
+  // resume at the retry panel rather than restarting from the goals step.
+  const [sealPending, setSealPending] = useState<SealPending | null>(null);
+
   // ── Stable Request IDs for Idempotency ────────────────────────────────────
   const onboardingRequestIdRef = useRef<string>('');
   const questRequestIdsRef = useRef<Record<string, string>>({});
   const firstSealRequestIdRef = useRef<string>('');
 
   useEffect(() => {
-    // Generate UUIDs once on mount; reuse across any network retries
+    // On mount: load request IDs from localStorage if they exist (recovery path),
+    // otherwise generate fresh UUIDs and write them so future retries/reloads reuse them.
     const uuid = () =>
       typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
         ? crypto.randomUUID()
         : 'a0000000-0000-0000-0000-' + Math.random().toString(16).substring(2, 14);
 
-    if (!onboardingRequestIdRef.current) {
+    const recovery = readRecovery();
+
+    if (recovery) {
+      // Restore persisted request IDs so retries send identical UUIDs to the server.
+      if (recovery.onboardingRequestId) onboardingRequestIdRef.current = recovery.onboardingRequestId;
+      if (recovery.firstSealRequestId) firstSealRequestIdRef.current = recovery.firstSealRequestId;
+      if (recovery.questRequestIds) questRequestIdsRef.current = { ...recovery.questRequestIds };
+
+      // If the seal completed but the preference write never succeeded, skip
+      // directly to the finalization-retry panel.
+      if (recovery.sealPending) {
+        setSealPending(recovery.sealPending);
+        setSelectedTimezone(recovery.sealPending.selectedTimezone);
+        setStep('first_quest');
+      }
+    } else {
+      // No recovery record: first visit. Generate and persist fresh IDs.
       onboardingRequestIdRef.current = uuid();
-    }
-    if (!firstSealRequestIdRef.current) {
       firstSealRequestIdRef.current = uuid();
+      writeRecovery({
+        onboardingRequestId: onboardingRequestIdRef.current,
+        firstSealRequestId: firstSealRequestIdRef.current,
+        questRequestIds: {},
+      });
     }
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Detect silent timezone on client mount
   useEffect(() => {
@@ -172,16 +200,22 @@ export const OnboardingExperience: React.FC = () => {
     });
   };
 
-  // Ensure quest request IDs exist for each kept quest
+  // Ensure quest request IDs exist for each kept quest and persist them.
   useEffect(() => {
+    let anyNew = false;
     keptQuestIds.forEach((id) => {
       if (!questRequestIdsRef.current[id]) {
         questRequestIdsRef.current[id] =
           typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
             ? crypto.randomUUID()
             : 'q0000000-0000-0000-0000-' + Math.random().toString(16).substring(2, 14);
+        anyNew = true;
       }
     });
+    // Persist any newly-assigned quest UUIDs so reload retries send the same IDs.
+    if (anyNew) {
+      updateRecovery({ questRequestIds: { ...questRequestIdsRef.current } });
+    }
   }, [keptQuestIds]);
 
   // Persist preferences (Step 8) before entering the First Quest selection
@@ -529,6 +563,7 @@ export const OnboardingExperience: React.FC = () => {
                 firstSealRequestId: firstSealRequestIdRef.current,
               }}
               onSealed={() => setStep('sealed')}
+              sealPending={sealPending}
             />
           )}
         </main>

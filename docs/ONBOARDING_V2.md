@@ -69,8 +69,8 @@ Step 7 & 8: First Quest Selection & Real Seal (FirstSeal.tsx)
   │  - Authoritatively creates kept quests via create_quest RPC
   │  - Seals chosen first quest via complete_quest RPC
   │  - Updates preferences.onboarded = true
-  │  - First-Seal motion choreography:
-  │      Seal lands (100ms) → Ember warms (250ms) → Light trace travels (500ms) → Root sprout wakes (400ms)
+  │  - First-Seal motion choreography (~850ms total, overlapping causal phases):
+  │      Seal lands (100ms) → Ember warms (250ms) → Light trace travels (250ms) → Root filament wakes (250ms)
   │  - Climax display: "THAT'S THE LOOP. What you do becomes what grows."
   │  - Displays actual returned XP, Sparks, and Ember state
   ▼
