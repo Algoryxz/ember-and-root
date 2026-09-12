@@ -96,6 +96,7 @@ export async function startTrialAction(
     requiredDays: config.kind === 'distinct_days' ? (config.requiredDays ?? 5) : undefined,
     distinctDaysCompleted: config.kind === 'distinct_days' ? 0 : undefined,
     milestoneText: undefined,
+    completedAt: null,
     claimedAt: null,
   };
 
@@ -164,6 +165,7 @@ export async function progressSessionTrialAction(
   const updatedTrial: TrialState = {
     ...trial,
     distinctDaysCompleted: newCount,
+    completedAt: isComplete ? new Date().toISOString() : (trial.completedAt ?? null),
   };
 
   const existingBranch = snapshot.branches[attribute];
@@ -225,6 +227,7 @@ export async function recordMilestoneAction(
   const updatedTrial: TrialState = {
     ...trial,
     milestoneText,
+    completedAt: trial.completedAt ?? new Date().toISOString(),
   };
 
   const existingBranch = snapshot.branches[attribute];
@@ -333,6 +336,7 @@ export function startTrialAdapter(snapshot: GameSnapshot, attribute: AttributeId
     requiredDays: config.kind === 'distinct_days' ? (config.requiredDays ?? 5) : undefined,
     distinctDaysCompleted: config.kind === 'distinct_days' ? 0 : undefined,
     milestoneText: undefined,
+    completedAt: null,
     claimedAt: null,
   };
   return {
