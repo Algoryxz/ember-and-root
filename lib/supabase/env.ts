@@ -21,8 +21,16 @@ export function getSupabaseEnv() {
     };
   }
 
+  // Normalize URL to ensure clean origin without trailing slashes or /rest/v1 paths
+  let cleanUrl = url;
+  try {
+    cleanUrl = new URL(url).origin;
+  } catch {
+    cleanUrl = url;
+  }
+
   return {
-    url,
+    url: cleanUrl,
     anonKey,
     isConfigured: true,
   };
