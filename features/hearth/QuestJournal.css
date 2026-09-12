@@ -1,211 +1,168 @@
 /* ==========================================================================
-   Ember & Root — Quest Journal Container Styles
+   QuestJournal — Daily Practice Folio Surface
    Owned by: Deeptiman (Experience / Frontend Lead)
-   Visual Direction: Illuminated Field Journal
-   Specification: docs/UI_UX_BRIEF.md
+   Visual Direction: Botanical Field Journal Sequence (Not a SaaS Grid)
    ========================================================================== */
 
 .quest-journal-section {
-  display: flex;
-  flex-direction: column;
+  position: relative;
   width: 100%;
-  box-sizing: border-box;
 }
 
-/* --------------------------------------------------------------------------
-   Ruled Section Divider: TODAY ──────────────────────────────────────────
-   -------------------------------------------------------------------------- */
-.journal-section-divider {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-8);
+/* Editorial Folio Header */
+.journal-header-cluster {
   margin-bottom: var(--space-16);
 }
 
-.journal-divider-title-row {
+.journal-date-marker {
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--color-ember);
+  margin-bottom: var(--space-4);
+}
+
+.journal-title-row {
   display: flex;
-  align-items: center;
+  align-items: baseline;
   justify-content: space-between;
+  flex-wrap: wrap;
   gap: var(--space-12);
 }
 
-.journal-section-title {
+.journal-title {
   font-family: var(--font-display);
-  font-size: var(--text-xl);
+  font-size: var(--text-2xl);
+  font-weight: 500;
   color: var(--color-text-primary);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  font-weight: 600;
   margin: 0;
+  letter-spacing: -0.01em;
 }
 
-.journal-status-pill {
+.journal-progress-pill {
   font-family: var(--font-body);
   font-size: var(--text-xs);
   color: var(--color-text-secondary);
-  background: rgba(20, 23, 19, 0.7);
+  background: rgba(185, 190, 172, 0.08);
+  border: 1px solid rgba(185, 190, 172, 0.12);
   padding: var(--space-4) var(--space-12);
   border-radius: var(--radius-btn);
-  border: 1px solid rgba(185, 190, 172, 0.12);
+  letter-spacing: 0.04em;
 }
 
-.journal-rule-line {
+.journal-rule-divider {
   height: 1px;
-  background: linear-gradient(
-    90deg,
-    rgba(185, 190, 172, 0.3) 0%,
-    rgba(185, 190, 172, 0.15) 60%,
-    transparent 100%
-  );
+  background: rgba(185, 190, 172, 0.16);
+  margin-top: var(--space-12);
+}
+
+/* List Container */
+.journal-sequence-wrapper {
+  position: relative;
   width: 100%;
 }
 
-/* --------------------------------------------------------------------------
-   Journal Sheet & Entries List
-   -------------------------------------------------------------------------- */
-.journal-sheet {
-  display: flex;
-  flex-direction: column;
-  background-color: var(--color-surface);
-  border: 1px solid rgba(185, 190, 172, 0.15);
-  border-radius: var(--radius-panel);
-  padding: var(--space-16) var(--space-24);
-  box-sizing: border-box;
-}
-
-.quest-journal-list {
+.journal-sequence-list {
   list-style: none;
-  display: flex;
-  flex-direction: column;
-  margin: 0;
   padding: 0;
+  margin: 0;
 }
 
-/* Action row at bottom of sheet */
-.journal-actions-row {
-  display: flex;
+/* Inscribe New Practice Action */
+.journal-inscribe-row {
+  margin-top: var(--space-24);
+}
+
+.journal-inscribe-btn {
+  display: inline-flex;
   align-items: center;
-  justify-content: space-between;
-  gap: var(--space-16);
-  padding-top: var(--space-16);
-  margin-top: var(--space-8);
-  flex-wrap: wrap;
-}
-
-.journal-subtle-hint {
-  font-family: var(--font-body);
-  font-style: italic;
-  font-size: var(--text-xs);
+  justify-content: center;
+  gap: var(--space-8);
+  width: 100%;
+  min-height: 48px;
+  background: transparent;
+  border: 1px dashed rgba(185, 190, 172, 0.24);
+  border-radius: var(--radius-btn);
   color: var(--color-text-secondary);
-  opacity: 0.8;
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: all 120ms ease;
 }
 
-/* --------------------------------------------------------------------------
-   State Cards: Loading, Error, Empty
-   -------------------------------------------------------------------------- */
+.journal-inscribe-btn:hover {
+  border-color: var(--color-ember);
+  color: var(--color-ember);
+  background: rgba(233, 138, 75, 0.06);
+}
+
+.journal-inscribe-btn:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.inscribe-btn-mark {
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+/* State Cards (Empty / Loading / Error) */
 .journal-state-card {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  padding: var(--space-48) var(--space-24);
   text-align: center;
-  border-radius: var(--radius-card);
-  background: var(--color-surface);
+  padding: var(--space-32) var(--space-24);
+  background: rgba(29, 35, 29, 0.4);
   border: 1px dashed rgba(185, 190, 172, 0.2);
-  box-sizing: border-box;
+  border-radius: var(--radius-panel);
+  margin-top: var(--space-16);
+}
+
+.journal-pulse-glyph,
+.journal-empty-glyph,
+.journal-error-glyph {
+  font-size: 1.5rem;
+  margin-bottom: var(--space-12);
+  line-height: 1;
+}
+
+.journal-pulse-glyph {
+  color: var(--color-ember);
+}
+
+.journal-empty-glyph {
+  color: var(--color-root);
+}
+
+.journal-error-glyph {
+  color: var(--color-error);
 }
 
 .journal-state-title {
   font-family: var(--font-display);
   font-size: var(--text-xl);
   color: var(--color-text-primary);
-  margin-bottom: var(--space-8);
+  margin: 0 0 var(--space-8);
+  font-weight: 500;
 }
 
 .journal-state-text {
   font-family: var(--font-body);
   font-size: var(--text-sm);
   color: var(--color-text-secondary);
-  max-width: 360px;
+  max-width: 400px;
   line-height: 1.5;
-  margin-bottom: var(--space-24);
+  margin: 0 0 var(--space-16);
 }
 
-/* Loading State */
-.journal-loading-state {
-  border-style: solid;
-  border-color: rgba(233, 138, 75, 0.2);
-}
-
-.journal-pulse-flame {
-  font-size: var(--text-3xl);
-  color: var(--color-ember);
-  margin-bottom: var(--space-12);
-  animation: pulse-waking 1.6s ease-in-out infinite;
-}
-
-@keyframes pulse-waking {
-  0%, 100% {
-    transform: scale(0.9);
-    opacity: 0.6;
-  }
-  50% {
-    transform: scale(1.15);
-    opacity: 1;
-    text-shadow: 0 0 12px var(--color-ember);
-  }
-}
-
-/* Error State */
-.journal-error-state {
-  border-color: rgba(240, 167, 157, 0.35);
-  background-color: rgba(240, 167, 157, 0.04);
-}
-
-.journal-error-icon {
-  font-size: var(--text-3xl);
-  color: var(--color-error);
-  margin-bottom: var(--space-12);
-}
-
-/* Empty State */
-.journal-empty-state {
-  border-color: rgba(185, 190, 172, 0.25);
-}
-
-.journal-empty-mark {
-  font-size: var(--text-2xl);
-  color: var(--color-ember-core);
-  margin-bottom: var(--space-12);
-  opacity: 0.7;
-}
-
-/* --------------------------------------------------------------------------
-   Mobile Adjustments
-   -------------------------------------------------------------------------- */
-@media (max-width: 600px) {
-  .journal-sheet {
-    padding: var(--space-12);
-  }
-
-  .journal-actions-row {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .journal-actions-row .btn {
-    width: 100%;
-  }
-
-  .journal-subtle-hint {
-    text-align: center;
-  }
-}
-
-/* Reduced Motion Override */
+/* Reduced Motion */
 @media (prefers-reduced-motion: reduce) {
-  .journal-pulse-flame {
-    animation: none !important;
+  .journal-inscribe-btn {
+    transition: none !important;
   }
 }
