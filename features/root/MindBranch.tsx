@@ -15,7 +15,7 @@ export const MindBranch: React.FC<MindBranchProps> = ({
   state,
   onSelectSpecialization,
   className = '',
-}) => {
+}: MindBranchProps) => {
   const [viewMode, setViewMode] = useState<'visual' | 'list'>('visual');
 
   const { mindXP, selectedSpecialization, specializationAvailable } = state;
@@ -233,7 +233,7 @@ export const MindBranch: React.FC<MindBranchProps> = ({
             selectedSpecialization={selectedSpecialization}
           />
           <div className="root-nodes-layer">
-            {nodes.map((node) => (
+            {nodes.map((node: MindNodeInfo) => (
               <RootNodeButton
                 key={node.id}
                 node={node}

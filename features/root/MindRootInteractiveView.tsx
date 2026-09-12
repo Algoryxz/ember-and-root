@@ -11,8 +11,8 @@ import {
 export const MindRootInteractiveView: React.FC = () => {
   const [currentState, setCurrentState] = useState<MindBranchState>(INITIAL_MIND_STATE);
 
-  const handleSelectSpecialization = (spec: SpecializationId) => {
-    setCurrentState((prev) => ({
+  const handleSelectSpecialization = (spec: SpecializationId): void => {
+    setCurrentState((prev: MindBranchState) => ({
       ...prev,
       selectedSpecialization: spec,
       specializationAvailable: false,

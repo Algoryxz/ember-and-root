@@ -1,7 +1,7 @@
 import React from 'react';
 import { MindNodeInfo, SpecializationId } from './types';
 
-interface MindRootListProps {
+export interface MindRootListProps {
   nodes: MindNodeInfo[];
   mindXP: number;
   selectedSpecialization: SpecializationId | null;
@@ -13,7 +13,7 @@ export const MindRootList: React.FC<MindRootListProps> = ({
   mindXP,
   selectedSpecialization,
   onSelectSpecialization,
-}) => {
+}: MindRootListProps) => {
   return (
     <div
       className="root-list-fallback"
@@ -59,7 +59,7 @@ export const MindRootList: React.FC<MindRootListProps> = ({
           gap: '8px',
         }}
       >
-        {nodes.map((node) => {
+        {nodes.map((node: MindNodeInfo) => {
           const isInteractive = node.state === 'available' && node.specializationKey && onSelectSpecialization;
 
           return (

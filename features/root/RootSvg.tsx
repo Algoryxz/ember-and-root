@@ -12,7 +12,7 @@ export const RootSvg: React.FC<RootSvgProps> = ({
   mindState,
   onSelectSpecialization,
   className = '',
-}) => {
+}: RootSvgProps) => {
   return (
     <div className={`root-svg-container ${className}`}>
       <MindBranch

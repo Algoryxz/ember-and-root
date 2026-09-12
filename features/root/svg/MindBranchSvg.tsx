@@ -1,7 +1,7 @@
 import React from 'react';
 import { NodeState, SpecializationId } from '../types';
 
-interface MindBranchSvgProps {
+export interface MindBranchSvgProps {
   firstThoughtState: NodeState;
   scholarState: NodeState;
   explorerState: NodeState;
@@ -17,9 +17,9 @@ export const MindBranchSvg: React.FC<MindBranchSvgProps> = ({
   scholarsCrownState,
   explorersCompassState,
   selectedSpecialization,
-}) => {
+}: MindBranchSvgProps) => {
   // Path colors based on states
-  const getPathColor = (fromState: NodeState, toState: NodeState, isSelectedPath?: boolean) => {
+  const getPathColor = (fromState: NodeState, toState: NodeState, isSelectedPath?: boolean): string => {
     if (isSelectedPath || (toState === 'selected' || toState === 'unlocked')) {
       return '#9FBA87'; // --color-root
     }
@@ -32,7 +32,7 @@ export const MindBranchSvg: React.FC<MindBranchSvgProps> = ({
     return '#2A322A'; // Dark locked path
   };
 
-  const getPathWidth = (toState: NodeState, isSelectedPath?: boolean) => {
+  const getPathWidth = (toState: NodeState, isSelectedPath?: boolean): number => {
     if (isSelectedPath || toState === 'selected') return 4.5;
     if (toState === 'unlocked' || toState === 'available') return 3.5;
     return 2;

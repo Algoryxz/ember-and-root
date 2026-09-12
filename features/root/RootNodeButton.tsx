@@ -1,15 +1,15 @@
 import React from 'react';
 import { MindNodeInfo } from './types';
 
-interface RootNodeButtonProps {
+export interface RootNodeButtonProps {
   node: MindNodeInfo;
   onSelect?: () => void;
 }
 
-export const RootNodeButton: React.FC<RootNodeButtonProps> = ({ node, onSelect }) => {
+export const RootNodeButton: React.FC<RootNodeButtonProps> = ({ node, onSelect }: RootNodeButtonProps) => {
   const isInteractive = node.state === 'available' && !!onSelect;
 
-  const getAriaLabel = () => {
+  const getAriaLabel = (): string => {
     let statusText = '';
     switch (node.state) {
       case 'unlocked':
