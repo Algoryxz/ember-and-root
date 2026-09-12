@@ -1,77 +1,96 @@
-import { BranchState, MindBranchState, RootTreeState } from './types';
+import { BranchState, RootTreeState } from './types';
 
 /**
- * Initial fixture state for Mind (70 XP)
+ * Legacy Mind fixtures adapting to canonical BranchState
  */
-export const INITIAL_MIND_STATE: MindBranchState = {
+export const INITIAL_MIND_STATE: BranchState = {
   attribute: 'mind',
   xp: 70,
   mindXP: 70,
+  specialization: null,
   selectedSpecialization: null,
   specializationAvailable: false,
+  sproutAvailable: true,
+  crestAvailable: false,
+  crestClaimed: false,
 };
 
-/**
- * Fixture state for Mind when specialization threshold is reached (90 XP)
- */
-export const AVAILABLE_MIND_STATE: MindBranchState = {
+export const AVAILABLE_MIND_STATE: BranchState = {
   attribute: 'mind',
   xp: 90,
   mindXP: 90,
+  specialization: null,
   selectedSpecialization: null,
   specializationAvailable: true,
+  sproutAvailable: true,
+  crestAvailable: false,
+  crestClaimed: false,
 };
 
-/**
- * Fixture state when Scholar specialization is chosen
- */
-export const SCHOLAR_MIND_STATE: MindBranchState = {
+export const SCHOLAR_MIND_STATE: BranchState = {
   attribute: 'mind',
   xp: 90,
   mindXP: 90,
+  specialization: 'scholar',
   selectedSpecialization: 'scholar',
   specializationAvailable: false,
+  sproutAvailable: true,
+  crestAvailable: true,
+  crestClaimed: false,
 };
 
-/**
- * Fixture state when Explorer specialization is chosen
- */
-export const EXPLORER_MIND_STATE: MindBranchState = {
+export const EXPLORER_MIND_STATE: BranchState = {
   attribute: 'mind',
   xp: 90,
   mindXP: 90,
+  specialization: 'explorer',
   selectedSpecialization: 'explorer',
   specializationAvailable: false,
+  sproutAvailable: true,
+  crestAvailable: true,
+  crestClaimed: false,
 };
 
 /**
- * Initial Root Tree State for all 4 attributes (70 XP each)
+ * Initial Root Tree State for all 4 attributes (70 XP each, specialization unavailable)
  */
 export const INITIAL_TREE_STATE: RootTreeState = {
   branches: {
     mind: {
       attribute: 'mind',
       xp: 70,
-      selectedSpecialization: null,
+      specialization: null,
       specializationAvailable: false,
+      sproutAvailable: true,
+      crestAvailable: false,
+      crestClaimed: false,
     },
     body: {
       attribute: 'body',
       xp: 70,
-      selectedSpecialization: null,
+      specialization: null,
       specializationAvailable: false,
+      sproutAvailable: true,
+      crestAvailable: false,
+      crestClaimed: false,
     },
     will: {
       attribute: 'will',
       xp: 70,
-      selectedSpecialization: null,
+      specialization: null,
       specializationAvailable: false,
+      sproutAvailable: true,
+      crestAvailable: false,
+      crestClaimed: false,
     },
     craft: {
       attribute: 'craft',
       xp: 70,
-      selectedSpecialization: null,
+      specialization: null,
       specializationAvailable: false,
+      sproutAvailable: true,
+      crestAvailable: false,
+      crestClaimed: false,
     },
   },
 };
@@ -84,58 +103,82 @@ export const SPEC_READY_TREE_STATE: RootTreeState = {
     mind: {
       attribute: 'mind',
       xp: 90,
-      selectedSpecialization: null,
+      specialization: null,
       specializationAvailable: true,
+      sproutAvailable: true,
+      crestAvailable: false,
+      crestClaimed: false,
     },
     body: {
       attribute: 'body',
       xp: 90,
-      selectedSpecialization: null,
+      specialization: null,
       specializationAvailable: true,
+      sproutAvailable: true,
+      crestAvailable: false,
+      crestClaimed: false,
     },
     will: {
       attribute: 'will',
       xp: 90,
-      selectedSpecialization: null,
+      specialization: null,
       specializationAvailable: true,
+      sproutAvailable: true,
+      crestAvailable: false,
+      crestClaimed: false,
     },
     craft: {
       attribute: 'craft',
       xp: 90,
-      selectedSpecialization: null,
+      specialization: null,
       specializationAvailable: true,
+      sproutAvailable: true,
+      crestAvailable: false,
+      crestClaimed: false,
     },
   },
 };
 
 /**
- * Root Tree State with active specializations chosen for each branch
+ * Root Tree State with active specializations & crest availability for each branch
  */
 export const SPECIALIZED_TREE_STATE: RootTreeState = {
   branches: {
     mind: {
       attribute: 'mind',
-      xp: 90,
-      selectedSpecialization: 'scholar',
+      xp: 160,
+      specialization: 'scholar',
       specializationAvailable: false,
+      sproutAvailable: true,
+      crestAvailable: true,
+      crestClaimed: false,
     },
     body: {
       attribute: 'body',
-      xp: 90,
-      selectedSpecialization: 'endurance',
+      xp: 160,
+      specialization: 'endurance',
       specializationAvailable: false,
+      sproutAvailable: true,
+      crestAvailable: true,
+      crestClaimed: false,
     },
     will: {
       attribute: 'will',
-      xp: 90,
-      selectedSpecialization: 'focus',
+      xp: 160,
+      specialization: 'focus',
       specializationAvailable: false,
+      sproutAvailable: true,
+      crestAvailable: true,
+      crestClaimed: false,
     },
     craft: {
       attribute: 'craft',
-      xp: 90,
-      selectedSpecialization: 'builder',
+      xp: 160,
+      specialization: 'builder',
       specializationAvailable: false,
+      sproutAvailable: true,
+      crestAvailable: true,
+      crestClaimed: false,
     },
   },
 };

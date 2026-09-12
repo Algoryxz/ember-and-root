@@ -1,6 +1,6 @@
 export type AttributeId = 'mind' | 'body' | 'will' | 'craft';
 
-export type SpecializationId =
+export type Specialization =
   | 'scholar'
   | 'explorer'
   | 'endurance'
@@ -9,6 +9,9 @@ export type SpecializationId =
   | 'courage'
   | 'builder'
   | 'artisan';
+
+// Backward compatibility alias
+export type SpecializationId = Specialization;
 
 export type NodeState = 'locked' | 'available' | 'unlocked' | 'selected';
 
@@ -26,25 +29,33 @@ export interface RootNodeInfo {
   label: string;
   subtitle: string;
   type: NodeType;
-  specializationKey?: SpecializationId;
+  specializationKey?: Specialization;
   state: NodeState;
   xpRequired: number;
   description: string;
   coordinates: NodeCoordinates;
 }
 
-// Backward compatibility alias for MindNodeInfo
+// Backward compatibility alias
 export type MindNodeInfo = RootNodeInfo;
 
+// Canonical BranchState matching Smarak's docs/CONTRACTS.md contract
 export interface BranchState {
   attribute: AttributeId;
   xp: number;
-  mindXP?: number;
-  selectedSpecialization: SpecializationId | null;
+  mindXP?: number; // legacy alias
+  specialization: Specialization | null;
+  selectedSpecialization?: Specialization | null; // legacy alias getter
+  selectedAt?: string | null;
+  sproutAvailable?: boolean;
   specializationAvailable: boolean;
+  crestAvailable?: boolean;
+  trialStarted?: boolean;
+  trialComplete?: boolean;
+  crestClaimed?: boolean;
 }
 
-// Backward compatibility alias for MindBranchState
+// Backward compatibility alias
 export type MindBranchState = BranchState;
 
 export interface BranchConfig {
@@ -60,7 +71,7 @@ export interface BranchConfig {
   };
   specializations: [
     {
-      id: SpecializationId;
+      id: Specialization;
       label: string;
       subtitle: string;
       description: string;
@@ -72,7 +83,7 @@ export interface BranchConfig {
       };
     },
     {
-      id: SpecializationId;
+      id: Specialization;
       label: string;
       subtitle: string;
       description: string;

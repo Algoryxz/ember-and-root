@@ -1,5 +1,5 @@
 import React from 'react';
-import { NodeState, SpecializationId } from '../types';
+import { NodeState, Specialization } from '../types';
 
 export interface BodyBranchSvgProps {
   originState: NodeState;
@@ -7,7 +7,7 @@ export interface BodyBranchSvgProps {
   mobilityState: NodeState;
   enduranceCrestState: NodeState;
   mobilityCrestState: NodeState;
-  selectedSpecialization: SpecializationId | null;
+  selectedSpecialization: Specialization | null;
 }
 
 export const BodyBranchSvg: React.FC<BodyBranchSvgProps> = ({
@@ -20,10 +20,10 @@ export const BodyBranchSvg: React.FC<BodyBranchSvgProps> = ({
 }: BodyBranchSvgProps) => {
   const getPathColor = (fromState: NodeState, toState: NodeState, isSelectedPath?: boolean): string => {
     if (isSelectedPath || (toState === 'selected' || toState === 'unlocked')) {
-      return '#E98A4B'; // --color-ember / Body copper accent
+      return '#E98A4B';
     }
     if (toState === 'available') {
-      return '#FFD38A'; // Ember core glow
+      return '#FFD38A';
     }
     if (fromState === 'unlocked' && toState === 'locked') {
       return 'rgba(233, 138, 75, 0.25)';
@@ -74,7 +74,7 @@ export const BodyBranchSvg: React.FC<BodyBranchSvgProps> = ({
         filter={originState !== 'locked' ? 'url(#bodyGlow)' : undefined}
       />
 
-      {/* Path 2A: Rooted Stance -> Endurance (Left Curve) */}
+      {/* Path 2A: Rooted Stance -> Endurance */}
       <path
         className="root-path"
         d="M 180 80 C 180 140 100 150 100 220"
@@ -86,7 +86,7 @@ export const BodyBranchSvg: React.FC<BodyBranchSvgProps> = ({
         filter={isEnduranceChosen || enduranceState === 'available' ? 'url(#bodyGlow)' : undefined}
       />
 
-      {/* Path 2B: Rooted Stance -> Mobility (Right Curve) */}
+      {/* Path 2B: Rooted Stance -> Mobility */}
       <path
         className="root-path"
         d="M 180 80 C 180 140 260 150 260 220"
@@ -121,6 +121,32 @@ export const BodyBranchSvg: React.FC<BodyBranchSvgProps> = ({
         strokeLinecap="round"
         filter={mobilityCrestState !== 'locked' ? 'url(#bodyGlow)' : undefined}
       />
+
+      {/* Authored Crest Artwork: Endurance Aegis Emblem at (100, 370) */}
+      <g transform="translate(100, 370)" opacity={enduranceCrestState !== 'locked' ? 1 : 0.4}>
+        <path
+          d="M -10 -10 L 10 -10 L 10 0 C 10 8 0 14 0 14 C 0 14 -10 8 -10 0 Z"
+          fill={enduranceCrestState !== 'locked' ? '#E98A4B' : '#2A322A'}
+          stroke="#FFD38A"
+          strokeWidth="1.5"
+        />
+        <circle cx="0" cy="0" r="3" fill="#FFD38A" />
+      </g>
+
+      {/* Authored Crest Artwork: Mobility Wing Emblem at (260, 370) */}
+      <g transform="translate(260, 370)" opacity={mobilityCrestState !== 'locked' ? 1 : 0.4}>
+        <path
+          d="M -12 6 C -6 -6 4 -12 12 -12 C 4 -4 -2 2 -12 6 Z"
+          fill={mobilityCrestState !== 'locked' ? '#E98A4B' : '#2A322A'}
+          stroke="#FFD38A"
+          strokeWidth="1.5"
+        />
+        <path
+          d="M -8 10 C -2 0 6 -6 14 -6 C 6 0 2 6 -8 10 Z"
+          fill={mobilityCrestState !== 'locked' ? '#FFD38A' : '#2A322A'}
+          opacity="0.8"
+        />
+      </g>
 
       {/* Flourishes */}
       <circle cx="180" cy="80" r="4" fill="#E98A4B" opacity="0.8" />

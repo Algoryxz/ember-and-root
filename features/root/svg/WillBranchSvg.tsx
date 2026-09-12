@@ -1,5 +1,5 @@
 import React from 'react';
-import { NodeState, SpecializationId } from '../types';
+import { NodeState, Specialization } from '../types';
 
 export interface WillBranchSvgProps {
   originState: NodeState;
@@ -7,7 +7,7 @@ export interface WillBranchSvgProps {
   courageState: NodeState;
   focusCrestState: NodeState;
   courageCrestState: NodeState;
-  selectedSpecialization: SpecializationId | null;
+  selectedSpecialization: Specialization | null;
 }
 
 export const WillBranchSvg: React.FC<WillBranchSvgProps> = ({
@@ -20,7 +20,7 @@ export const WillBranchSvg: React.FC<WillBranchSvgProps> = ({
 }: WillBranchSvgProps) => {
   const getPathColor = (fromState: NodeState, toState: NodeState, isSelectedPath?: boolean): string => {
     if (isSelectedPath || (toState === 'selected' || toState === 'unlocked')) {
-      return '#FFD38A'; // --color-ember-core / Will gold accent
+      return '#FFD38A';
     }
     if (toState === 'available') {
       return '#E98A4B';
@@ -74,7 +74,7 @@ export const WillBranchSvg: React.FC<WillBranchSvgProps> = ({
         filter={originState !== 'locked' ? 'url(#willGlow)' : undefined}
       />
 
-      {/* Path 2A: Iron Intent -> Focus (Left Curve) */}
+      {/* Path 2A: Iron Intent -> Focus */}
       <path
         className="root-path"
         d="M 180 80 C 180 140 100 150 100 220"
@@ -86,7 +86,7 @@ export const WillBranchSvg: React.FC<WillBranchSvgProps> = ({
         filter={isFocusChosen || focusState === 'available' ? 'url(#willGlow)' : undefined}
       />
 
-      {/* Path 2B: Iron Intent -> Courage (Right Curve) */}
+      {/* Path 2B: Iron Intent -> Courage */}
       <path
         className="root-path"
         d="M 180 80 C 180 140 260 150 260 220"
@@ -121,6 +121,28 @@ export const WillBranchSvg: React.FC<WillBranchSvgProps> = ({
         strokeLinecap="round"
         filter={courageCrestState !== 'locked' ? 'url(#willGlow)' : undefined}
       />
+
+      {/* Authored Crest Artwork: Focus Prism Emblem at (100, 370) */}
+      <g transform="translate(100, 370)" opacity={focusCrestState !== 'locked' ? 1 : 0.4}>
+        <polygon
+          points="0,-12 10,0 0,12 -10,0"
+          fill={focusCrestState !== 'locked' ? '#FFD38A' : '#2A322A'}
+          stroke="#E98A4B"
+          strokeWidth="1.5"
+        />
+        <line x1="0" y1="-12" x2="0" y2="12" stroke="#141713" strokeWidth="1" />
+      </g>
+
+      {/* Authored Crest Artwork: Courage Shield Emblem at (260, 370) */}
+      <g transform="translate(260, 370)" opacity={courageCrestState !== 'locked' ? 1 : 0.4}>
+        <path
+          d="M -10 -10 L 0 -14 L 10 -10 L 10 2 C 10 9 0 14 0 14 C 0 14 -10 9 -10 2 Z"
+          fill={courageCrestState !== 'locked' ? '#FFD38A' : '#2A322A'}
+          stroke="#E98A4B"
+          strokeWidth="1.5"
+        />
+        <path d="M 0 -8 L 0 8 M -6 0 L 6 0" stroke="#141713" strokeWidth="1.5" />
+      </g>
 
       {/* Flourishes */}
       <circle cx="180" cy="80" r="4" fill="#FFD38A" opacity="0.8" />

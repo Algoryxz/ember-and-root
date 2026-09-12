@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { AttributeId, BranchState, NodeState, RootNodeInfo, SpecializationId } from './types';
+import { AttributeId, BranchState, NodeState, RootNodeInfo, Specialization } from './types';
 import { BRANCH_CONFIGS } from './config';
 import { BranchSvgRenderer } from './svg/BranchSvgRenderer';
 import { RootNodeButton } from './RootNodeButton';
@@ -9,7 +9,7 @@ import './root.css';
 export interface RootBranchProps {
   attribute: AttributeId;
   state: BranchState;
-  onSelectSpecialization?: (attribute: AttributeId, spec: SpecializationId) => void;
+  onSelectSpecialization?: (attribute: AttributeId, spec: Specialization) => void;
   className?: string;
 }
 
@@ -22,7 +22,16 @@ export const RootBranch: React.FC<RootBranchProps> = ({
   const [viewMode, setViewMode] = useState<'visual' | 'list'>('visual');
 
   const config = BRANCH_CONFIGS[attribute];
-  const { xp, selectedSpecialization, specializationAvailable } = state;
+  const {
+    xp,
+    specialization,
+    selectedSpecialization,
+    specializationAvailable,
+    crestAvailable,
+    crestClaimed,
+  } = state;
+
+  const activeSpec = specialization || selectedSpecialization || null;
 
   // Node state derivations
   const originState: NodeState = xp >= 1 ? 'unlocked' : 'locked';
@@ -33,10 +42,10 @@ export const RootBranch: React.FC<RootBranchProps> = ({
   let spec1State: NodeState = 'locked';
   let spec2State: NodeState = 'locked';
 
-  if (selectedSpecialization === spec1.id) {
+  if (activeSpec === spec1.id) {
     spec1State = 'selected';
     spec2State = 'locked';
-  } else if (selectedSpecialization === spec2.id) {
+  } else if (activeSpec === spec2.id) {
     spec2State = 'selected';
     spec1State = 'locked';
   } else if (specializationAvailable) {
@@ -45,10 +54,22 @@ export const RootBranch: React.FC<RootBranchProps> = ({
   }
 
   const spec1CrestState: NodeState =
-    selectedSpecialization === spec1.id ? 'available' : 'locked';
+    activeSpec === spec1.id
+      ? crestClaimed
+        ? 'selected'
+        : crestAvailable
+        ? 'available'
+        : 'unlocked'
+      : 'locked';
 
   const spec2CrestState: NodeState =
-    selectedSpecialization === spec2.id ? 'available' : 'locked';
+    activeSpec === spec2.id
+      ? crestClaimed
+        ? 'selected'
+        : crestAvailable
+        ? 'available'
+        : 'unlocked'
+      : 'locked';
 
   // Node definitions with coordinates matching SVG viewBox 360x480
   const nodes: RootNodeInfo[] = [
@@ -172,7 +193,7 @@ export const RootBranch: React.FC<RootBranchProps> = ({
       </header>
 
       {/* Specialization Prompt Banner */}
-      {specializationAvailable && !selectedSpecialization && (
+      {specializationAvailable && !activeSpec && (
         <div
           role="status"
           aria-live="polite"
@@ -203,7 +224,7 @@ export const RootBranch: React.FC<RootBranchProps> = ({
       )}
 
       {/* Specialization Confirmation Badge */}
-      {selectedSpecialization && (
+      {activeSpec && (
         <div
           style={{
             backgroundColor: '#1F2A1E',
@@ -215,16 +236,32 @@ export const RootBranch: React.FC<RootBranchProps> = ({
             fontSize: '12px',
             display: 'flex',
             alignItems: 'center',
-            gap: '6px',
+            justifyContent: 'space-between',
           }}
         >
-          <span aria-hidden="true">🌱</span>
-          <span>
-            Specialization Chosen:{' '}
-            <strong style={{ textTransform: 'capitalize', color: '#F0E7D3' }}>
-              {selectedSpecialization}
-            </strong>
-          </span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <span aria-hidden="true">🌱</span>
+            <span>
+              Specialization:{' '}
+              <strong style={{ textTransform: 'capitalize', color: '#F0E7D3' }}>
+                {activeSpec}
+              </strong>
+            </span>
+          </div>
+          {crestAvailable && (
+            <span
+              style={{
+                fontSize: '11px',
+                backgroundColor: '#E98A4B',
+                color: '#141713',
+                padding: '2px 6px',
+                borderRadius: '4px',
+                fontWeight: 600,
+              }}
+            >
+              Crest Unlocked!
+            </span>
+          )}
         </div>
       )}
 
@@ -234,7 +271,7 @@ export const RootBranch: React.FC<RootBranchProps> = ({
           <BranchSvgRenderer
             attribute={attribute}
             nodes={nodes}
-            selectedSpecialization={selectedSpecialization}
+            selectedSpecialization={activeSpec}
           />
           <div className="root-nodes-layer">
             {nodes.map((node: RootNodeInfo) => (
@@ -255,7 +292,7 @@ export const RootBranch: React.FC<RootBranchProps> = ({
           attribute={attribute}
           nodes={nodes}
           xp={xp}
-          selectedSpecialization={selectedSpecialization}
+          selectedSpecialization={activeSpec}
           onSelectSpecialization={onSelectSpecialization}
         />
       )}

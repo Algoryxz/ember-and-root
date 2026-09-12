@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { RootSvg } from './RootSvg';
-import { AttributeId, RootTreeState, SpecializationId } from './types';
+import { AttributeId, RootTreeState, Specialization } from './types';
 import {
   INITIAL_TREE_STATE,
   SPEC_READY_TREE_STATE,
@@ -10,15 +10,17 @@ import {
 export const RootInteractiveView: React.FC = () => {
   const [treeState, setTreeState] = useState<RootTreeState>(INITIAL_TREE_STATE);
 
-  const handleSelectSpecialization = (attribute: AttributeId, spec: SpecializationId): void => {
+  const handleSelectSpecialization = (attribute: AttributeId, spec: Specialization): void => {
     setTreeState((prev: RootTreeState) => ({
       ...prev,
       branches: {
         ...prev.branches,
         [attribute]: {
           ...prev.branches[attribute],
+          specialization: spec,
           selectedSpecialization: spec,
           specializationAvailable: false,
+          crestAvailable: true,
         },
       },
     }));
@@ -46,7 +48,7 @@ export const RootInteractiveView: React.FC = () => {
             color: '#F0E7D3',
           }}
         >
-          Ember & Root — 4 Branch Skill Tree
+          Ember & Root — Specializations & Crests
         </h1>
         <p style={{ margin: 0, fontSize: '13px', color: '#B9BEAC' }}>
           Mind · Body · Will · Craft (Lead: <strong>Akriti</strong>)

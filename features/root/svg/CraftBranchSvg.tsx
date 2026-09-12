@@ -1,5 +1,5 @@
 import React from 'react';
-import { NodeState, SpecializationId } from '../types';
+import { NodeState, Specialization } from '../types';
 
 export interface CraftBranchSvgProps {
   originState: NodeState;
@@ -7,7 +7,7 @@ export interface CraftBranchSvgProps {
   artisanState: NodeState;
   builderCrestState: NodeState;
   artisanCrestState: NodeState;
-  selectedSpecialization: SpecializationId | null;
+  selectedSpecialization: Specialization | null;
 }
 
 export const CraftBranchSvg: React.FC<CraftBranchSvgProps> = ({
@@ -20,7 +20,7 @@ export const CraftBranchSvg: React.FC<CraftBranchSvgProps> = ({
 }: CraftBranchSvgProps) => {
   const getPathColor = (fromState: NodeState, toState: NodeState, isSelectedPath?: boolean): string => {
     if (isSelectedPath || (toState === 'selected' || toState === 'unlocked')) {
-      return '#D9E3B2'; // --color-root-mature / Craft pale gold accent
+      return '#D9E3B2';
     }
     if (toState === 'available') {
       return '#E98A4B';
@@ -74,7 +74,7 @@ export const CraftBranchSvg: React.FC<CraftBranchSvgProps> = ({
         filter={originState !== 'locked' ? 'url(#craftGlow)' : undefined}
       />
 
-      {/* Path 2A: First Spark -> Builder (Left Curve) */}
+      {/* Path 2A: First Spark -> Builder */}
       <path
         className="root-path"
         d="M 180 80 C 180 140 100 150 100 220"
@@ -86,7 +86,7 @@ export const CraftBranchSvg: React.FC<CraftBranchSvgProps> = ({
         filter={isBuilderChosen || builderState === 'available' ? 'url(#craftGlow)' : undefined}
       />
 
-      {/* Path 2B: First Spark -> Artisan (Right Curve) */}
+      {/* Path 2B: First Spark -> Artisan */}
       <path
         className="root-path"
         d="M 180 80 C 180 140 260 150 260 220"
@@ -121,6 +121,27 @@ export const CraftBranchSvg: React.FC<CraftBranchSvgProps> = ({
         strokeLinecap="round"
         filter={artisanCrestState !== 'locked' ? 'url(#craftGlow)' : undefined}
       />
+
+      {/* Authored Crest Artwork: Builder's Keystone Emblem at (100, 370) */}
+      <g transform="translate(100, 370)" opacity={builderCrestState !== 'locked' ? 1 : 0.4}>
+        <path
+          d="M -10 -12 L 10 -12 L 6 12 L -6 12 Z"
+          fill={builderCrestState !== 'locked' ? '#D9E3B2' : '#2A322A'}
+          stroke="#E98A4B"
+          strokeWidth="1.5"
+        />
+        <rect x="-4" y="-4" width="8" height="8" fill="#141713" opacity="0.6" />
+      </g>
+
+      {/* Authored Crest Artwork: Artisan's Anvil Emblem at (260, 370) */}
+      <g transform="translate(260, 370)" opacity={artisanCrestState !== 'locked' ? 1 : 0.4}>
+        <path
+          d="M -12 -8 L 8 -8 L 12 -4 L 4 -2 L 4 4 L 8 10 L -8 10 L -4 4 L -4 -2 L -12 -4 Z"
+          fill={artisanCrestState !== 'locked' ? '#D9E3B2' : '#2A322A'}
+          stroke="#E98A4B"
+          strokeWidth="1.5"
+        />
+      </g>
 
       {/* Flourishes */}
       <circle cx="180" cy="80" r="4" fill="#D9E3B2" opacity="0.8" />
