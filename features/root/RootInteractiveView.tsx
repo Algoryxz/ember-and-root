@@ -188,6 +188,15 @@ export const RootInteractiveView: React.FC<RootInteractiveViewProps> = ({
   return (
     <div className="root-interactive-shell">
             {/* Dedicated Root Data & Progression Overview Panel (Above Schematic) */}
+      <header className="root-hero-section">
+        <h1 className="root-hero-title">
+          THE ROOT
+        </h1>
+        <p className="root-hero-subtitle">
+          The canopy of permanent becoming. What you do becomes who you are.
+        </p>
+      </header>
+
       <section className="root-data-overview-panel" aria-label="Root State and Progression Overview">
         <div className="root-data-overview-header">
           <span className="root-data-overview-eyebrow">Canopy Progression Ledger</span>
@@ -225,15 +234,6 @@ export const RootInteractiveView: React.FC<RootInteractiveViewProps> = ({
           </div>
         </div>
       </section>
-
-      <header className="root-hero-section">
-        <h1 className="root-hero-title">
-          THE ROOT
-        </h1>
-        <p className="root-hero-subtitle">
-          The canopy of permanent becoming. What you do becomes who you are.
-        </p>
-      </header>
 
       {/* Mutation Status & Event Banner */}
       {lastEvent && (

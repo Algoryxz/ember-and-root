@@ -322,6 +322,7 @@ export const RootBranch: React.FC<RootBranchProps> = ({
             attribute={attribute}
             nodes={nodes}
             selectedSpecialization={activeSpec}
+            interactive={true}
           />
           <div className="root-nodes-layer">
             {nodes.map((node: RootNodeInfo) => (

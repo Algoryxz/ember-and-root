@@ -8,6 +8,7 @@ export interface WillBranchSvgProps {
   focusCrestState: NodeState;
   courageCrestState: NodeState;
   selectedSpecialization: Specialization | null;
+  interactive?: boolean;
 }
 
 export const WillBranchSvg: React.FC<WillBranchSvgProps> = ({
@@ -17,6 +18,7 @@ export const WillBranchSvg: React.FC<WillBranchSvgProps> = ({
   focusCrestState,
   courageCrestState,
   selectedSpecialization,
+  interactive = false,
 }: WillBranchSvgProps) => {
   const getPathColor = (fromState: NodeState, toState: NodeState, isSelectedPath?: boolean): string => {
     if (isSelectedPath || (toState === 'selected' || toState === 'unlocked')) {
@@ -234,37 +236,47 @@ export const WillBranchSvg: React.FC<WillBranchSvgProps> = ({
         <polyline points="180,80 230,55 330,55" fill="none" stroke="rgba(255, 211, 138, 0.4)" strokeWidth="1" strokeDasharray="2 3" />
         <circle cx="180" cy="80" r="2.5" fill="#FFD38A" />
         <circle cx="330" cy="55" r="1.5" fill="#FFD38A" />
+        {!interactive && (
         <text x="328" y="48" fill="#FFD38A" fontSize="7.5" fontFamily="Fraunces" fontStyle="italic" textAnchor="end">
           FIG 3.1 · IRON INTENT
         </text>
+      )}
 
         {/* Callout 2: Focus Spec (100, 220) -> Left Margin */}
         <polyline points="100,220 60,200 25,200" fill="none" stroke="rgba(255, 211, 138, 0.35)" strokeWidth="1" strokeDasharray="2 3" />
         <circle cx="100" cy="220" r="2.5" fill={focusState !== 'locked' ? '#FFD38A' : '#3B463B'} />
+        {!interactive && (
         <text x="25" y="193" fill="#B9BEAC" fontSize="7.5" fontFamily="DM Sans" letterSpacing="0.05em">
           SPEC. A · FOCUS
         </text>
+      )}
 
         {/* Callout 3: Courage Spec (260, 220) -> Right Margin */}
         <polyline points="260,220 300,200 335,200" fill="none" stroke="rgba(233, 138, 75, 0.35)" strokeWidth="1" strokeDasharray="2 3" />
         <circle cx="260" cy="220" r="2.5" fill={courageState !== 'locked' ? '#E98A4B' : '#3B463B'} />
+        {!interactive && (
         <text x="335" y="193" fill="#B9BEAC" fontSize="7.5" fontFamily="DM Sans" textAnchor="end" letterSpacing="0.05em">
           SPEC. B · COURAGE
         </text>
+      )}
 
         {/* Callout 4: Focus Prism Crest (100, 370) -> Left Bottom Margin */}
         <polyline points="100,370 50,390 25,390" fill="none" stroke="rgba(255, 211, 138, 0.35)" strokeWidth="1" strokeDasharray="2 3" />
         <circle cx="100" cy="370" r="2.5" fill={focusCrestState !== 'locked' ? '#FFD38A' : '#3B463B'} />
+        {!interactive && (
         <text x="25" y="383" fill="#FFD38A" fontSize="7.5" fontFamily="Fraunces" fontStyle="italic">
           CREST · FOCUS PRISM
         </text>
+      )}
 
         {/* Callout 5: Courage Shield Crest (260, 370) -> Right Bottom Margin */}
         <polyline points="260,370 310,390 335,390" fill="none" stroke="rgba(233, 138, 75, 0.35)" strokeWidth="1" strokeDasharray="2 3" />
         <circle cx="260" cy="370" r="2.5" fill={courageCrestState !== 'locked' ? '#E98A4B' : '#3B463B'} />
+        {!interactive && (
         <text x="335" y="383" fill="#FFD38A" fontSize="7.5" fontFamily="Fraunces" fontStyle="italic" textAnchor="end">
           CREST · COURAGE SHIELD
         </text>
+      )}
       </g>
     </svg>
   );

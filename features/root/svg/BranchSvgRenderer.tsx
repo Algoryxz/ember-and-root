@@ -9,12 +9,14 @@ export interface BranchSvgRendererProps {
   attribute: AttributeId;
   nodes: RootNodeInfo[];
   selectedSpecialization: SpecializationId | null;
+  interactive?: boolean;
 }
 
 export const BranchSvgRenderer: React.FC<BranchSvgRendererProps> = ({
   attribute,
   nodes,
   selectedSpecialization,
+  interactive = false,
 }: BranchSvgRendererProps) => {
   const getNodeState = (index: number): NodeState => nodes[index]?.state || 'locked';
 
@@ -28,6 +30,7 @@ export const BranchSvgRenderer: React.FC<BranchSvgRendererProps> = ({
           scholarsCrownState={getNodeState(3)}
           explorersCompassState={getNodeState(4)}
           selectedSpecialization={selectedSpecialization}
+          interactive={interactive}
         />
       );
     case 'body':
@@ -39,6 +42,7 @@ export const BranchSvgRenderer: React.FC<BranchSvgRendererProps> = ({
           enduranceCrestState={getNodeState(3)}
           mobilityCrestState={getNodeState(4)}
           selectedSpecialization={selectedSpecialization}
+          interactive={interactive}
         />
       );
     case 'will':
@@ -50,6 +54,7 @@ export const BranchSvgRenderer: React.FC<BranchSvgRendererProps> = ({
           focusCrestState={getNodeState(3)}
           courageCrestState={getNodeState(4)}
           selectedSpecialization={selectedSpecialization}
+          interactive={interactive}
         />
       );
     case 'craft':
@@ -61,6 +66,7 @@ export const BranchSvgRenderer: React.FC<BranchSvgRendererProps> = ({
           builderCrestState={getNodeState(3)}
           artisanCrestState={getNodeState(4)}
           selectedSpecialization={selectedSpecialization}
+          interactive={interactive}
         />
       );
     default:

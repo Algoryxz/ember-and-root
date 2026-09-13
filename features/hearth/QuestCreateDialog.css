@@ -20,6 +20,7 @@
 
 .dialog-window {
   background-color: var(--color-surface);
+  color-scheme: dark;
   border: 1px solid rgba(185, 190, 172, 0.2);
   border-radius: var(--radius-dialog);
   width: 100%;
@@ -112,18 +113,33 @@
 .form-select {
   padding: var(--space-8) var(--space-12);
   min-height: var(--min-touch-target);
-  background-color: var(--color-bg);
-  border: 1px solid rgba(185, 190, 172, 0.22);
+  background-color: var(--color-bg, #0e120f);
+  border: 1px solid rgba(185, 190, 172, 0.28);
   border-radius: var(--radius-btn);
-  color: var(--color-text-primary);
+  color: var(--color-text-primary, #f5f6f1);
   font-family: var(--font-body);
   font-size: var(--text-base);
   box-sizing: border-box;
   transition: border-color 150ms ease;
+  color-scheme: dark;
+}
+
+.form-select {
+  cursor: pointer;
+}
+
+.form-select option {
+  background-color: #141915;
+  color: #f5f6f1;
+  padding: var(--space-8) var(--space-12);
+}
+
+.form-select option:disabled {
+  color: #707569;
 }
 
 .form-input::placeholder {
-  color: rgba(185, 190, 172, 0.4);
+  color: rgba(185, 190, 172, 0.55);
 }
 
 .form-input:focus,

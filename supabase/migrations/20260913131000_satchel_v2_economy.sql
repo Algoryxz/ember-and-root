@@ -63,6 +63,27 @@ REVOKE ALL ON FUNCTION public.level_from_xp(integer) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.level_from_xp(integer) TO authenticated, anon, service_role;
 
 -- ---------------------------------------------------------------------
+-- 2b. Helper: base_xp_from_effort
+-- ---------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION public.base_xp_from_effort(p_effort text)
+RETURNS integer
+LANGUAGE sql
+IMMUTABLE
+PARALLEL SAFE
+SECURITY INVOKER
+AS $$
+  SELECT CASE p_effort
+    WHEN 'quick' THEN 10
+    WHEN 'standard' THEN 20
+    WHEN 'deep' THEN 35
+    ELSE 0
+  END;
+$$;
+
+REVOKE ALL ON FUNCTION public.base_xp_from_effort(text) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.base_xp_from_effort(text) TO authenticated, anon, service_role;
+
+-- ---------------------------------------------------------------------
 -- 3. Authoritative get_game_snapshot()
 -- Aligns snapshot structure with TypeScript contracts (equippedItemId, inventory.items)
 -- ---------------------------------------------------------------------

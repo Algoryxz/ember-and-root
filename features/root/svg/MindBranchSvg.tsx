@@ -8,6 +8,7 @@ export interface MindBranchSvgProps {
   scholarsCrownState: NodeState;
   explorersCompassState: NodeState;
   selectedSpecialization: Specialization | null;
+  interactive?: boolean;
 }
 
 export const MindBranchSvg: React.FC<MindBranchSvgProps> = ({
@@ -17,6 +18,7 @@ export const MindBranchSvg: React.FC<MindBranchSvgProps> = ({
   scholarsCrownState,
   explorersCompassState,
   selectedSpecialization,
+  interactive = false,
 }: MindBranchSvgProps) => {
   const getPathColor = (fromState: NodeState, toState: NodeState, isSelectedPath?: boolean): string => {
     if (isSelectedPath || (toState === 'selected' || toState === 'unlocked')) {
@@ -230,37 +232,47 @@ export const MindBranchSvg: React.FC<MindBranchSvgProps> = ({
         <polyline points="180,80 230,55 330,55" fill="none" stroke="rgba(159, 186, 135, 0.4)" strokeWidth="1" strokeDasharray="2 3" />
         <circle cx="180" cy="80" r="2.5" fill="#9FBA87" />
         <circle cx="330" cy="55" r="1.5" fill="#9FBA87" />
+        {!interactive && (
         <text x="328" y="48" fill="#D9E3B2" fontSize="7.5" fontFamily="Fraunces" fontStyle="italic" textAnchor="end">
           FIG 1.1 · PRIMORIAL SEED
         </text>
+      )}
 
         {/* Callout 2: Scholar Spec (100, 220) -> Left Margin */}
         <polyline points="100,220 60,200 25,200" fill="none" stroke="rgba(159, 186, 135, 0.35)" strokeWidth="1" strokeDasharray="2 3" />
         <circle cx="100" cy="220" r="2.5" fill={scholarState !== 'locked' ? '#9FBA87' : '#3B463B'} />
+        {!interactive && (
         <text x="25" y="193" fill="#B9BEAC" fontSize="7.5" fontFamily="DM Sans" letterSpacing="0.05em">
           SPEC. A · SCHOLAR
         </text>
+      )}
 
         {/* Callout 3: Explorer Spec (260, 220) -> Right Margin */}
         <polyline points="260,220 300,200 335,200" fill="none" stroke="rgba(233, 138, 75, 0.35)" strokeWidth="1" strokeDasharray="2 3" />
         <circle cx="260" cy="220" r="2.5" fill={explorerState !== 'locked' ? '#E98A4B' : '#3B463B'} />
+        {!interactive && (
         <text x="335" y="193" fill="#B9BEAC" fontSize="7.5" fontFamily="DM Sans" textAnchor="end" letterSpacing="0.05em">
           SPEC. B · EXPLORER
         </text>
+      )}
 
         {/* Callout 4: Scholar Crown Crest (100, 370) -> Left Bottom Margin */}
         <polyline points="100,370 50,390 25,390" fill="none" stroke="rgba(159, 186, 135, 0.35)" strokeWidth="1" strokeDasharray="2 3" />
         <circle cx="100" cy="370" r="2.5" fill={scholarsCrownState !== 'locked' ? '#9FBA87' : '#3B463B'} />
+        {!interactive && (
         <text x="25" y="383" fill="#D9E3B2" fontSize="7.5" fontFamily="Fraunces" fontStyle="italic">
           CREST · SCHOLAR'S CROWN
         </text>
+      )}
 
         {/* Callout 5: Explorer Compass Crest (260, 370) -> Right Bottom Margin */}
         <polyline points="260,370 310,390 335,390" fill="none" stroke="rgba(233, 138, 75, 0.35)" strokeWidth="1" strokeDasharray="2 3" />
         <circle cx="260" cy="370" r="2.5" fill={explorersCompassState !== 'locked' ? '#E98A4B' : '#3B463B'} />
+        {!interactive && (
         <text x="335" y="383" fill="#D9E3B2" fontSize="7.5" fontFamily="Fraunces" fontStyle="italic" textAnchor="end">
           CREST · EXPLORER'S COMPASS
         </text>
+      )}
       </g>
     </svg>
   );
