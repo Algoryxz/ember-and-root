@@ -44,13 +44,6 @@ jobs:
           set -euo pipefail
           supabase db push --db-url "$SUPABASE_DB_URL"
 
-      - name: Reassert canonical quest-sealing RPC
-        shell: bash
-        run: |
-          set -euo pipefail
-          psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -f supabase/migrations/20260914031500_fix_canonical_quest_sealing_against_current_schema.sql
-          psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -f supabase/migrations/20260914033000_repair_live_complete_quest.sql
-
       - name: Verify production quest-sealing contract
         shell: bash
         run: |
@@ -58,18 +51,48 @@ jobs:
           rpc=$(psql "$SUPABASE_DB_URL" -Atqc "SELECT COALESCE(to_regprocedure('public.complete_quest(uuid,uuid,text)')::text, 'MISSING');")
           snapshot=$(psql "$SUPABASE_DB_URL" -Atqc "SELECT COALESCE(to_regprocedure('public.get_game_snapshot()')::text, 'MISSING');")
           level=$(psql "$SUPABASE_DB_URL" -Atqc "SELECT COALESCE(to_regprocedure('public.level_from_xp(integer)')::text, 'MISSING');")
+          total_level=$(psql "$SUPABASE_DB_URL" -Atqc "SELECT COALESCE(to_regprocedure('public.level_from_total_xp(integer)')::text, 'MISSING');")
           xp=$(psql "$SUPABASE_DB_URL" -Atqc "SELECT COALESCE(to_regprocedure('public.base_xp_from_effort(text)')::text, 'MISSING');")
           ember=$(psql "$SUPABASE_DB_URL" -Atqc "SELECT COALESCE(to_regprocedure('public.ember_state_from_count(integer)')::text, 'MISSING');")
           echo "complete_quest: $rpc"
           echo "get_game_snapshot: $snapshot"
           echo "level_from_xp: $level"
+          echo "level_from_total_xp: $total_level"
           echo "base_xp_from_effort: $xp"
           echo "ember_state_from_count: $ember"
           [[ "$rpc" == "complete_quest(uuid,uuid,text)" ]]
           [[ "$snapshot" == "get_game_snapshot()" ]]
           [[ "$level" == "level_from_xp(integer)" ]]
+          [[ "$total_level" == "level_from_total_xp(integer)" ]]
           [[ "$xp" == "base_xp_from_effort(text)" ]]
           [[ "$ember" == "ember_state_from_count(integer)" ]]
+
+          quick_xp=$(psql "$SUPABASE_DB_URL" -Atqc "SELECT public.base_xp_from_effort('quick');")
+          standard_xp=$(psql "$SUPABASE_DB_URL" -Atqc "SELECT public.base_xp_from_effort('standard');")
+          deep_xp=$(psql "$SUPABASE_DB_URL" -Atqc "SELECT public.base_xp_from_effort('deep');")
+          echo "quick XP: $quick_xp (expected 10)"
+          echo "standard XP: $standard_xp (expected 20)"
+          echo "deep XP: $deep_xp (expected 35)"
+          [[ "$quick_xp" == "10" ]]
+          [[ "$standard_xp" == "20" ]]
+          [[ "$deep_xp" == "35" ]]
+
+          e0=$(psql "$SUPABASE_DB_URL" -Atqc "SELECT public.ember_state_from_count(0);")
+          e1=$(psql "$SUPABASE_DB_URL" -Atqc "SELECT public.ember_state_from_count(1);")
+          e2=$(psql "$SUPABASE_DB_URL" -Atqc "SELECT public.ember_state_from_count(2);")
+          e3=$(psql "$SUPABASE_DB_URL" -Atqc "SELECT public.ember_state_from_count(3);")
+          echo "ember states: 0->$e0, 1->$e1, 2->$e2, 3->$e3"
+          [[ "$e0" == "resting" ]]
+          [[ "$e1" == "kindled" ]]
+          [[ "$e2" == "steady" ]]
+          [[ "$e3" == "bright" ]]
+
+          has_pg_greatest=$(psql "$SUPABASE_DB_URL" -Atqc "SELECT prosrc LIKE '%pg_catalog.greatest%' FROM pg_proc WHERE proname = 'complete_quest' AND pronamespace = 'public'::regnamespace;")
+          has_pg_least=$(psql "$SUPABASE_DB_URL" -Atqc "SELECT prosrc LIKE '%pg_catalog.least%' FROM pg_proc WHERE proname = 'complete_quest' AND pronamespace = 'public'::regnamespace;")
+          echo "complete_quest contains pg_catalog.greatest: $has_pg_greatest"
+          echo "complete_quest contains pg_catalog.least: $has_pg_least"
+          [[ "$has_pg_greatest" == "f" ]]
+          [[ "$has_pg_least" == "f" ]]
 
       - name: Verify migration state
         shell: bash
