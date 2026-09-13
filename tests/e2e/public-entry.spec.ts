@@ -105,6 +105,10 @@ test.describe('Ember & Root — Public Entry Experience (Phase 1)', () => {
     const navBegin = page.locator('.btn-nav-primary');
     await expect(navBegin).toBeFocused();
 
+    await page.keyboard.press('Tab'); // Cinematic interactive story shell
+    const cinematicShell = page.locator('.cinematic-shell');
+    await expect(cinematicShell).toBeFocused();
+
     await page.keyboard.press('Tab'); // Begin your path (Hero CTA)
     const heroBegin = page.locator('.btn-primary-cta').first();
     await expect(heroBegin).toBeFocused();

@@ -1,8 +1,12 @@
-import React from 'react';
+'use client';
+
+import React, { useState } from 'react';
 import Link from 'next/link';
+import { CinematicExperience } from './CinematicExperience';
 import './LandingView.css';
 
 export function LandingView() {
+  const [showCinematic, setShowCinematic] = useState<boolean>(true);
   return (
     <div className="landing-shell">
       {/* Accessible Skip Link */}
@@ -31,6 +35,13 @@ export function LandingView() {
 
       {/* Main Landing Canvas */}
       <main className="landing-content">
+        {/* Interactive Cinematic Awakening Experience */}
+        {showCinematic && (
+          <section className="w-full mb-8" aria-label="Interactive Cinematic Awakening">
+            <CinematicExperience />
+          </section>
+        )}
+
         {/* ==================================================================
             SECTION 1: Large Living Ember & Hero
             ================================================================== */}
