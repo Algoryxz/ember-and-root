@@ -197,6 +197,7 @@
   pointer-events: auto;
   min-width: 44px;
   min-height: 44px;
+  max-width: 170px;
   padding: 8px 12px;
   border-radius: 22px;
   background-color: var(--color-surface);
@@ -219,6 +220,19 @@
   outline-offset: 3px;
   border-radius: 22px;
 }
+/* Branch-specific positioning variants to prevent center stem collision & elevation scale overlap */
+.root-node-button.node-pos-left {
+  transform: translate(-45%, -50%);
+}
+
+.root-node-button.node-pos-right {
+  transform: translate(-55%, -50%);
+}
+
+.root-node-button.node-pos-center {
+  transform: translate(-50%, -50%);
+}
+
 
 /* Node State Variants */
 
@@ -335,7 +349,7 @@
   font-style: italic;
 }
 
-/* Mobile Responsive Adjustments */
+/* Mobile Responsive Adjustments & Collision Prevention */
 @media (max-width: 640px) {
   .root-branch-container {
     padding: var(--space-16);
@@ -343,49 +357,117 @@
   .root-svg-wrapper {
     max-width: 360px;
   }
+  .root-node-button {
+    max-width: 135px;
+    padding: 6px 10px;
+    gap: 6px;
+    font-size: 12px;
+  }
+  .node-title {
+    font-size: 12px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 90px;
+  }
+  .node-subtitle {
+    font-size: 9.5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 90px;
+  }
 }
 
-@media (max-width: 420px) {
+@media (max-width: 440px) {
+  .root-interactive-shell {
+    padding: 0 var(--space-4, 4px);
+  }
   .root-branch-container {
-    padding: var(--space-12);
+    padding: 12px 8px;
   }
-  
   .root-svg-wrapper {
-    max-width: 310px;
+    max-width: 320px;
   }
-
   .root-node-button {
-    padding: 4px 8px;
+    max-width: 112px;
+    padding: 4px 6px;
     gap: 4px;
     font-size: 11px;
+    min-height: 44px;
   }
-  
+  .root-node-button.node-pos-left {
+    transform: translate(-42%, -50%);
+  }
+  .root-node-button.node-pos-right {
+    transform: translate(-58%, -50%);
+  }
+  .node-indicator {
+    width: 10px;
+    height: 10px;
+    flex-shrink: 0;
+  }
   .node-title {
-    font-size: 11px;
+    font-size: 10.5px;
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 78px;
   }
-  
   .node-subtitle {
+    font-size: 8.5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 78px;
+    opacity: 0.8;
+  }
+  .root-data-stat-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px;
+  }
+  .root-data-stat-card {
+    padding: 8px 10px;
+  }
+  .root-data-stat-label {
+    font-size: 9px;
+  }
+  .root-data-stat-value {
+    font-size: 1rem;
+  }
+  .root-data-stat-meta {
     font-size: 9px;
   }
 }
 
 @media (max-width: 340px) {
+  .root-interactive-shell {
+    padding: 0 2px;
+  }
   .root-branch-container {
-    padding: var(--space-8);
+    padding: 8px 4px;
   }
-
   .root-svg-wrapper {
-    max-width: 270px;
+    max-width: 280px;
   }
-
   .root-branch-header-title {
-    font-size: 1.1rem;
+    font-size: 1.05rem;
   }
-
   .root-view-toggle-btn {
-    padding: 4px 8px;
-    font-size: 11px;
+    padding: 4px 6px;
+    font-size: 10px;
+  }
+  .root-node-button {
+    max-width: 96px;
+    padding: 3px 5px;
+    gap: 3px;
+  }
+  .node-title {
+    font-size: 9.5px;
+    max-width: 68px;
+  }
+  .node-subtitle {
+    display: none;
   }
 }
 

@@ -84,6 +84,19 @@ export async function signupAction(
   });
 
   if (error) {
+    const msg = error.message || '';
+    const lower = msg.toLowerCase();
+    if (
+      lower.includes('rate limit') ||
+      lower.includes('over_email_send_rate_limit') ||
+      ('status' in error && (error as any).status === 429)
+    ) {
+      return {
+        error:
+          'Email dispatch rate limit reached. If you recently requested an account, please check your inbox or wait a few minutes before trying again.',
+      };
+    }
+
     return {
       error: error.message || 'Unable to create account. Please try again.',
     };
