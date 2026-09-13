@@ -276,7 +276,12 @@ export const HearthRootPreview: React.FC<HearthRootPreviewProps> = ({
         </div>
 
         {/* Marginal Anatomical Progression Rail */}
-        <div className="specimen-anatomy-rail" aria-label="Botanical progression markers">
+        <div
+          className="specimen-anatomy-rail"
+          role="region"
+          aria-label="Botanical progression markers"
+          tabIndex={0}
+        >
           <div className="anatomy-rail-line" aria-hidden="true" />
           {ANATOMICAL_MARKERS.map((marker, idx) => {
             const isReached = idx <= currentStageIndex;
@@ -288,13 +293,19 @@ export const HearthRootPreview: React.FC<HearthRootPreviewProps> = ({
                 className={`anatomy-marker-item ${isReached ? 'is-reached' : ''} ${
                   isCurrent ? 'is-current' : ''
                 }`}
+                aria-label={`${marker.name}: ${marker.thresholdXp} XP. ${marker.description}`}
               >
                 <span className="marker-dot" aria-hidden="true">
                   {isCurrent ? '●' : isReached ? '○' : '·'}
                 </span>
-                <div className="marker-text-cluster">
-                  <span className="marker-name">{marker.name}</span>
-                  <span className="marker-threshold">{marker.thresholdXp} XP</span>
+                <div className="marker-content">
+                  <div className="marker-text-cluster">
+                    <span className="marker-name">{marker.name}</span>
+                    <span className="marker-threshold">{marker.thresholdXp} XP</span>
+                  </div>
+                  {marker.description && (
+                    <p className="marker-description">{marker.description}</p>
+                  )}
                 </div>
               </div>
             );
