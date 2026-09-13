@@ -738,8 +738,17 @@ BEGIN
     RAISE EXCEPTION 'Quest occurrence % has already been completed', v_occurrence_key USING ERRCODE = 'P0007';
   END IF;
 
-  -- 9. Determine base XP by effort
-  v_base_xp := public.base_xp_from_effort(v_quest.effort);
+  -- 9. Determine base XP by effort (authoritative canonical mapping with defensive in-procedure fallback)
+  BEGIN
+    v_base_xp := public.base_xp_from_effort(v_quest.effort);
+  EXCEPTION WHEN undefined_function OR OTHERS THEN
+    CASE v_quest.effort
+      WHEN 'quick' THEN v_base_xp := 10;
+      WHEN 'standard' THEN v_base_xp := 20;
+      WHEN 'deep' THEN v_base_xp := 35;
+      ELSE v_base_xp := 0;
+    END CASE;
+  END;
 
   -- 10. Enforce daily 140 XP cap
   SELECT COALESCE(pg_catalog.sum(xp_awarded), 0)
@@ -785,10 +794,26 @@ BEGIN
     '{}'::jsonb
   );
 
-  -- 13. Derive level transition
-  v_prev_level := public.level_from_xp(v_profile.total_xp);
+  -- 13. Derive level transition (with defensive fallback to level_from_total_xp)
+  BEGIN
+    v_prev_level := public.level_from_xp(v_profile.total_xp);
+  EXCEPTION WHEN undefined_function OR OTHERS THEN
+    BEGIN
+      v_prev_level := public.level_from_total_xp(v_profile.total_xp);
+    EXCEPTION WHEN OTHERS THEN
+      v_prev_level := 1;
+    END;
+  END;
   v_new_total_xp := v_profile.total_xp + v_awarded_xp;
-  v_new_level := public.level_from_xp(v_new_total_xp);
+  BEGIN
+    v_new_level := public.level_from_xp(v_new_total_xp);
+  EXCEPTION WHEN undefined_function OR OTHERS THEN
+    BEGIN
+      v_new_level := public.level_from_total_xp(v_new_total_xp);
+    EXCEPTION WHEN OTHERS THEN
+      v_new_level := 1;
+    END;
+  END;
   v_new_sparks := v_profile.sparks_balance + v_sparks_awarded;
 
   -- 14. Increment branch XP

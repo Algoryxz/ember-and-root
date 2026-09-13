@@ -1,0 +1,223 @@
+/* ==========================================================================
+   Root Biological Progression Rail
+   Specification: docs/UI_UX_BRIEF.md & Execution Prompts V2
+   Enforces bounded horizontal scrolling without viewport overflow
+   ========================================================================== */
+
+.root-progression-rail-wrapper {
+  margin: var(--space-16, 16px) 0 var(--space-20, 20px) 0;
+  padding: var(--space-12, 12px) var(--space-16, 16px);
+  background: rgba(29, 35, 29, 0.45);
+  border: 1px solid rgba(159, 186, 135, 0.2);
+  border-radius: var(--radius-lg, 12px);
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+}
+
+.root-progression-rail-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(185, 190, 172, 0.12);
+}
+
+.root-progression-rail-eyebrow {
+  font-family: var(--font-display, serif);
+  font-size: 0.8125rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-root-mature, #D9E3B2);
+  font-weight: 500;
+}
+
+.root-progression-rail-hint {
+  font-family: var(--font-body, sans-serif);
+  font-size: 0.6875rem;
+  color: var(--color-text-secondary, #B9BEAC);
+  opacity: 0.75;
+}
+
+/* Horizontal Scroll Container: Bounded and Swipeable */
+.root-progression-rail-scroller {
+  display: flex;
+  align-items: center;
+  gap: var(--space-12, 12px);
+  overflow-x: auto;
+  overflow-y: hidden;
+  white-space: nowrap;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  padding: 4px 2px 8px 2px;
+  box-sizing: border-box;
+  max-width: 100%;
+}
+
+.root-progression-rail-scroller::-webkit-scrollbar {
+  display: none;
+}
+
+/* Stage Card */
+.root-rail-card {
+  flex: 0 0 210px;
+  min-width: 190px;
+  background: rgba(14, 18, 14, 0.65);
+  border: 1px solid rgba(185, 190, 172, 0.18);
+  border-radius: var(--radius-md, 8px);
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  box-sizing: border-box;
+  transition: border-color 150ms ease, background-color 150ms ease, box-shadow 150ms ease;
+  cursor: default;
+  outline: none;
+}
+
+.root-rail-card:focus-visible {
+  border-color: var(--color-focus, #C4A96A);
+  box-shadow: 0 0 0 2px var(--color-focus, #C4A96A);
+}
+
+.root-rail-card.is-reached {
+  border-color: rgba(159, 186, 135, 0.35);
+  background: rgba(29, 35, 29, 0.65);
+}
+
+.root-rail-card.is-current {
+  border-color: var(--color-ember, #E98A4B);
+  background: rgba(43, 35, 25, 0.6);
+  box-shadow: 0 0 16px rgba(233, 138, 75, 0.2);
+}
+
+.rail-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  font-size: 0.6875rem;
+  font-family: var(--font-body, sans-serif);
+}
+
+.rail-card-indicator {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary, #B9BEAC);
+}
+
+.root-rail-card.is-reached .rail-card-indicator {
+  color: var(--color-root, #9FBA87);
+}
+
+.root-rail-card.is-current .rail-card-indicator {
+  color: var(--color-ember-core, #FFD38A);
+}
+
+.rail-card-badge {
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 600;
+  color: var(--color-text-secondary, #B9BEAC);
+  opacity: 0.8;
+}
+
+.rail-card-xp {
+  font-weight: 600;
+  color: var(--color-text-primary, #F0E7D3);
+  background: rgba(0, 0, 0, 0.35);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.rail-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.rail-card-title {
+  margin: 0;
+  font-family: var(--font-display, serif);
+  font-size: 0.9375rem;
+  color: var(--color-text-primary, #F0E7D3);
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  white-space: normal;
+  line-height: 1.25;
+}
+
+.rail-card-desc {
+  margin: 0;
+  font-family: var(--font-body, sans-serif);
+  font-size: 0.6875rem;
+  color: var(--color-text-secondary, #B9BEAC);
+  line-height: 1.35;
+  white-space: normal;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.rail-card-status {
+  margin-top: 4px;
+  display: flex;
+}
+
+.status-pill {
+  font-size: 0.625rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 12px;
+}
+
+.status-pill.current {
+  background: rgba(233, 138, 75, 0.25);
+  color: var(--color-ember-core, #FFD38A);
+  border: 1px solid rgba(233, 138, 75, 0.5);
+}
+
+.status-pill.achieved {
+  background: rgba(159, 186, 135, 0.15);
+  color: var(--color-root-mature, #D9E3B2);
+  border: 1px solid rgba(159, 186, 135, 0.3);
+}
+
+.status-pill.locked {
+  background: rgba(0, 0, 0, 0.3);
+  color: #707569;
+  border: 1px solid rgba(112, 117, 105, 0.25);
+}
+
+/* Inter-stage Connector */
+.rail-connector {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-secondary, #B9BEAC);
+  opacity: 0.45;
+  font-size: 0.875rem;
+  user-select: none;
+}
+
+@media (max-width: 640px) {
+  .root-progression-rail-wrapper {
+    padding: var(--space-8, 8px) var(--space-12, 12px);
+    margin: var(--space-12, 12px) 0 var(--space-16, 16px) 0;
+  }
+
+  .root-rail-card {
+    flex: 0 0 175px;
+    min-width: 165px;
+    padding: 8px 10px;
+  }
+
+  .rail-card-title {
+    font-size: 0.875rem;
+  }
+}

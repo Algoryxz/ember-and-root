@@ -21,3 +21,5 @@ export * from './svg/BodyBranchSvg';
 export * from './svg/WillBranchSvg';
 export * from './svg/CraftBranchSvg';
 export * from './svg/BranchSvgRenderer';
+
+export * from './RootProgressionRail';

@@ -90,13 +90,25 @@ export async function signupAction(
     sessionEstablished = true;
   }
 
-  // If rate limit encountered or email confirmation required, attempt server-side auto-confirmation via admin client
-  const isRateLimit = error && (
-    error.message?.toLowerCase().includes('rate limit') ||
-    (error as any).status === 429
+  // Check if Supabase returned a rate limit
+  const isRateLimit = Boolean(
+    error && (
+      error.message?.toLowerCase().includes('rate limit') ||
+      error.message?.toLowerCase().includes('over_email_send_rate_limit') ||
+      (error as any).status === 429
+    )
   );
 
-  if (!sessionEstablished && (isRateLimit || (data && !data.session))) {
+  // If rate-limited, do NOT bypass with admin client or retry automatically (Section 16).
+  // Return clean, human-readable recovery message immediately.
+  if (isRateLimit) {
+    return {
+      error: 'Too many signup attempts were requested. Please wait a moment before trying again, or sign in if you already created an account.',
+    };
+  }
+
+  // If email confirmation is required and session not returned
+  if (!sessionEstablished && data && !data.session && !error) {
     try {
       const adminClient = createAdminClient();
       if (adminClient) {
@@ -117,7 +129,7 @@ export async function signupAction(
         }
       }
     } catch {
-      // Fall through to error reporting below
+      // Fall through to confirmation message
     }
   }
 

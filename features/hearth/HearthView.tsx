@@ -151,12 +151,30 @@ export const HearthView: React.FC<HearthViewProps> = ({
       }
     } catch (err: any) {
       // Handle network or validation failure: render inline retry affordance
-      console.error('Failed to seal quest:', err);
-      const rawMsg = err?.message || '';
-      const userFriendlyMsg =
-        rawMsg.startsWith('complete_quest failed:')
-          ? "We couldn't seal this quest right now. Please check your connection and retry."
-          : rawMsg || 'Could not seal practice. Check connection and retry.';
+      // Preserve deep diagnostics for developer inspection
+      console.error('[Hearth] complete_quest failed:', err);
+      const rawMsg = String(err?.message || err || '');
+      const lower = rawMsg.toLowerCase();
+
+      let userFriendlyMsg: string;
+      if (
+        lower.includes('failed to fetch') ||
+        lower.includes('network error') ||
+        lower.includes('networkrequestfailed') ||
+        lower.includes('timeout')
+      ) {
+        userFriendlyMsg = 'Connection interrupted. Please check your network and retry.';
+      } else if (lower.includes('rate limit') || lower.includes('429')) {
+        userFriendlyMsg = 'Too many requests were made. Please wait a moment before retrying.';
+      } else if (lower.includes('jwt') || lower.includes('unauthorized') || lower.includes('session') || lower.includes('p0001')) {
+        userFriendlyMsg = 'Your session expired. Please sign in again to seal this quest.';
+      } else if (lower.includes('already completed') || lower.includes('p0007')) {
+        userFriendlyMsg = 'This quest has already been sealed for today.';
+      } else if (lower.includes('occurrence mismatch') || lower.includes('p0006')) {
+        userFriendlyMsg = 'Day boundary changed. Please refresh to seal today’s occurrence.';
+      } else {
+        userFriendlyMsg = "We couldn't seal this quest right now. Please try again.";
+      }
 
       setErrorQuestMap((prev) => ({
         ...prev,
