@@ -79,7 +79,9 @@
 .prologue-black { position: absolute; inset: 0; background: #000; pointer-events: none; z-index: 7; }
 .prologue-whisper { position: absolute; bottom: 10%; width: 100%; text-align: center; font-size: 10px; letter-spacing: .22em; color: #e0ded0; text-shadow: 0 2px 8px #000; pointer-events: none; z-index: 8; }
 .prologue-tools { position: absolute; bottom: max(12px,env(safe-area-inset-bottom)); right: 24px; display: flex; gap: 20px; z-index: 10; }
-.prologue-tools button { min-height: 44px; background: transparent; border: 0; padding: 8px 0; color: #b9b9ad; font-size: 10px; letter-spacing: .04em; text-shadow: 0 1px 5px #000; cursor: pointer; }
+.prologue-tools button { min-height: 44px; background: transparent; border: 0; padding: 8px 0; color: #b9b9ad; font-size: 10px; letter-spacing: .04em; text-shadow: 0 1px 5px #000; cursor: pointer; transition: color .2s; }
+.prologue-sound-btn { display: inline-flex; align-items: center; gap: 4px; font-weight: 500; }
+.prologue-sound-btn:hover { color: #ffe1a0; text-shadow: 0 0 10px #e98a4b88; }
 .prologue-tools button:focus-visible, .prologue-loading button:focus-visible { outline: 2px solid #ffd38a; outline-offset: 2px; }
 .prologue-tools button:disabled { cursor: default; }
 .prologue-end { position: absolute; left: 0; right: 0; top: 48%; text-align: center; font-size: 12px; letter-spacing: .12em; z-index: 8; }
