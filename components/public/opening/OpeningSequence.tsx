@@ -1,38 +1,18 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useRef, useState, useCallback, type CSSProperties, type RefObject } from 'react';
 import { motion, useReducedMotion } from 'motion/react';
 import './opening.css';
 import { ShoreSequence } from './ShoreSequence';
 import { useEntryAudio } from './EntryAudioProvider';
+import { ForestAwakeningOrb } from './ForestAwakeningOrb';
 
-type Scene = 'forest' | 'guided' | 'chamber' | 'discovery' | 'surge' | 'black';
+type Scene = 'forest' | 'chamber' | 'black';
 
 const LABELS: Record<Scene, string> = {
-  forest: 'Follow the glowing tree',
-  guided: 'Enter the root passage',
-  chamber: 'Approach the Ember',
-  discovery: 'Reach for the Ember',
-  surge: 'The Ember answers',
+  forest: 'Hold the dormant orb to awaken the forest',
+  chamber: 'Reach for the Ember',
   black: 'The Ember is within you',
-};
-
-// Authored stops and musical timings synchronized with 75 BPM soundtrack:
-// Bar 1 (00:01.33) -> Bar 2 (00:04.54) -> Bar 5 (00:14.14) -> Bar 7 (00:20.52) -> Bar 9 (00:26.92) -> Bar 10 (00:30.12)
-const NEXT: Partial<Record<Scene, Scene>> = {
-  forest: 'guided',
-  guided: 'chamber',
-  chamber: 'discovery',
-  discovery: 'surge',
-};
-
-const ENTER_MS: Record<Scene, number> = {
-  forest: 4540,
-  guided: 9600,
-  chamber: 6380,
-  discovery: 6400,
-  surge: 3200,
-  black: 150,
 };
 
 type PlateProps = {
@@ -41,10 +21,12 @@ type PlateProps = {
   attempt: number;
   active: boolean;
   scene: Scene;
-  enabled: boolean;
   hotspot: RefObject<HTMLButtonElement>;
-  onAdvance: (detail: number) => void;
+  onAdvance: () => void;
   onNear: (near: boolean) => void;
+  onForestAwakened?: () => void;
+  reduced: boolean;
+  paused: boolean;
 };
 
 function ScenePlate({
@@ -53,15 +35,17 @@ function ScenePlate({
   attempt,
   active,
   scene,
-  enabled,
   hotspot,
   onAdvance,
   onNear,
+  onForestAwakened,
+  reduced,
+  paused,
 }: PlateProps) {
   const root = kind === 'root-chamber';
   const style = {
-    '--target-x': root ? '57%' : scene === 'forest' ? '70%' : '50%',
-    '--target-y': root ? '51%' : scene === 'forest' ? '55%' : '64%',
+    '--target-x': root ? '57%' : '50%',
+    '--target-y': root ? '51%' : '55%',
     backgroundImage: loaded ? `url('/opening/${kind}.webp?v=${attempt}')` : undefined,
   } as CSSProperties;
 
@@ -75,7 +59,6 @@ function ScenePlate({
           <div className="prologue-backdrop" />
           <div className="prologue-emissive" />
           <div className="prologue-fog prologue-fog-far" />
-          {!root && <div className="prologue-old-guidance" aria-hidden="true">⁙</div>}
           <div className="prologue-destination" aria-hidden="true">
             <span className="prologue-aura" />
             {root ? (
@@ -83,11 +66,7 @@ function ScenePlate({
                 <i />
                 <b />
               </span>
-            ) : (
-              <span className="prologue-mark">
-                ·<br />⁙<br />·
-              </span>
-            )}
+            ) : null}
             {Array.from({ length: 10 }, (_, index) => (
               <i
                 key={index}
@@ -102,30 +81,29 @@ function ScenePlate({
               />
             ))}
           </div>
-          <div className="prologue-foreground" />
           <div className="prologue-fog prologue-fog-near" />
-          {active && scene !== 'black' && (
+
+          {/* Forest Stage: Dormant Orb Hold-to-Awaken Interaction */}
+          {!root && active && scene === 'forest' && onForestAwakened && (
+            <ForestAwakeningOrb
+              onAwakened={onForestAwakened}
+              reducedMotion={reduced}
+              paused={paused}
+            />
+          )}
+
+          {/* Root Chamber Stage: Reach for the Ember */}
+          {root && active && scene === 'chamber' && (
             <button
               ref={hotspot}
               type="button"
               className="prologue-hotspot"
               aria-label={LABELS[scene]}
-              aria-disabled={!enabled}
-              onClick={(event) => {
-                if (enabled) onAdvance(event.detail);
-              }}
+              onClick={() => onAdvance()}
               onFocus={() => onNear(true)}
               onBlur={() => onNear(false)}
-              onPointerDown={() => onNear(true)}
             >
-              {/* Silent environmental guidance for forest & guided; restrained text for chamber & discovery */}
-              <span>
-                {scene === 'chamber'
-                  ? 'Closer.'
-                  : scene === 'discovery'
-                  ? 'REACH FOR IT'
-                  : ''}
-              </span>
+              <span>REACH FOR THE EMBER</span>
             </button>
           )}
         </div>
@@ -136,7 +114,7 @@ function ScenePlate({
 
 export function OpeningSequence() {
   const [scene, setScene] = useState<Scene>('forest');
-  const [phase, setPhase] = useState<'enter' | 'idle'>('enter');
+  const [phase, setPhase] = useState<'enter' | 'idle'>('idle');
   const [skipShore, setSkipShore] = useState(false);
   const [near, setNear] = useState(false);
   const [still, setStill] = useState(false);
@@ -150,11 +128,8 @@ export function OpeningSequence() {
   const reduced = Boolean(osReduced || still);
   const hotspot = useRef<HTMLButtonElement>(null);
 
-  const keyboardAdvance = useRef(false);
-  const root = !['forest', 'guided'].includes(scene);
-  const needsRoots = scene !== 'forest';
-  const ready = assets.forest && (!needsRoots || assets.roots);
-  const enabled = phase === 'idle' && ready && !failed && Boolean(NEXT[scene]);
+  const root = scene === 'chamber';
+  const ready = assets.forest;
 
   // Audio lifecycle initialization: start playback on prologue mount
   useEffect(() => {
@@ -164,7 +139,7 @@ export function OpeningSequence() {
   // Asset preloading
   useEffect(() => {
     let cancelled = false;
-    const images = (needsRoots ? ['forest', 'root-chamber'] : ['forest']).map((name) => {
+    const images = ['forest', 'root-chamber'].map((name) => {
       const image = new Image();
       image.onload = () => {
         if (!cancelled)
@@ -186,7 +161,7 @@ export function OpeningSequence() {
         image.onerror = null;
       });
     };
-  }, [attempt, needsRoots]);
+  }, [attempt]);
 
   useEffect(() => {
     if (scene !== 'chamber') return;
@@ -203,35 +178,32 @@ export function OpeningSequence() {
     return () => document.removeEventListener('visibilitychange', change);
   }, []);
 
-  // Synchronized musical scene progression
-  useEffect(() => {
-    if (!ready || paused || phase === 'idle' || failed) return;
-    const timer = window.setTimeout(() => {
-      if (scene === 'surge') {
-        setScene('black');
-        setPhase('enter');
-      } else {
-        setPhase('idle');
-        if (keyboardAdvance.current) hotspot.current?.focus();
-      }
-    }, reduced ? 140 : ENTER_MS[scene]);
-    return () => window.clearTimeout(timer);
-  }, [scene, phase, ready, paused, reduced, failed]);
-
-  function advance(detail: number) {
-    const next = NEXT[scene];
-    if (!enabled || !next) return;
-    keyboardAdvance.current = detail === 0;
-    setNear(false);
-    setScene(next);
+  // Callback triggered when the forest dormant orb reaches 100% hold energy
+  const handleForestAwakened = useCallback(() => {
     setPhase('enter');
-  }
+    const duration = reduced ? 150 : 850;
+    window.setTimeout(() => {
+      setScene('chamber');
+      setPhase('idle');
+      hotspot.current?.focus();
+    }, duration);
+  }, [reduced]);
+
+  // Advance from chamber to black / shore sequence
+  const advance = useCallback(() => {
+    if (scene !== 'chamber') return;
+    setNear(false);
+    setPhase('enter');
+    const delay = reduced ? 80 : 550;
+    window.setTimeout(() => {
+      setScene('black');
+      setPhase('idle');
+    }, delay);
+  }, [reduced, scene]);
 
   function skip() {
-    // Flow naturally into shore/title without killing the soundtrack
     play();
     setSkipShore(true);
-    keyboardAdvance.current = true;
     setScene('black');
     setPhase('idle');
     setNear(false);
@@ -239,9 +211,8 @@ export function OpeningSequence() {
 
   function handleReplay() {
     setSkipShore(false);
-    keyboardAdvance.current = false;
     setScene('forest');
-    setPhase('enter');
+    setPhase('idle');
     setNear(false);
     restart();
   }
@@ -254,7 +225,7 @@ export function OpeningSequence() {
       data-near={near}
       data-reduced={reduced}
       data-paused={paused}
-      aria-label="Ember and Root playable prologue"
+      aria-label="Ember and Root — playable prologue"
       onPointerMove={(event) => {
         if (event.pointerType !== 'mouse' || scene === 'black') return;
         const rect = hotspot.current?.getBoundingClientRect();
@@ -276,10 +247,12 @@ export function OpeningSequence() {
           attempt={attempt}
           active={!root}
           scene={scene}
-          enabled={enabled}
           hotspot={hotspot}
           onAdvance={advance}
           onNear={setNear}
+          onForestAwakened={handleForestAwakened}
+          reduced={reduced}
+          paused={paused}
         />
       )}
       {scene !== 'black' && (
@@ -289,10 +262,11 @@ export function OpeningSequence() {
           attempt={attempt}
           active={root}
           scene={scene}
-          enabled={enabled}
           hotspot={hotspot}
           onAdvance={advance}
           onNear={setNear}
+          reduced={reduced}
+          paused={paused}
         />
       )}
       <div className="prologue-vignette" aria-hidden="true" />
@@ -301,7 +275,7 @@ export function OpeningSequence() {
         aria-hidden="true"
         initial={{ opacity: 1 }}
         animate={{ opacity: scene === 'black' || !assets.forest ? 1 : 0 }}
-        transition={{ duration: reduced ? 0.12 : scene === 'black' ? 0.1 : 1.6 }}
+        transition={{ duration: reduced ? 0.12 : scene === 'black' ? 0.1 : 1.4 }}
       />
       {/* Early forest call whisper */}
       <motion.p
@@ -373,11 +347,9 @@ export function OpeningSequence() {
       )}
 
       <p className="prologue-sr" role="status" aria-live="polite">
-        {phase === 'idle'
-          ? scene === 'black'
-            ? 'The Ember is within you. The shore is opening.'
-            : `${LABELS[scene]}. Activate the scene hotspot to continue.`
-          : ''}
+        {scene === 'black'
+          ? 'The Ember is within you. The shore is opening.'
+          : `${LABELS[scene]}.`}
       </p>
 
       <noscript>

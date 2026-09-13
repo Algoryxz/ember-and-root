@@ -126,3 +126,176 @@
 
 .prologue[data-scene='surge'] .prologue-mote,.prologue[data-scene='surge'] .prologue-fog{animation:none;opacity:0}
 .prologue[data-scene='surge'] .prologue-foreground{transform:scale(1.32)}
+/* ==========================================================================
+   FOREST AWAKENING ORB & FIREFLY SYSTEM (Cinematic Runtime Integration)
+   ========================================================================== */
+
+.prologue-awakening-container {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 5;
+  --orb-progress: 0;
+  --awakening-glow: 0;
+}
+
+.prologue-firefly-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.prologue-orb-wrap {
+  position: absolute;
+  left: 50%;
+  top: 55%;
+  transform: translate(-50%, -50%);
+  z-index: 4;
+  pointer-events: auto;
+}
+
+.prologue-orb-button {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  min-width: 44px;
+  min-height: 44px;
+  border-radius: 50%;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  touch-action: none;
+  -webkit-tap-highlight-color: transparent;
+  outline: none;
+  transition: transform 0.2s cubic-bezier(0.2, 0.8, 0.25, 1);
+}
+
+.prologue-orb-button:focus-visible {
+  outline: 2px solid #ffd38a;
+  outline-offset: 6px;
+}
+
+.prologue-orb-button:active {
+  transform: scale(0.96);
+}
+
+/* Subtle Ambient Halo */
+.prologue-orb-halo {
+  position: absolute;
+  inset: -20px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(233, 138, 75, calc(0.2 + var(--orb-progress) * 0.45)), transparent 70%);
+  filter: blur(10px);
+  pointer-events: none;
+  transition: transform 0.3s ease;
+  transform: scale(calc(1 + var(--orb-progress) * 0.6));
+}
+
+/* SVG Progress Arc */
+.prologue-orb-meter {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+  pointer-events: none;
+}
+
+.prologue-orb-meter .meter-track {
+  fill: none;
+  stroke: rgba(217, 142, 84, 0.25);
+  stroke-width: 3;
+}
+
+.prologue-orb-meter .meter-fill {
+  fill: none;
+  stroke: #ffe0a0;
+  stroke-width: 3.5;
+  stroke-linecap: round;
+  stroke-dasharray: 201.06;
+  stroke-dashoffset: 201.06;
+  filter: drop-shadow(0 0 6px #e98a4b);
+  transition: stroke 0.2s;
+}
+
+/* Living Orb Core */
+.prologue-orb-core {
+  position: relative;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 35%, #fff5d6, #f3be7a 55%, #c86927 90%);
+  box-shadow:
+    0 0 14px rgba(255, 211, 138, calc(0.4 + var(--orb-progress) * 0.6)),
+    0 0 35px rgba(233, 138, 75, calc(0.25 + var(--orb-progress) * 0.75));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  transform: scale(calc(0.92 + var(--orb-progress) * 0.25));
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.prologue-orb-core .orb-inner-filament {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 0 8px #fff0b8;
+  opacity: calc(0.6 + var(--orb-progress) * 0.4);
+  animation: orb-filament-pulse 2.8s ease-in-out infinite alternate;
+}
+
+@keyframes orb-filament-pulse {
+  0% { transform: scale(0.85); opacity: 0.5; }
+  100% { transform: scale(1.15); opacity: 0.95; }
+}
+
+/* Prompt Label */
+.prologue-orb-label {
+  position: absolute;
+  top: calc(100% + 14px);
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font-sans, system-ui, sans-serif);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  font-weight: 600;
+  white-space: nowrap;
+  color: #ffdca3;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.9), 0 0 12px rgba(233, 138, 75, 0.6);
+  pointer-events: none;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+/* Full-scene awakening bloom flash upon completion */
+.prologue-awakening-bloom {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(circle at 50% 55%, #fffdf4 0%, #ffdca3 30%, #e98a4b 60%, transparent 85%);
+  opacity: var(--awakening-glow);
+  mix-blend-mode: screen;
+  z-index: 6;
+  transition: opacity 0.4s ease-out;
+}
+
+@media (max-width: 768px) {
+  .prologue-orb-wrap {
+    top: 58%;
+  }
+  .prologue-orb-button {
+    width: 76px;
+    height: 76px;
+  }
+  .prologue-orb-core {
+    width: 38px;
+    height: 38px;
+  }
+}

@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState } from 'react';
 import Link from 'next/link';
@@ -8,7 +8,7 @@ import type { NodeState, RootNodeInfo } from '../../features/root/types';
 import type { AttributeId, BranchState } from '../../features/hearth/contracts';
 import { DEMO_SNAPSHOT } from '../../game/fixtures/snapshot';
 import { CinematicHero } from './CinematicHero';
-import { CinematicExperience } from './CinematicExperience';
+
 import './LandingView.css';
 
 const ATTRIBUTES: AttributeId[] = ['mind', 'body', 'will', 'craft'];
@@ -36,7 +36,7 @@ const RITUAL_STEPS: RitualStep[] = [
     actionWord: 'Declare intention',
     description: 'Choose meaningful daily practices aligned with Mind, Body, Will, or Craft in your field journal.',
     consequence: 'The entry awaits your real effort in the waking world.',
-    glyph: '✎',
+    glyph: 'âœŽ',
   },
   {
     number: '02',
@@ -44,23 +44,23 @@ const RITUAL_STEPS: RitualStep[] = [
     actionWord: 'Carry through',
     description: 'Engage with your practice outside the screen. No synthetic timers, tracking gimmicks, or surveillance.',
     consequence: 'Real work is done where it matters most.',
-    glyph: '✦',
+    glyph: 'âœ¦',
   },
   {
     number: '03',
     title: 'Seal',
     actionWord: 'Stamp impression',
     description: 'Confirm completion with a tactile wax seal in your journal. Sealing is a deliberate personal testimony.',
-    consequence: 'The practice becomes permanent in today’s folio.',
-    glyph: '◎',
+    consequence: 'The practice becomes permanent in todayâ€™s folio.',
+    glyph: 'â—Ž',
   },
   {
     number: '04',
     title: 'Ember Responds',
     actionWord: 'Daily momentum',
-    description: 'Today’s brazier stirs from resting coals to vigorous flame, casting warmth across your field journal.',
+    description: 'Todayâ€™s brazier stirs from resting coals to vigorous flame, casting warmth across your field journal.',
     consequence: 'Present-day momentum is visibly ignited.',
-    glyph: '🔥',
+    glyph: 'ðŸ”¥',
   },
   {
     number: '05',
@@ -68,7 +68,7 @@ const RITUAL_STEPS: RitualStep[] = [
     actionWord: 'Permanent becoming',
     description: 'Effort travels into the living organism. Branches thicken, forks awaken, and mastery crests bloom.',
     consequence: 'Who you become is permanently shaped.',
-    glyph: '🌱',
+    glyph: 'ðŸŒ±',
   },
 ];
 
@@ -191,7 +191,7 @@ function deriveCanonicalBranchNodes(attribute: AttributeId, branch: BranchState)
 }
 
 /**
- * LandingView — Public Entry Surface
+ * LandingView â€” Public Entry Surface
  * Owned by: Deeptiman (Experience / Frontend Lead)
  * Visual Direction: Contemporary Botanical Field Folio
  * 
@@ -227,10 +227,6 @@ export function LandingView() {
 
       {/* Main Landing Canvas */}
       <main className="landing-content">
-        {/* Interactive Cinematic Awakening Experience */}
-        <section className="w-full mb-8" aria-label="Interactive Cinematic Awakening">
-          <CinematicExperience />
-        </section>
 
         {/* ==================================================================
             SECTION 2: The Causal Ritual Loop (Editorial Demonstration Folio)
@@ -274,7 +270,7 @@ export function LandingView() {
             <div className="ritual-stage-leaf" role="tabpanel" aria-label={`Details for ${activeStep.title}`}>
               <div className="leaf-header-row">
                 <span className="leaf-glyph" aria-hidden="true">{activeStep.glyph}</span>
-                <span className="leaf-step-badge">Stage {activeStep.number} · {activeStep.title}</span>
+                <span className="leaf-step-badge">Stage {activeStep.number} Â· {activeStep.title}</span>
               </div>
 
               <h3 className="leaf-title">{activeStep.actionWord}</h3>
@@ -310,7 +306,7 @@ export function LandingView() {
             <div className="specimen-plate-header">
               <div className="specimen-tag-cluster">
                 <span className="specimen-plate-tag" aria-hidden="true">
-                  PLATE I · CANONICAL CUTTING ({ATTRIBUTE_LABELS[selectedAttribute]})
+                  PLATE I Â· CANONICAL CUTTING ({ATTRIBUTE_LABELS[selectedAttribute]})
                 </span>
                 <h3 className="specimen-plate-title">The Living Root Specimen</h3>
               </div>
@@ -354,7 +350,7 @@ export function LandingView() {
                   {SPECIMEN_MARKERS.map((marker, idx) => (
                     <div key={marker.name} className="anatomy-legend-item">
                       <span className="legend-marker-dot" aria-hidden="true">
-                        {idx <= 2 ? '●' : '○'}
+                        {idx <= 2 ? 'â—' : 'â—‹'}
                       </span>
                       <div className="legend-marker-text">
                         <div className="legend-marker-top">
@@ -384,7 +380,7 @@ export function LandingView() {
           </p>
           <div className="landing-cta-group">
             <Link href="/signup" className="btn-primary-cta">
-              Begin your path →
+              Begin your path â†’
             </Link>
           </div>
         </section>
@@ -392,8 +388,9 @@ export function LandingView() {
 
       {/* Footer */}
       <footer className="landing-footer">
-        <p>Ember &amp; Root · “What you do becomes who you are.”</p>
+        <p>Ember &amp; Root Â· â€œWhat you do becomes who you are.â€</p>
       </footer>
     </div>
   );
 }
+
