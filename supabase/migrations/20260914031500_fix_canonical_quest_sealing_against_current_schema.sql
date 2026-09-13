@@ -32,26 +32,29 @@ COMMENT ON FUNCTION public.base_xp_from_effort(text) IS
 REVOKE ALL ON FUNCTION public.base_xp_from_effort(text) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.base_xp_from_effort(text) TO authenticated, anon, service_role;
 
--- 2. Helper: level_from_total_xp
+-- 2. Helper: level_from_total_xp (canonical formula: cumulative XP threshold = 25 * lvl * (lvl + 3))
 CREATE OR REPLACE FUNCTION public.level_from_total_xp(p_total_xp integer)
 RETURNS integer
-LANGUAGE sql
+LANGUAGE plpgsql
 IMMUTABLE
 PARALLEL SAFE
 SECURITY DEFINER
+SET search_path = ''
 AS $$
-  SELECT CASE
-    WHEN p_total_xp >= 1600 THEN 10
-    WHEN p_total_xp >= 1300 THEN 9
-    WHEN p_total_xp >= 1050 THEN 8
-    WHEN p_total_xp >= 820 THEN 7
-    WHEN p_total_xp >= 620 THEN 6
-    WHEN p_total_xp >= 450 THEN 5
-    WHEN p_total_xp >= 300 THEN 4
-    WHEN p_total_xp >= 180 THEN 3
-    WHEN p_total_xp >= 80 THEN 2
-    ELSE 1
-  END;
+DECLARE
+  v_lvl integer := 1;
+BEGIN
+  IF p_total_xp <= 0 OR p_total_xp IS NULL THEN
+    RETURN 1;
+  END IF;
+
+  -- Canonical thresholds: L1: 0, L2: 100, L3: 250, L4: 450, L5: 700, L6: 1000, L7: 1350, L8: 1750...
+  WHILE p_total_xp >= (25 * v_lvl * (v_lvl + 3)) LOOP
+    v_lvl := v_lvl + 1;
+  END LOOP;
+
+  RETURN v_lvl;
+END;
 $$;
 
 COMMENT ON FUNCTION public.level_from_total_xp(integer) IS
