@@ -3,6 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { EmberRootMark } from '@/components/brand/EmberRootLogo';
 
 interface NavItem {
   name: string;
@@ -135,7 +136,7 @@ export function GameNav() {
             href="/hearth"
             className="flex items-center gap-2.5 font-['Fraunces'] text-xl font-normal text-[#F0E7D3] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C4A96A] focus-visible:ring-offset-2 focus-visible:ring-offset-[#141713] rounded-[6px] px-1 py-1"
           >
-            <span className="w-2.5 h-2.5 rounded-full bg-[#E98A4B] inline-block shadow-[0_0_8px_#E98A4B]" aria-hidden="true" />
+            <EmberRootMark size={22} className="text-[#E98A4B]" />
             <span>Ember &amp; Root</span>
           </Link>
 

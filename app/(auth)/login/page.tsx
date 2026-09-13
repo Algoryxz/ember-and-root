@@ -5,6 +5,7 @@ import Link from 'next/link';
 import '@/components/public/opening/entry.css';
 import { useSearchParams } from 'next/navigation';
 import { loginAction, type AuthActionResult } from '@/app/actions/auth';
+import { EmberRootMark } from '@/components/brand/EmberRootLogo';
 
 function LoginForm() {
   const searchParams = useSearchParams();
@@ -32,9 +33,18 @@ function LoginForm() {
     <div className="path-inscription">
       {/* Editorial Folio Header */}
       <div className="text-center mb-8">
-        <span className="inline-block text-[11px] uppercase tracking-[0.16em] text-[#E98A4B] font-semibold mb-2">
-          THE PATH CONTINUES.
-        </span>
+        <Link
+          href="/"
+          className="inline-flex items-center justify-center mb-4 rounded-[6px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C4A96A] focus-visible:ring-offset-2 focus-visible:ring-offset-[#1D231D]"
+          aria-label="Return to Ember and Root prologue"
+        >
+          <EmberRootMark size={36} />
+        </Link>
+        <div>
+          <span className="inline-block text-[11px] uppercase tracking-[0.16em] text-[#E98A4B] font-semibold mb-2">
+            THE PATH CONTINUES.
+          </span>
+        </div>
         <h1 className="text-3xl sm:text-4xl font-normal font-['Fraunces'] text-[#F0E7D3] tracking-tight mb-2">
           SIGN IN
         </h1>

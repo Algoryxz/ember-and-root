@@ -115,3 +115,11 @@ Ember & Root product concept, game systems, backend architecture, visual directi
 - Status: User-supplied media for the public cinematic prologue sequence (~35s, 75 BPM).
 - What was borrowed: Atmospheric orchestral soundtrack utilized exclusively within the public cinematic prologue (`components/public/opening/`). Zero presence in interior game surfaces (Hearth, Root, Satchel, Chronicle, Settings).
 - Integration: Authored audio controller (`prologueAudio.ts`) handling HTML5 audio playback, browser gesture unlocking for autoplay restrictions, accessible sound toggle controls, and smooth volume fading. No external audio dependencies introduced.
+
+## 8. Canonical Brand Mark — Ember to Root (2026-09-13)
+
+- Source: Project-authored brand mark evolution based on user-supplied fallback mark (`media_1789273873966.png`).
+- Status: Project-authored original design (Direction A — Variant A2).
+- Concept: Evolves the diagonal 3-point branch silhouette into an illuminated Ember seed apex sprouting natural tapered organic roots, paired with Fraunces variable serif typography.
+- Assets: `public/brand/`, `public/icon.svg`, `app/icon.svg`, and `components/brand/EmberRootLogo.tsx`.
+
