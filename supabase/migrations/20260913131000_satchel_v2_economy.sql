@@ -48,7 +48,21 @@ ON CONFLICT (id) DO UPDATE SET
   description = EXCLUDED.description;
 
 -- ---------------------------------------------------------------------
--- 2. Authoritative get_game_snapshot()
+-- 2. Helper: level_from_xp delegating to level_from_total_xp
+-- ---------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION public.level_from_xp(p_total_xp integer)
+RETURNS integer
+LANGUAGE sql
+IMMUTABLE
+AS $$
+  SELECT public.level_from_total_xp(p_total_xp);
+$$;
+
+REVOKE ALL ON FUNCTION public.level_from_xp(integer) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.level_from_xp(integer) TO authenticated, anon;
+
+-- ---------------------------------------------------------------------
+-- 3. Authoritative get_game_snapshot()
 -- Aligns snapshot structure with TypeScript contracts (equippedItemId, inventory.items)
 -- ---------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION public.get_game_snapshot()

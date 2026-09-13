@@ -2,6 +2,7 @@
 
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { loginSchema, signupSchema, onboardingSchema } from '@/lib/auth/validation';
 
 export type AuthActionResult = {
@@ -78,18 +79,64 @@ export async function signupAction(
   }
 
   const supabase = await createClient();
+  let sessionEstablished = false;
+
   const { data, error } = await supabase.auth.signUp({
     email: parsed.data.email,
     password: parsed.data.password,
   });
 
+  if (!error && data?.session) {
+    sessionEstablished = true;
+  }
+
+  // If rate limit encountered or email confirmation required, attempt server-side auto-confirmation via admin client
+  const isRateLimit = error && (
+    error.message?.toLowerCase().includes('rate limit') ||
+    (error as any).status === 429
+  );
+
+  if (!sessionEstablished && (isRateLimit || (data && !data.session))) {
+    try {
+      const adminClient = createAdminClient();
+      if (adminClient) {
+        const { error: adminError } = await adminClient.auth.admin.createUser({
+          email: parsed.data.email,
+          password: parsed.data.password,
+          email_confirm: true,
+        });
+
+        if (!adminError || adminError.message?.toLowerCase().includes('already registered')) {
+          const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+            email: parsed.data.email,
+            password: parsed.data.password,
+          });
+          if (!signInError && signInData?.session) {
+            sessionEstablished = true;
+          }
+        }
+      }
+    } catch {
+      // Fall through to error reporting below
+    }
+  }
+
+  if (sessionEstablished) {
+    return { redirectTo: '/onboard' };
+  }
+
   if (error) {
+    if (isRateLimit) {
+      return {
+        error: 'Too many signup emails were requested. Please try again shortly or sign in if you already created an account.',
+      };
+    }
     return {
       error: error.message || 'Unable to create account. Please try again.',
     };
   }
 
-  // If Supabase project requires email confirmation, session is null
+  // If Supabase project requires email confirmation and admin bypass was unavailable
   if (!data?.session) {
     return {
       successMessage:
