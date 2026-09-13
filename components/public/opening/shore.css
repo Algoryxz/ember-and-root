@@ -29,3 +29,69 @@
 .shore-replay-btn:hover{color:#e9b984;text-shadow:0 0 12px #e98a4b55}
 .shore-replay-btn:focus-visible{outline:2px solid #ffd38a;outline-offset:2px}
 @media(prefers-reduced-motion:reduce){.shore-sequence *{animation:none!important;transition:opacity .15s!important}}
+/* ==========================================================================
+   LIVING ORGANIC HEARTBEAT (Final Shore / Chest Ember Breath Cycle)
+   ========================================================================== */
+
+@keyframes shore-heartbeat-living {
+  0% {
+    /* SOFT */
+    transform: scale(0.96);
+    opacity: 0.72;
+    box-shadow: 0 0 12px 3px rgba(233, 138, 75, 0.45), 0 0 32px 8px rgba(218, 112, 43, 0.25);
+    filter: brightness(0.95);
+  }
+  38% {
+    /* BRIGHTER */
+    transform: scale(1.08);
+    opacity: 0.95;
+    box-shadow: 0 0 20px 8px rgba(255, 225, 170, 0.75), 0 0 48px 15px rgba(233, 138, 75, 0.5);
+    filter: brightness(1.2);
+  }
+  50% {
+    /* PEAK */
+    transform: scale(1.15);
+    opacity: 1;
+    box-shadow: 0 0 26px 11px rgba(255, 235, 190, 0.95), 0 0 60px 22px rgba(233, 138, 75, 0.7);
+    filter: brightness(1.35);
+  }
+  75% {
+    /* GRADUAL RETURN */
+    transform: scale(1.02);
+    opacity: 0.85;
+    box-shadow: 0 0 16px 5px rgba(233, 138, 75, 0.55), 0 0 40px 10px rgba(218, 112, 43, 0.3);
+    filter: brightness(1.05);
+  }
+  100% {
+    /* SOFT */
+    transform: scale(0.96);
+    opacity: 0.72;
+    box-shadow: 0 0 12px 3px rgba(233, 138, 75, 0.45), 0 0 32px 8px rgba(218, 112, 43, 0.25);
+    filter: brightness(0.95);
+  }
+}
+
+@keyframes shore-filaments-living {
+  0% {
+    opacity: 0.4;
+    transform: rotate(-18deg) scale(0.94);
+  }
+  50% {
+    opacity: 0.85;
+    transform: rotate(-18deg) scale(1.12);
+  }
+  100% {
+    opacity: 0.4;
+    transform: rotate(-18deg) scale(0.94);
+  }
+}
+
+.shore-sequence[data-beat='4'] .shore-core {
+  opacity: 0.85;
+  animation: shore-heartbeat-living 3.6s cubic-bezier(0.4, 0, 0.2, 1) infinite !important;
+}
+
+.shore-sequence[data-beat='4'] .shore-filaments {
+  opacity: 0.65;
+  animation: shore-filaments-living 3.6s cubic-bezier(0.4, 0, 0.2, 1) infinite !important;
+}
