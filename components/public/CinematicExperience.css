@@ -1,0 +1,265 @@
+/* ==========================================================================
+   Ember & Root — Cinematic Experience Styles
+   Visual Direction: Botanical Folio Cinematic Atmosphere
+   ========================================================================== */
+
+.cinematic-shell {
+  position: relative;
+  width: 100%;
+  max-width: 720px;
+  height: 440px;
+  margin: 0 auto;
+  background: radial-gradient(circle at 50% 50%, #1D231D 0%, #141713 100%);
+  border: 1px solid rgba(185, 190, 172, 0.15);
+  border-radius: var(--radius-panel, 16px);
+  overflow: hidden;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.6), inset 0 0 32px rgba(233, 138, 75, 0.05);
+  user-select: none;
+  outline: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.cinematic-shell:focus-visible {
+  border-color: var(--color-ember, #E98A4B);
+  box-shadow: 0 0 0 2px rgba(200, 157, 92, 0.6);
+}
+
+/* Background Canvas for Particle Fireflies */
+.cinematic-firefly-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* --------------------------------------------------------------------------
+   Slide 1 & 2: Scene & Tree SVG
+   -------------------------------------------------------------------------- */
+.cinematic-scene {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+}
+
+.cinematic-tree-svg {
+  width: 100%;
+  height: 100%;
+  max-height: 380px;
+  overflow: visible;
+}
+
+/* Interactive Touch Target (Minimum 48x48px hit area) */
+.orb-touch-target {
+  cursor: pointer;
+  touch-action: none;
+}
+
+.orb-touch-target:hover + .orb-outer-field {
+  fill: rgba(233, 138, 75, 0.3);
+}
+
+/* Orb Breathing Animation for Rest/Dormant State */
+.orb-breathing {
+  animation: orb-soft-breath 3.6s ease-in-out infinite;
+}
+
+@keyframes orb-soft-breath {
+  0%, 100% { transform: scale(1); opacity: 0.55; }
+  50% { transform: scale(1.15); opacity: 0.85; }
+}
+
+/* Contextual Guidance Hint */
+.cinematic-guidance-hint {
+  position: absolute;
+  bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-body, system-ui, sans-serif);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--color-text-secondary, #B9BEAC);
+  background: rgba(20, 23, 19, 0.75);
+  border: 1px solid rgba(185, 190, 172, 0.2);
+  padding: 6px 14px;
+  border-radius: 20px;
+  backdrop-filter: blur(4px);
+  pointer-events: none;
+  animation: hint-fade-pulse 2.8s ease-in-out infinite;
+}
+
+.guidance-pulse-icon {
+  color: var(--color-ember, #E98A4B);
+}
+
+@keyframes hint-fade-pulse {
+  0%, 100% { opacity: 0.65; transform: translateY(0); }
+  50% { opacity: 0.95; transform: translateY(-2px); }
+}
+
+/* Real-Time Energy Hold Progress Bar */
+.cinematic-progress-wrap {
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 180px;
+  height: 4px;
+  background: rgba(20, 23, 19, 0.8);
+  border-radius: 2px;
+  overflow: hidden;
+  border: 1px solid rgba(185, 190, 172, 0.2);
+}
+
+.cinematic-progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #E98A4B, #FFD38A);
+  transition: width 30ms linear;
+}
+
+/* --------------------------------------------------------------------------
+   Slide 3: Awakening Scene, Living Heart & Dialogue
+   -------------------------------------------------------------------------- */
+.cinematic-awakening-scene {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 24px;
+  text-align: center;
+  z-index: 2;
+  cursor: pointer;
+}
+
+/* Living Ember Heart Container & Pulse States */
+.cinematic-heart-container {
+  position: relative;
+  width: 110px;
+  height: 110px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  margin-bottom: 20px;
+  transition: transform 900ms cubic-bezier(0.4, 0, 0.2, 1), filter 900ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.cinematic-heart-halo {
+  position: absolute;
+  inset: -14px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(233, 138, 75, 0.3) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.cinematic-heart-svg {
+  width: 80px;
+  height: 80px;
+  overflow: visible;
+  filter: drop-shadow(0 4px 16px rgba(233, 138, 75, 0.4));
+}
+
+/* Organic Pulse States: soften -> brighten -> peak -> soften */
+.cinematic-heart-container.pulse-soft {
+  transform: scale(0.96);
+  filter: brightness(0.9);
+}
+
+.cinematic-heart-container.pulse-bright {
+  transform: scale(1.04);
+  filter: brightness(1.15);
+}
+
+.cinematic-heart-container.pulse-peak {
+  transform: scale(1.12);
+  filter: brightness(1.3);
+}
+
+/* Dialogue Container */
+.cinematic-dialogue-wrap {
+  max-width: 520px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 80px;
+}
+
+.cinematic-dialogue-text {
+  font-family: var(--font-display, Georgia, serif);
+  font-size: 1.15rem;
+  line-height: 1.5;
+  color: var(--color-text-primary, #F0E7D3);
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.cinematic-cursor {
+  color: var(--color-ember, #E98A4B);
+  animation: cursor-blink 800ms infinite;
+}
+
+@keyframes cursor-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+.cinematic-dialogue-sub {
+  font-family: var(--font-body, system-ui, sans-serif);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--color-ember, #E98A4B);
+  opacity: 0.8;
+}
+
+.cinematic-cta-wrap {
+  margin-top: 16px;
+}
+
+/* --------------------------------------------------------------------------
+   Responsive & Reduced Motion Adjustments
+   -------------------------------------------------------------------------- */
+@media (max-width: 520px) {
+  .cinematic-shell {
+    height: 380px;
+  }
+
+  .cinematic-dialogue-text {
+    font-size: 0.95rem;
+  }
+
+  .cinematic-heart-container {
+    width: 90px;
+    height: 90px;
+  }
+
+  .cinematic-heart-svg {
+    width: 64px;
+    height: 64px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .orb-breathing,
+  .guidance-pulse-icon,
+  .cinematic-guidance-hint {
+    animation: none !important;
+  }
+
+  .cinematic-heart-container {
+    transition: none !important;
+  }
+}

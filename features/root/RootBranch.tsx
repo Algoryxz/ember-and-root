@@ -161,6 +161,19 @@ export const RootBranch: React.FC<RootBranchProps> = ({
       {/* Header */}
       <header className="root-branch-header">
         <div className="root-branch-header-info">
+          <div
+            style={{
+              fontSize: '10px',
+              textTransform: 'uppercase',
+              letterSpacing: '0.08em',
+              color: TOKENS.color.textSecondary,
+              marginBottom: '2px',
+              fontFamily: TOKENS.font.display,
+              fontStyle: 'italic',
+            }}
+          >
+            {attribute === 'mind' ? 'FIG. I · BOTANICAL FIELD SPECIMEN' : `SPECIMEN PLATE · ${attribute.toUpperCase()}`}
+          </div>
           <h2 className="root-branch-header-title">
             <span
               style={{

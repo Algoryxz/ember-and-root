@@ -8,6 +8,7 @@ import type { NodeState, RootNodeInfo } from '../../features/root/types';
 import type { AttributeId, BranchState } from '../../features/hearth/contracts';
 import { DEMO_SNAPSHOT } from '../../game/fixtures/snapshot';
 import { CinematicHero } from './CinematicHero';
+import { CinematicExperience } from './CinematicExperience';
 import './LandingView.css';
 
 const ATTRIBUTES: AttributeId[] = ['mind', 'body', 'will', 'craft'];
@@ -226,6 +227,10 @@ export function LandingView() {
 
       {/* Main Landing Canvas */}
       <main className="landing-content">
+        {/* Interactive Cinematic Awakening Experience */}
+        <section className="w-full mb-8" aria-label="Interactive Cinematic Awakening">
+          <CinematicExperience />
+        </section>
         {/* ==================================================================
             SECTION 2: The Causal Ritual Loop (Editorial Demonstration Folio)
             Replaces the 4-card grid with ONE authored causal experience
