@@ -9,6 +9,7 @@ export interface QuestRowProps {
   isPending?: boolean;
   errorMessage?: string | null;
   onComplete: (questId: string) => void;
+  onBeginFocus?: (quest: Quest | HearthQuest) => void;
   onEdit?: (quest: Quest | HearthQuest) => void;
   onRetry?: (questId: string) => void;
   onAttributeHover?: (attribute: AttributeId | null) => void;
@@ -36,6 +37,7 @@ export const QuestRow: React.FC<QuestRowProps> = ({
   isPending = false,
   errorMessage = null,
   onComplete,
+  onBeginFocus,
   onEdit,
   onRetry,
   onAttributeHover,
@@ -158,11 +160,27 @@ export const QuestRow: React.FC<QuestRowProps> = ({
       {/* Editorial Connecting Rule Line */}
       <div className="entry-rule-line" aria-hidden="true" />
 
-      {/* Physical Tactile Seal Action */}
+      {/* Physical Tactile Seal & Focus Ritual Actions */}
       <div className="entry-seal-affordance">
+        {onBeginFocus && !isCompleted && !isPending && (
+          <button
+            type="button"
+            className="entry-ritual-btn"
+            onClick={(e) => {
+              e.stopPropagation();
+              onBeginFocus(quest);
+            }}
+            aria-label={`Begin focus ritual for practice: ${title}`}
+            title="Begin Focus Ritual"
+          >
+            <span className="ritual-btn-mark" aria-hidden="true">✦</span>
+            <span className="ritual-btn-label">Ritual</span>
+          </button>
+        )}
+
         <button
           type="button"
-          className={`entry-seal-btn ${isCompleted ? 'is-sealed' : ''} ${isPending ? 'is-pending' : ''}`}
+          className={`entry-seal-btn btn-completion ${isCompleted ? 'is-sealed is-completed' : ''} ${isPending ? 'is-pending' : ''}`}
           onClick={handleAction}
           disabled={isCompleted || isPending}
           aria-label={

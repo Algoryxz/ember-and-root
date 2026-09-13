@@ -44,6 +44,7 @@ export function ShoreSequence({ reduced, paused, skip = false }: { reduced: bool
       {beat === 4 && <motion.div className="shore-copy" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: reduced ? .12 : 2 }}>
         <p className="shore-eyebrow">YOU FOUND THE EMBER.</p><h2>WHAT YOU DO<br /><em>BECOMES WHO YOU ARE.</em></h2><p className="shore-support">Now give it something to become.</p>
         <div className="shore-choices"><button ref={begin} disabled={!!destination} onClick={() => setDestination('signup')}>BEGIN YOUR PATH <span aria-hidden="true">↗</span></button><button disabled={!!destination} onClick={() => setDestination('login')}><small>RETURNING PLAYER</small> SIGN IN</button></div>
+        <p className="shore-credits">Built by Algoryxz for Tech Zephyr Web Hackathon</p>
       </motion.div>}
       <div className="shore-bloom" aria-hidden="true" />
     </>}

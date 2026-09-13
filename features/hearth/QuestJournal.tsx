@@ -13,6 +13,7 @@ export interface QuestJournalProps {
   isLoading?: boolean;
   generalError?: string | null;
   onCompleteQuest: (questId: string) => void;
+  onBeginFocusQuest?: (quest: Quest | HearthQuest) => void;
   onEditQuest?: (quest: Quest | HearthQuest) => void;
   onRetryQuest?: (questId: string) => void;
   onRetryGeneral?: () => void;
@@ -56,6 +57,7 @@ export const QuestJournal: React.FC<QuestJournalProps> = ({
   isLoading = false,
   generalError = null,
   onCompleteQuest,
+  onBeginFocusQuest,
   onEditQuest,
   onRetryQuest,
   onRetryGeneral,
@@ -147,6 +149,7 @@ export const QuestJournal: React.FC<QuestJournalProps> = ({
                   isPending={isPending}
                   errorMessage={errorMessage}
                   onComplete={onCompleteQuest}
+                  onBeginFocus={onBeginFocusQuest}
                   onEdit={onEditQuest}
                   onRetry={onRetryQuest}
                   onAttributeHover={onAttributeHover}

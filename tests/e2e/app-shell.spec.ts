@@ -51,6 +51,7 @@ test.describe('Public Auth Pages Accessibility', () => {
     await page.getByRole('button', { name: 'Skip cinematic' }).click();
     await expect(page.getByRole('button', { name: 'BEGIN YOUR PATH' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'RETURNING PLAYER SIGN IN' })).toBeVisible();
+    await expect(page.locator('.shore-credits')).toHaveText('Built by Algoryxz for Tech Zephyr Web Hackathon');
   });
 
   test('login page allows full keyboard navigation through all interactive controls', async ({ page }) => {

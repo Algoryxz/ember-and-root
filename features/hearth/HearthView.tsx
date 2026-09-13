@@ -20,6 +20,7 @@ import { QuestJournal } from './QuestJournal';
 import { QuestCreateDialog } from './QuestCreateDialog';
 import { QuestEditDialog } from './QuestEditDialog';
 import { RewardSequence } from './RewardSequence';
+import { FocusRitual } from '../focus';
 import './HearthView.css';
 
 export interface HearthViewProps {
@@ -72,9 +73,10 @@ export const HearthView: React.FC<HearthViewProps> = ({
   const [isEmberRelit, setIsEmberRelit] = useState<boolean>(false);
   const [showPathReadyNotice, setShowPathReadyNotice] = useState<boolean>(false);
 
-  // Dialog states
+  // Dialog & Ritual states
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState<boolean>(false);
   const [editingQuest, setEditingQuest] = useState<Quest | HearthQuest | null>(null);
+  const [focusQuest, setFocusQuest] = useState<Quest | HearthQuest | null>(null);
 
   // Failure simulation toggle (for QA and manual verification of retry behavior)
   const [simulateFailure, setSimulateFailure] = useState<boolean>(false);
@@ -288,6 +290,7 @@ export const HearthView: React.FC<HearthViewProps> = ({
               pendingQuestId={pendingQuestId}
               errorQuestMap={errorQuestMap}
               onCompleteQuest={handleCompleteQuest}
+              onBeginFocusQuest={setFocusQuest}
               onEditQuest={(q) => setEditingQuest(q)}
               onRetryQuest={handleRetryQuest}
               onOpenCreateDialog={() => setIsCreateDialogOpen(true)}
@@ -337,6 +340,16 @@ export const HearthView: React.FC<HearthViewProps> = ({
         onClose={() => setEditingQuest(null)}
         onUpdateQuest={handleUpdateQuest}
       />
+
+      {/* Focus Ritual Atmospheric Modal */}
+      {focusQuest && (
+        <FocusRitual
+          quest={focusQuest}
+          isOpen={Boolean(focusQuest)}
+          onClose={() => setFocusQuest(null)}
+          onSeal={(questId) => handleCompleteQuest(questId)}
+        />
+      )}
     </div>
   );
 };

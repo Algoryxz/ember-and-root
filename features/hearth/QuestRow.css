@@ -180,10 +180,51 @@
   border-bottom-style: solid;
 }
 
-/* Tactile Physical Seal Affordance — Minimum 44x44px touch target */
+/* Tactile Physical Seal & Ritual Affordances — Minimum 44x44px touch targets */
 .entry-seal-affordance {
   flex-shrink: 0;
   align-self: center;
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+}
+
+.entry-ritual-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-height: 44px;
+  min-width: 44px;
+  padding: 0 var(--space-12);
+  background: rgba(20, 24, 20, 0.6);
+  border: 1px solid rgba(196, 169, 106, 0.35);
+  border-radius: var(--radius-btn);
+  color: #C4A96A;
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 120ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.entry-ritual-btn:hover:not(:disabled) {
+  background: rgba(196, 169, 106, 0.12);
+  border-color: #C4A96A;
+  color: #F0E7D3;
+  box-shadow: 0 0 10px rgba(196, 169, 106, 0.2);
+}
+
+.entry-ritual-btn:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.ritual-btn-mark {
+  font-size: 0.85rem;
+  line-height: 1;
 }
 
 .entry-seal-btn {

@@ -1,0 +1,572 @@
+/* FocusRitual.css — Cinematic Focus Experience for Ember & Root */
+
+.focus-ritual-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background-color: #070907;
+  color: #F0E7D3;
+  overflow-y: auto;
+  padding: 1.5rem;
+  font-family: var(--font-sans, "DM Sans", system-ui, sans-serif);
+}
+
+/* Background Ambient Atmosphere */
+.focus-ritual-ambient {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.28;
+  transition: opacity 1.5s ease;
+}
+
+.attr-ambient-mind {
+  background: radial-gradient(circle at 50% 45%, #4C72B0 0%, transparent 65%);
+}
+.attr-ambient-body {
+  background: radial-gradient(circle at 50% 45%, #C97A3E 0%, transparent 65%);
+}
+.attr-ambient-will {
+  background: radial-gradient(circle at 50% 45%, #B84A39 0%, transparent 65%);
+}
+.attr-ambient-craft {
+  background: radial-gradient(circle at 50% 45%, #4F8A65 0%, transparent 65%);
+}
+
+.focus-ritual-vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse at center, transparent 40%, #050705 95%);
+}
+
+/* Header */
+.focus-ritual-header {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  max-width: 800px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.focus-ritual-header-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.focus-ritual-eyebrow {
+  font-size: 0.6875rem;
+  letter-spacing: 0.22em;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: #C4A96A;
+}
+
+.focus-ritual-quest-title {
+  font-family: var(--font-display, "Fraunces", Georgia, serif);
+  font-size: clamp(1.25rem, 2.8vw, 1.875rem);
+  font-weight: 400;
+  color: #F0E7D3;
+  letter-spacing: -0.015em;
+  line-height: 1.25;
+}
+
+.focus-ritual-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  color: #B9BEAC;
+}
+
+.focus-attr-pill {
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+}
+
+.focus-attr-pill.attr-mind {
+  background: rgba(76, 114, 176, 0.25);
+  color: #8EBAE5;
+  border: 1px solid rgba(76, 114, 176, 0.5);
+}
+.focus-attr-pill.attr-body {
+  background: rgba(201, 122, 62, 0.25);
+  color: #F3B27A;
+  border: 1px solid rgba(201, 122, 62, 0.5);
+}
+.focus-attr-pill.attr-will {
+  background: rgba(184, 74, 57, 0.25);
+  color: #F08E80;
+  border: 1px solid rgba(184, 74, 57, 0.5);
+}
+.focus-attr-pill.attr-craft {
+  background: rgba(79, 138, 101, 0.25);
+  color: #8FD8A8;
+  border: 1px solid rgba(79, 138, 101, 0.5);
+}
+
+.focus-effort-pill {
+  font-size: 0.6875rem;
+  letter-spacing: 0.08em;
+  color: #8E9785;
+}
+
+.focus-meta-sep {
+  color: #4A564A;
+}
+
+.focus-ritual-close-btn {
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(20, 24, 20, 0.6);
+  border: 1px solid #2A332A;
+  border-radius: 6px;
+  color: #B9BEAC;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.focus-ritual-close-btn:hover {
+  background: #1D231D;
+  color: #F0E7D3;
+  border-color: #C4A96A;
+}
+
+.focus-ritual-close-btn:focus-visible {
+  outline: 2px solid #C4A96A;
+  outline-offset: 2px;
+}
+
+/* Center Stage */
+.focus-ritual-stage {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  max-width: 600px;
+  width: 100%;
+  margin: auto;
+  text-align: center;
+  padding: 1.5rem 0;
+}
+
+/* Dial & Ember Visualization */
+.focus-ritual-dial-container {
+  position: relative;
+  width: min(320px, 78vw);
+  aspect-ratio: 1 / 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+}
+
+.focus-ritual-svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+  overflow: visible;
+}
+
+.focus-dial-track {
+  fill: none;
+  stroke: rgba(196, 169, 106, 0.12);
+  stroke-width: 3;
+}
+
+.focus-dial-progress {
+  fill: none;
+  stroke: #E98A4B;
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-dasharray: 565.48;
+  transition: stroke-dashoffset 0.8s ease;
+  filter: drop-shadow(0 0 6px rgba(233, 138, 75, 0.45));
+}
+
+/* Central Flame & Filaments */
+.focus-root-filaments path {
+  fill: none;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  opacity: 0.45;
+  transition: opacity 1s ease;
+}
+
+.attr-filaments-mind path { stroke: #6B95D1; }
+.attr-filaments-body path { stroke: #DFA266; }
+.attr-filaments-will path { stroke: #D86B5A; }
+.attr-filaments-craft path { stroke: #6AB888; }
+
+.focus-ember-aura {
+  animation: ember-pulse 3.8s ease-in-out infinite alternate;
+}
+
+.focus-ember-flame {
+  fill: #E98A4B;
+  transform-origin: 100px 100px;
+  filter: drop-shadow(0 0 10px rgba(233, 138, 75, 0.6));
+}
+
+.focus-ember-flame.is-pulsing {
+  animation: flame-flicker 2.4s ease-in-out infinite alternate;
+}
+
+.focus-ember-spark {
+  fill: #FFF2CC;
+  filter: drop-shadow(0 0 4px #FFE090);
+}
+
+@keyframes ember-pulse {
+  0% { transform: scale(0.92); opacity: 0.6; }
+  100% { transform: scale(1.08); opacity: 0.95; }
+}
+
+@keyframes flame-flicker {
+  0% { transform: scale(0.96) rotate(-1deg); }
+  50% { transform: scale(1.04) rotate(1.5deg); }
+  100% { transform: scale(0.98) rotate(-0.5deg); }
+}
+
+/* Time Overlay Inside Ring */
+.focus-ritual-time-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  transform: translateY(22px);
+}
+
+.focus-ritual-digits {
+  font-size: clamp(2.25rem, 6vw, 3.25rem);
+  font-weight: 300;
+  letter-spacing: 0.04em;
+  color: #F0E7D3;
+  text-shadow: 0 0 20px rgba(233, 138, 75, 0.35);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.focus-ritual-status-label {
+  font-size: 0.6875rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #C4A96A;
+  margin-top: 0.35rem;
+  opacity: 0.85;
+}
+
+/* Phased Inscriptions */
+.focus-ritual-inscription {
+  margin-top: 2rem;
+  margin-bottom: 2rem;
+  font-family: var(--font-display, "Fraunces", Georgia, serif);
+  font-size: clamp(1.05rem, 2.2vw, 1.35rem);
+  font-style: italic;
+  color: #D8D2C2;
+  letter-spacing: 0.01em;
+  line-height: 1.4;
+  min-height: 2.8rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: inscription-fade 1.2s ease;
+}
+
+@keyframes inscription-fade {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Controls */
+.focus-ritual-controls-row {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+  width: 100%;
+}
+
+.focus-presets-group {
+  display: flex;
+  gap: 0.5rem;
+  background: rgba(18, 22, 18, 0.7);
+  padding: 0.25rem;
+  border-radius: 8px;
+  border: 1px solid #2A332A;
+}
+
+.focus-preset-btn {
+  min-width: 44px;
+  min-height: 38px;
+  padding: 0.35rem 0.85rem;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  color: #B9BEAC;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.focus-preset-btn:hover {
+  color: #F0E7D3;
+}
+
+.focus-preset-btn.is-active {
+  background: #252D25;
+  color: #F0E7D3;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+.focus-preset-btn:focus-visible {
+  outline: 2px solid #C4A96A;
+  outline-offset: 1px;
+}
+
+.focus-actions-group {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.focus-action-btn {
+  min-height: 44px;
+  min-width: 44px;
+  padding: 0.65rem 1.4rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+
+.focus-action-primary {
+  background: #E98A4B;
+  color: #141713;
+  border: none;
+}
+
+.focus-action-primary:hover {
+  filter: brightness(1.08);
+}
+
+.focus-action-primary:active {
+  transform: scale(0.97);
+}
+
+.focus-action-secondary {
+  background: #181E18;
+  color: #B9BEAC;
+  border: 1px solid #2A332A;
+}
+
+.focus-action-secondary:hover {
+  background: #222B22;
+  color: #F0E7D3;
+  border-color: #3B473B;
+}
+
+.focus-action-finish {
+  background: transparent;
+  color: #C4A96A;
+  border: 1px dashed rgba(196, 169, 106, 0.4);
+}
+
+.focus-action-finish:hover {
+  background: rgba(196, 169, 106, 0.1);
+  border-style: solid;
+  border-color: #C4A96A;
+}
+
+.focus-action-btn:focus-visible {
+  outline: 2px solid #C4A96A;
+  outline-offset: 2px;
+}
+
+/* Real-World Seal Verification Phase */
+.focus-ritual-seal-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+  background: #111511;
+  border: 1px solid #2D372D;
+  border-radius: 12px;
+  padding: 2.25rem 1.75rem;
+  max-width: 480px;
+  width: 100%;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.65);
+  animation: seal-modal-in 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes seal-modal-in {
+  from { opacity: 0; transform: scale(0.96) translateY(8px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.focus-seal-flame-crown {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(233, 138, 75, 0.25) 0%, transparent 70%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: -0.25rem;
+}
+
+.focus-seal-spark {
+  color: #FFE090;
+  font-size: 1.5rem;
+  filter: drop-shadow(0 0 8px #E98A4B);
+}
+
+.focus-seal-prompt-title {
+  font-family: var(--font-display, "Fraunces", Georgia, serif);
+  font-size: 1.625rem;
+  font-weight: 400;
+  color: #F0E7D3;
+  letter-spacing: -0.01em;
+}
+
+.focus-seal-prompt-desc {
+  font-size: 0.9375rem;
+  color: #B9BEAC;
+  line-height: 1.5;
+}
+
+.focus-seal-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  width: 100%;
+  margin-top: 0.5rem;
+}
+
+.focus-seal-confirm-btn {
+  min-height: 48px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: #E98A4B;
+  color: #141713;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  box-shadow: 0 4px 16px rgba(233, 138, 75, 0.3);
+}
+
+.focus-seal-confirm-btn:hover {
+  filter: brightness(1.08);
+  transform: translateY(-1px);
+}
+
+.focus-seal-confirm-btn:active {
+  transform: translateY(1px);
+}
+
+.focus-seal-confirm-btn:focus-visible {
+  outline: 2px solid #C4A96A;
+  outline-offset: 2px;
+}
+
+.focus-seal-btn-mark {
+  font-size: 1rem;
+}
+
+.focus-seal-decline-btn {
+  min-height: 44px;
+  width: 100%;
+  background: transparent;
+  border: 1px solid #2A332A;
+  border-radius: 8px;
+  color: #8E9785;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+
+.focus-seal-decline-btn:hover {
+  color: #F0E7D3;
+  border-color: #3E4A3E;
+  background: rgba(26, 32, 26, 0.4);
+}
+
+.focus-seal-decline-btn:focus-visible {
+  outline: 2px solid #C4A96A;
+  outline-offset: 2px;
+}
+
+.focus-seal-integrity-note {
+  font-size: 0.6875rem;
+  color: #717B6E;
+  line-height: 1.4;
+  margin-top: 0.25rem;
+}
+
+/* Footer Brand */
+.focus-ritual-footer {
+  position: relative;
+  z-index: 10;
+  text-align: center;
+  padding-top: 1rem;
+}
+
+.focus-ritual-brand {
+  font-size: 0.6875rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #6E7968;
+}
+
+/* Reduced Motion Override */
+[data-reduced-motion="true"] .focus-ember-aura,
+[data-reduced-motion="true"] .focus-ember-flame,
+[data-reduced-motion="true"] .focus-dial-progress,
+[data-reduced-motion="true"] .focus-ritual-seal-stage,
+[data-reduced-motion="true"] .focus-ritual-inscription {
+  animation: none !important;
+  transition: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .focus-ember-aura,
+  .focus-ember-flame,
+  .focus-dial-progress,
+  .focus-ritual-seal-stage,
+  .focus-ritual-inscription {
+    animation: none !important;
+    transition: none !important;
+  }
+}
