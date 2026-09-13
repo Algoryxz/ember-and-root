@@ -205,6 +205,7 @@ export type MutationEvent = {
   specializationAvailable?: boolean;
   crestAvailable?: boolean;
   cappedToday?: boolean;               // true if daily cap was hit; xpAwarded will be 0
+  questNotesSnapshot?: string | null;
 
   // Ember fields
   emberRelit?: boolean;                // true if first completion after a missed day

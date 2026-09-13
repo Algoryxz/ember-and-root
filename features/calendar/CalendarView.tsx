@@ -2,15 +2,17 @@
 
 import React, { useState, useTransition, useMemo } from 'react';
 import type { CalendarMonthData, CalendarDayData } from './contracts';
-import { calculateMonthNavigation } from './calendarMath';
+import { calculateMonthNavigation, resolveTargetYearMonth } from './calendarMath';
 import { fetchCalendarMonthData } from './calendarAdapter';
 import { CalendarMonthView } from './CalendarMonthView';
 import { CalendarDayDetail } from './CalendarDayDetail';
 import './calendar.css';
 
 export interface CalendarViewProps {
-  initialData: CalendarMonthData;
+  initialData?: CalendarMonthData | null;
+  initialError?: string | null;
   initialSelectedDate?: string;
+  userTimezone?: string;
 }
 
 const MONTH_NAMES = [
@@ -18,29 +20,41 @@ const MONTH_NAMES = [
   'July', 'August', 'September', 'October', 'November', 'December',
 ];
 
-export function CalendarView({ initialData, initialSelectedDate }: CalendarViewProps) {
-  const [monthData, setMonthData] = useState<CalendarMonthData>(initialData);
+export function CalendarView({
+  initialData,
+  initialError,
+  initialSelectedDate,
+  userTimezone = 'UTC',
+}: CalendarViewProps) {
+  const [monthData, setMonthData] = useState<CalendarMonthData | null>(initialData || null);
+  const [error, setError] = useState<string | null>(initialError || null);
   const [selectedDate, setSelectedDate] = useState<string>(
-    initialSelectedDate || initialData.today || initialData.days[0]?.dateString
+    initialSelectedDate || initialData?.today || initialData?.days[0]?.dateString || ''
   );
   const [isPending, startTransition] = useTransition();
 
-  const nav = useMemo(
-    () => calculateMonthNavigation(monthData.year, monthData.month),
-    [monthData.year, monthData.month]
-  );
+  // Navigation targets
+  const nav = useMemo(() => {
+    if (!monthData) {
+      const { year, month } = resolveTargetYearMonth(null, userTimezone);
+      return calculateMonthNavigation(year, month);
+    }
+    return calculateMonthNavigation(monthData.year, monthData.month);
+  }, [monthData, userTimezone]);
 
-  const monthName = MONTH_NAMES[monthData.month - 1];
+  const monthName = monthData ? MONTH_NAMES[monthData.month - 1] : '';
 
   // Active days in this month
   const activeDaysCount = useMemo(() => {
+    if (!monthData) return 0;
     return monthData.days.filter((d) => d.isCurrentMonth && d.completionsCount > 0).length;
-  }, [monthData.days]);
+  }, [monthData]);
 
   // Currently selected day data
   const selectedDayData: CalendarDayData | null = useMemo(() => {
+    if (!monthData) return null;
     return monthData.days.find((d) => d.dateString === selectedDate) || null;
-  }, [monthData.days, selectedDate]);
+  }, [monthData, selectedDate]);
 
   const handleSelectDate = (dateStr: string) => {
     setSelectedDate(dateStr);
@@ -54,10 +68,10 @@ export function CalendarView({ initialData, initialSelectedDate }: CalendarViewP
   const handleNavigateMonth = (targetYear: number, targetMonth: number) => {
     startTransition(async () => {
       try {
+        setError(null);
         const nextData = await fetchCalendarMonthData(targetYear, targetMonth);
         setMonthData(nextData);
 
-        // Keep day selected if it exists in new month, else default to 1st of month
         const targetDateStr = `${targetYear}-${String(targetMonth).padStart(2, '0')}-01`;
         setSelectedDate(targetDateStr);
 
@@ -67,35 +81,74 @@ export function CalendarView({ initialData, initialSelectedDate }: CalendarViewP
           url.searchParams.set('day', targetDateStr);
           window.history.replaceState(null, '', url.toString());
         }
-      } catch (err) {
-        console.error('Failed to navigate calendar month:', err);
+      } catch (err: any) {
+        setError(err?.message || 'Failed to navigate calendar month.');
       }
     });
   };
 
   const handleToday = () => {
-    const [todayYear, todayMonth] = initialData.today.split('-').map(Number);
-    if (monthData.year === todayYear && monthData.month === todayMonth) {
-      handleSelectDate(initialData.today);
+    const { year: todayYear, month: todayMonth } = resolveTargetYearMonth(null, userTimezone);
+    if (monthData && monthData.year === todayYear && monthData.month === todayMonth) {
+      if (monthData.today) {
+        handleSelectDate(monthData.today);
+      }
     } else {
       startTransition(async () => {
         try {
+          setError(null);
           const nextData = await fetchCalendarMonthData(todayYear, todayMonth);
           setMonthData(nextData);
-          setSelectedDate(initialData.today);
+          setSelectedDate(nextData.today);
 
           if (typeof window !== 'undefined') {
             const url = new URL(window.location.href);
             url.searchParams.set('month', `${todayYear}-${String(todayMonth).padStart(2, '0')}`);
-            url.searchParams.set('day', initialData.today);
+            url.searchParams.set('day', nextData.today);
             window.history.replaceState(null, '', url.toString());
           }
-        } catch (err) {
-          console.error('Failed to navigate to today:', err);
+        } catch (err: any) {
+          setError(err?.message || 'Failed to navigate to today.');
         }
       });
     }
   };
+
+  const handleRetry = () => {
+    const targetYear = monthData?.year ?? nav.currentYear;
+    const targetMonth = monthData?.month ?? nav.currentMonth;
+    handleNavigateMonth(targetYear, targetMonth);
+  };
+
+  // Explicit Unavailable / Error State
+  if (error || !monthData) {
+    return (
+      <main className="path-calendar-container" aria-label="Path Calendar">
+        <header className="calendar-header">
+          <div className="calendar-title-area">
+            <span className="calendar-eyebrow">Botanical Folio · Path Calendar</span>
+            <h1 className="calendar-month-title">Path Archive</h1>
+            <span className="calendar-timezone-badge">Timezone: {userTimezone}</span>
+          </div>
+        </header>
+
+        <section className="calendar-error-banner" role="alert">
+          <h2 className="calendar-error-title">Path Archive Unavailable</h2>
+          <p className="calendar-error-message">
+            {error || 'Unable to synchronize path records with the archive.'}
+          </p>
+          <button
+            type="button"
+            className="calendar-retry-btn"
+            onClick={handleRetry}
+            disabled={isPending}
+          >
+            {isPending ? 'Reconnecting...' : 'Retry Connection'}
+          </button>
+        </section>
+      </main>
+    );
+  }
 
   return (
     <main className="path-calendar-container" aria-label="Path Calendar">

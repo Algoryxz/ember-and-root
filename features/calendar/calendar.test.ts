@@ -6,6 +6,7 @@ import {
   deriveEmberStateFromCount,
   calculateMonthNavigation,
   buildMonthGrid,
+  resolveTargetYearMonth,
 } from './calendarMath';
 import type { CalendarDayCompletion, CalendarDayNote } from './contracts';
 
@@ -217,6 +218,115 @@ describe('Path Calendar — Date & Mathematical Invariants', () => {
       expect(isValid('')).toBe(true);
       expect(isValid(validNote)).toBe(true);
       expect(isValid(invalidNote)).toBe(false);
+    });
+  });
+
+  describe('resolveTargetYearMonth — Timezone Month Boundary Invariants', () => {
+    it('derives correct user local month when server UTC is in the previous month', () => {
+      // 2026-08-31 23:30 UTC -> In Asia/Tokyo (+09:00), it is 2026-09-01 08:30 (Month 9!)
+      const serverUtcDate = new Date('2026-08-31T23:30:00Z');
+      const target = resolveTargetYearMonth(null, 'Asia/Tokyo', serverUtcDate);
+      expect(target.year).toBe(2026);
+      expect(target.month).toBe(9);
+
+      // In UTC, it remains August (Month 8)
+      const targetUtc = resolveTargetYearMonth(null, 'UTC', serverUtcDate);
+      expect(targetUtc.year).toBe(2026);
+      expect(targetUtc.month).toBe(8);
+    });
+
+    it('derives correct user local month when server UTC is in the next month', () => {
+      // 2026-09-01 02:00 UTC -> In Pacific/Honolulu (-10:00), it is 2026-08-31 16:00 (Month 8!)
+      const serverUtcDate = new Date('2026-09-01T02:00:00Z');
+      const target = resolveTargetYearMonth(null, 'Pacific/Honolulu', serverUtcDate);
+      expect(target.year).toBe(2026);
+      expect(target.month).toBe(8);
+
+      // In UTC, it is September (Month 9)
+      const targetUtc = resolveTargetYearMonth(null, 'UTC', serverUtcDate);
+      expect(targetUtc.year).toBe(2026);
+      expect(targetUtc.month).toBe(9);
+    });
+
+    it('respects valid search param ?month= overrides regardless of timezone', () => {
+      const target = resolveTargetYearMonth('2026-04', 'Asia/Tokyo');
+      expect(target.year).toBe(2026);
+      expect(target.month).toBe(4);
+    });
+
+    it('safely falls back to user local month when search param is invalid', () => {
+      const serverUtcDate = new Date('2026-09-13T12:00:00Z');
+      const target = resolveTargetYearMonth('invalid-month', 'UTC', serverUtcDate);
+      expect(target.year).toBe(2026);
+      expect(target.month).toBe(9);
+    });
+  });
+
+  describe('fetchCalendarMonthData — Production Hardening & Zero Fake Fallback', () => {
+    it('throws explicit error when RPC fails and never silently shows demo data', async () => {
+      const { fetchCalendarMonthData } = await import('./calendarAdapter');
+
+      const mockErrorClient = {
+        rpc: async () => ({
+          data: null,
+          error: { message: 'Database query timeout in production' },
+        }),
+      };
+
+      await expect(
+        fetchCalendarMonthData(2026, 9, mockErrorClient)
+      ).rejects.toThrow(/Failed to load calendar records: Database query timeout/);
+    });
+
+    it('throws explicit error in production environment when supabase client is missing', async () => {
+      const originalEnv = process.env.NODE_ENV;
+      try {
+        process.env.NODE_ENV = 'production';
+        const { fetchCalendarMonthData } = await import('./calendarAdapter');
+
+        await expect(
+          fetchCalendarMonthData(2026, 9, null)
+        ).rejects.toThrow(/Authentication required: please sign in/);
+      } finally {
+        process.env.NODE_ENV = originalEnv;
+      }
+    });
+
+    it('populates journal leaves strictly from canonical RPC response and does not read localStorage', async () => {
+      const { fetchCalendarMonthData } = await import('./calendarAdapter');
+
+      const mockClient = {
+        rpc: async (_fn: string) => ({
+          data: {
+            year: 2026,
+            month: 9,
+            timezone: 'UTC',
+            today: '2026-09-13',
+            completions: [],
+            notes: [
+              {
+                id: 'jn-db-1',
+                title: 'Canonical Note',
+                body: 'From Postgres journal_notes table',
+                localDate: '2026-09-13',
+                createdAt: '2026-09-13T10:00:00Z',
+              },
+            ],
+          },
+          error: null,
+        }),
+        from: () => ({
+          select: () => ({
+            is: () => Promise.resolve({ data: [], error: null }),
+          }),
+        }),
+      };
+
+      const result = await fetchCalendarMonthData(2026, 9, mockClient);
+      const todayCell = result.days.find((d) => d.dateString === '2026-09-13');
+      expect(todayCell?.journalNotes.length).toBe(1);
+      expect(todayCell?.journalNotes[0].title).toBe('Canonical Note');
+      expect(todayCell?.journalNotes[0].body).toBe('From Postgres journal_notes table');
     });
   });
 });

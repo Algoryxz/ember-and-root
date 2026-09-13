@@ -463,3 +463,61 @@
     font-size: 0.58rem;
   }
 }
+
+/* Error / Unavailable State */
+.calendar-error-banner {
+  background: rgba(45, 20, 20, 0.75);
+  border: 1px solid rgba(220, 90, 90, 0.4);
+  border-radius: 8px;
+  padding: 32px 24px;
+  text-align: center;
+  margin: 32px auto;
+  max-width: 600px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+}
+
+.calendar-error-title {
+  font-family: var(--font-display, 'Fraunces', serif);
+  font-size: 1.5rem;
+  font-weight: 400;
+  color: #F8D7DA;
+  margin: 0;
+}
+
+.calendar-error-message {
+  font-size: 0.9rem;
+  color: #E2B4B4;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.calendar-retry-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0 24px;
+  background: rgba(196, 169, 106, 0.15);
+  border: 1px solid #C4A96A;
+  border-radius: 6px;
+  color: #F0E7D3;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 140ms ease;
+  margin-top: 8px;
+}
+
+.calendar-retry-btn:hover {
+  background: rgba(196, 169, 106, 0.28);
+  color: #FFF;
+}
+
+.calendar-retry-btn:focus-visible {
+  outline: 2px solid #C4A96A;
+  outline-offset: 2px;
+}

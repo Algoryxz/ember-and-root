@@ -36,6 +36,29 @@ export function getLocalDateString(date: Date = new Date(), timeZone: string = '
 }
 
 /**
+ * Resolves the target year and month in the user's saved IANA timezone.
+ * When searchMonth is provided ('YYYY-MM'), validates and parses it.
+ * When omitted or invalid, calculates the current year and month from the user's local date.
+ * Never defaults to server-local new Date().getMonth().
+ */
+export function resolveTargetYearMonth(
+  searchMonth?: string | null,
+  userTimezone: string = 'UTC',
+  referenceDate: Date = new Date()
+): { year: number; month: number } {
+  if (searchMonth && /^\d{4}-\d{2}$/.test(searchMonth)) {
+    const [y, m] = searchMonth.split('-').map(Number);
+    if (m >= 1 && m <= 12) {
+      return { year: y, month: m };
+    }
+  }
+
+  const localDateStr = getLocalDateString(referenceDate, userTimezone);
+  const [userYear, userMonth] = localDateStr.split('-').map(Number);
+  return { year: userYear, month: userMonth };
+}
+
+/**
  * Returns the number of days in a given year and month (1-indexed, e.g., 2 for Feb).
  * Correctly accounts for leap years.
  */

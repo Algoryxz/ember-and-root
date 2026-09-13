@@ -1,10 +1,11 @@
-﻿import { describe, it } from 'vitest';
+import { describe, it } from 'vitest';
 import assert from 'node:assert/strict';
 import type { GameSnapshot, MutationResult } from '../../game/contracts';
 import {
   completeQuestAction,
   createQuestAction,
   updateQuestAction,
+  updateQuestNotesAction,
   softDeleteQuestAction,
   fetchGameSnapshotAction,
 } from './hearthAdapter';
@@ -202,5 +203,47 @@ describe('Hearth Adapters — Authoritative RPC Dispatch & Contract Verification
 
     assert.equal(capturedFn, 'get_game_snapshot');
     assert.equal(res.userId, 'fixture-user-id');
+  });
+
+  describe('Quest Notes Hardening & Snapshot Immutability', () => {
+    it('rejects notes exceeding 1000 characters in updateQuestNotesAction', async () => {
+      const longNote = 'X'.repeat(1001);
+      await assert.rejects(
+        () => updateQuestNotesAction(DEMO_SNAPSHOT, 'q-fixture-1', longNote),
+        /cannot exceed 1000 characters/
+      );
+    });
+
+    it('persists quest note snapshot upon completion and preserves it immutably across subsequent note edits', async () => {
+      // 1. Initial quest with note
+      const initialQuest = {
+        ...DEMO_SNAPSHOT.quests![0],
+        id: 'q-immutable-test',
+        notes: 'Original intention before sealing.',
+        completedForCurrentOccurrence: false,
+      };
+
+      const testSnapshot: GameSnapshot = {
+        ...DEMO_SNAPSHOT,
+        quests: [initialQuest],
+      };
+
+      // 2. Complete quest -> creates completion snapshot with original notes
+      const completionResult = await completeQuestAction(testSnapshot, 'q-immutable-test', null);
+      assert.equal(completionResult.event.questNotesSnapshot, 'Original intention before sealing.');
+
+      // 3. Edit quest notes afterward
+      const editResult = await updateQuestNotesAction(
+        completionResult.snapshot,
+        'q-immutable-test',
+        'Updated note after practice was completed.'
+      );
+
+      // Quest now has updated note
+      assert.equal(editResult.quest.notes, 'Updated note after practice was completed.');
+
+      // Historical completion event / snapshot remains strictly immutable!
+      assert.equal(completionResult.event.questNotesSnapshot, 'Original intention before sealing.');
+    });
   });
 });

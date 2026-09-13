@@ -175,6 +175,7 @@ export async function completeQuestAction(
         specializationAvailable,
         emberState: nextEmberState,
         emberRelit: currentSnapshot.emberState === 'resting' && currentSnapshot.currentStreak > 0,
+        questNotesSnapshot: quest.notes || null,
       };
 
       resolve({

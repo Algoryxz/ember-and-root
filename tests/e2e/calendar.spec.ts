@@ -123,5 +123,31 @@ test.describe('Path Calendar Journey', () => {
     const scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth);
     const clientWidth = await page.evaluate(() => document.documentElement.clientWidth);
     expect(scrollWidth).toBeLessThanOrEqual(clientWidth);
+
+    // Step 7: Verification of Failure State & Zero Fake Data
+    // Intercept RPC to simulate network/server error
+    await page.route('**/rest/v1/rpc/get_calendar_month*', (route) => {
+      route.fulfill({
+        status: 500,
+        contentType: 'application/json',
+        body: JSON.stringify({ message: 'Database connection failed' }),
+      });
+    });
+
+    // Trigger month navigation which calls fetchCalendarMonthData
+    await nextBtn.click();
+
+    // Verify explicit error banner appears
+    await expect(page.locator('.calendar-error-banner')).toBeVisible({ timeout: 5000 });
+    await expect(page.locator('text=Path Archive Unavailable')).toBeVisible();
+    await expect(page.locator('.calendar-retry-btn')).toBeVisible();
+
+    // Verify NO fake/simulated completions are shown
+    await expect(page.locator('.calendar-grid-card')).toHaveCount(0);
+
+    // Remove failure intercept and verify retry succeeds
+    await page.unroute('**/rest/v1/rpc/get_calendar_month*');
+    await page.locator('.calendar-retry-btn').click();
+    await expect(page.locator('.calendar-grid-card')).toBeVisible({ timeout: 5000 });
   });
 });
