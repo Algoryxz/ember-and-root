@@ -1,6 +1,6 @@
 ﻿'use client';
 
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 
 interface FireflyParticle {
   x: number;
@@ -123,7 +123,7 @@ export const ForestAwakeningOrb: React.FC<ForestAwakeningOrbProps> = ({
 
       // 1. Update hold progress
       if (isHoldingRef.current && !hasAwakenedRef.current) {
-        // Fast yet steady fill: ~1.2s to reach 100%
+        // Steady fill: ~1.2s to reach 100%
         progressRef.current = Math.min(1, progressRef.current + (reducedMotion ? 0.035 : 0.016));
       } else if (!hasAwakenedRef.current && progressRef.current > 0) {
         // Gentle decay on early release (graceful fall-off, no instant snap)
@@ -156,8 +156,11 @@ export const ForestAwakeningOrb: React.FC<ForestAwakeningOrbProps> = ({
       if (curProgress >= 1 && !hasAwakenedRef.current) {
         hasAwakenedRef.current = true;
         setAriaProgress(100);
+        if (containerRef.current) {
+          containerRef.current.setAttribute('data-orb-state', 'full');
+        }
         onAwakened();
-        return; // Halt loop once awakened
+        return; // Halt loop cleanly once awakened
       }
 
       // 3. Render Canvas Fireflies
@@ -188,9 +191,9 @@ export const ForestAwakeningOrb: React.FC<ForestAwakeningOrbProps> = ({
 
             ctx.beginPath();
             ctx.arc(p.x, p.y, Math.max(0.8, p.radius * scale), 0, Math.PI * 2);
-            ctx.fillStyle = `rgba(255, 218, 140, ${p.alpha * pulse * (1 - curProgress * 0.35)})`;
+            ctx.fillStyle = `rgba(255, 225, 155, ${p.alpha * pulse * (1 - curProgress * 0.35)})`;
             ctx.shadowColor = '#ffd38a';
-            ctx.shadowBlur = 8 + curProgress * 10;
+            ctx.shadowBlur = 6 + curProgress * 8;
             ctx.fill();
 
             // Respawn particles that reached orb center
@@ -214,7 +217,7 @@ export const ForestAwakeningOrb: React.FC<ForestAwakeningOrbProps> = ({
             ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
             ctx.fillStyle = `rgba(247, 215, 155, ${p.alpha * pulse * 0.75})`;
             ctx.shadowColor = '#e98a4b';
-            ctx.shadowBlur = 6;
+            ctx.shadowBlur = 4;
             ctx.fill();
           }
         }
@@ -331,11 +334,12 @@ export const ForestAwakeningOrb: React.FC<ForestAwakeningOrbProps> = ({
           <span className="prologue-orb-core" aria-hidden="true">
             <span className="orb-inner-filament" />
             <span className="orb-mote-cluster" />
+            <span className="orb-saturation-burst" />
           </span>
 
           {/* Prompt Label */}
           <span className="prologue-orb-label" aria-hidden="true">
-            {ariaProgress > 0 ? (ariaProgress >= 100 ? 'AWAKENING' : 'HOLDING…') : 'HOLD TO AWAKEN'}
+            {ariaProgress > 0 ? (ariaProgress >= 100 ? 'AWAKENED' : 'HOLDING…') : 'HOLD TO AWAKEN'}
           </span>
         </button>
       </div>

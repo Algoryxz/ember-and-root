@@ -421,3 +421,96 @@
     box-shadow: 0 0 10px rgba(159, 186, 135, 0.3) !important;
   }
 }
+/* ==========================================================================
+   ROOT DATA & PROGRESSION PANEL (Separated Above Schematic - No Overlap)
+   ========================================================================== */
+
+.root-data-overview-panel {
+  width: 100%;
+  background: linear-gradient(180deg, rgba(29, 35, 29, 0.85) 0%, rgba(20, 24, 20, 0.95) 100%);
+  border: 1px solid rgba(159, 186, 135, 0.28);
+  border-radius: var(--radius-panel, 12px);
+  padding: 16px 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(240, 231, 211, 0.06);
+  position: relative;
+  z-index: 5;
+  box-sizing: border-box;
+}
+
+.root-data-overview-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(159, 186, 135, 0.15);
+}
+
+.root-data-overview-eyebrow {
+  font-family: var(--font-body, system-ui, sans-serif);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-root, #9fba87);
+  font-weight: 600;
+}
+
+.root-data-overview-streak {
+  font-family: var(--font-body, system-ui, sans-serif);
+  font-size: 12px;
+  color: var(--color-ember-core, #ffd38a);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.root-data-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.root-data-stat-card {
+  background: rgba(20, 23, 19, 0.65);
+  border: 1px solid rgba(59, 70, 59, 0.5);
+  border-radius: var(--radius-sm, 6px);
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  box-sizing: border-box;
+}
+
+.root-data-stat-label {
+  font-family: var(--font-body, system-ui, sans-serif);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary, #b9beac);
+}
+
+.root-data-stat-value {
+  font-family: var(--font-display, Georgia, serif);
+  font-size: 1.15rem;
+  font-weight: 500;
+  color: var(--color-text-primary, #f0e7d3);
+  line-height: 1.2;
+}
+
+.root-data-stat-meta {
+  font-family: var(--font-body, system-ui, sans-serif);
+  font-size: 10px;
+  color: var(--color-root-mature, #d9e3b2);
+}
+
+@media (max-width: 640px) {
+  .root-data-stat-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+  .root-data-overview-panel {
+    padding: 12px 14px;
+    margin-bottom: 16px;
+  }
+}

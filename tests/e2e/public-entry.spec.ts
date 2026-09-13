@@ -29,11 +29,11 @@ test.describe('Authoritative Cinematic Pipeline on /', () => {
       await orbButton.focus();
       await page.keyboard.down('Enter');
 
-      // 5. Automatic awakening triggers transition to Root Chamber
+      // 5. Automatic awakening triggers transition to Root Chamber with pan/zoom focus
       await expect(prologue).toHaveAttribute('data-scene', 'chamber', { timeout: 10000 });
       await page.keyboard.up('Enter');
 
-      // 6. Reach for the Ember in root chamber
+      // 6. Reach for the Ember in root chamber (pan/zoom focused moment)
       const chamberHotspot = page.locator('.prologue-hotspot');
       await expect(chamberHotspot).toBeVisible();
       await chamberHotspot.focus();
@@ -56,7 +56,7 @@ test.describe('Authoritative Cinematic Pipeline on /', () => {
     });
   }
 
-  test('pointer hold triggers energy fill and decay on early release', async ({ page }) => {
+  test('pointer hold triggers energy fill, full light state, and decay on early release', async ({ page }) => {
     await page.goto('/');
     const orbButton = page.locator('.prologue-orb-button');
     await expect(orbButton).toBeVisible();
@@ -73,7 +73,7 @@ test.describe('Authoritative Cinematic Pipeline on /', () => {
     await orbButton.dispatchEvent('pointerup');
     await page.waitForTimeout(400);
 
-    // Complete hold to 100%
+    // Complete hold to 100% and verify full light / awakened state
     await orbButton.dispatchEvent('pointerdown');
     const prologue = page.locator('.prologue');
     await expect(prologue).toHaveAttribute('data-scene', 'chamber', { timeout: 10000 });
