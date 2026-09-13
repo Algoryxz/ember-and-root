@@ -1,0 +1,45 @@
+[
+  {
+    "width": 1440,
+    "height": 900,
+    "keyboardOrTouch": "pass",
+    "flow": "pass",
+    "errors": [],
+    "axe": []
+  },
+  {
+    "width": 390,
+    "height": 844,
+    "keyboardOrTouch": "pass",
+    "flow": "pass",
+    "errors": [],
+    "axe": []
+  },
+  {
+    "width": 320,
+    "height": 700,
+    "keyboardOrTouch": "pass",
+    "flow": "pass",
+    "errors": [],
+    "axe": []
+  },
+  {
+    "width": 375,
+    "height": 812,
+    "keyboardOrTouch": "pass",
+    "flow": "pass",
+    "errors": [],
+    "axe": []
+  },
+  {
+    "width": 768,
+    "height": 1024,
+    "keyboardOrTouch": "pass",
+    "flow": "pass",
+    "errors": [],
+    "axe": []
+  },
+  {
+    "reducedMotionSkipSignIn": "pass"
+  }
+]

@@ -1,0 +1,21 @@
+[
+  {
+    "width": 1440,
+    "height": 900,
+    "keyboardOrTouch": "pass",
+    "flow": "pass",
+    "errors": [],
+    "axe": []
+  },
+  {
+    "width": 390,
+    "height": 844,
+    "keyboardOrTouch": "pass",
+    "flow": "pass",
+    "errors": [],
+    "axe": []
+  },
+  {
+    "reducedMotionSkipSignIn": "pass"
+  }
+]

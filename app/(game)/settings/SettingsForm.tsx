@@ -180,6 +180,27 @@ export function SettingsForm({
           </form>
         </div>
       </section>
+
+      {/* Provenance & Hackathon Edition */}
+      <section
+        aria-labelledby="provenance-heading"
+        className="bg-[#1D231D] border border-[#2A332A] rounded-[10px] p-6 space-y-3"
+      >
+        <div className="flex items-center justify-between">
+          <h2 id="provenance-heading" className="font-['Fraunces'] text-xl font-normal text-[#F0E7D3]">
+            Provenance
+          </h2>
+          <span className="text-[11px] uppercase tracking-wider text-[#C4A96A] bg-[#141713] px-2.5 py-1 rounded-[4px] border border-[#2A332A]">
+            Tech Zephyr
+          </span>
+        </div>
+        <p className="text-sm text-[#F0E7D3] font-medium">
+          Built by <span className="text-[#E98A4B]">Algoryxz</span> for the <span className="text-[#F0E7D3]">Tech Zephyr Web Hackathon</span>.
+        </p>
+        <p className="text-xs text-[#B9BEAC] leading-relaxed">
+          Ember &amp; Root — What you do becomes who you are. Server-authoritative progression, living botanical organism, and authentic daily causal consequences.
+        </p>
+      </section>
     </div>
   );
 }

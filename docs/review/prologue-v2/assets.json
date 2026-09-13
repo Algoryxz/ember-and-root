@@ -1,0 +1,30 @@
+[
+  {
+    "name": "forest",
+    "width": 1730,
+    "height": 909,
+    "bytes": 160406,
+    "mode": "RGB"
+  },
+  {
+    "name": "root-chamber",
+    "width": 2009,
+    "height": 783,
+    "bytes": 203888,
+    "mode": "RGB"
+  },
+  {
+    "name": "storm-shore",
+    "width": 1672,
+    "height": 941,
+    "bytes": 186528,
+    "mode": "RGB"
+  },
+  {
+    "name": "shore-figures",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 146724,
+    "mode": "RGBA"
+  }
+]

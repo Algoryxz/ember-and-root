@@ -3,6 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { EmberRootMark } from '@/components/brand/EmberRootLogo';
 
 interface NavItem {
   name: string;
@@ -89,6 +90,24 @@ function ChronicleIcon({ className }: { className?: string }) {
   );
 }
 
+function JournalIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M12 20h9" />
+      <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+    </svg>
+  );
+}
+
 function SettingsIcon({ className }: { className?: string }) {
   return (
     <svg
@@ -107,12 +126,35 @@ function SettingsIcon({ className }: { className?: string }) {
   );
 }
 
+function CalendarIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+      <line x1="16" y1="2" x2="16" y2="6" />
+      <line x1="8" y1="2" x2="8" y2="6" />
+      <line x1="3" y1="10" x2="21" y2="10" />
+      <circle cx="12" cy="15" r="1.5" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}
+
 const navItems: NavItem[] = [
   { name: 'Hearth', href: '/hearth', icon: FlameIcon },
   { name: 'Root', href: '/root', icon: RootIcon },
+  { name: 'Journal', href: '/journal', icon: JournalIcon },
+  { name: 'Calendar', href: '/calendar', icon: CalendarIcon },
   { name: 'Satchel', href: '/satchel', icon: SatchelIcon },
   { name: 'Chronicle', href: '/chronicle', icon: ChronicleIcon },
-  { name: 'Settings', href: '/settings', icon: SettingsIcon },
+  { name: 'You', href: '/settings', icon: SettingsIcon },
 ];
 
 export function GameNav() {
@@ -135,7 +177,7 @@ export function GameNav() {
             href="/hearth"
             className="flex items-center gap-2.5 font-['Fraunces'] text-xl font-normal text-[#F0E7D3] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C4A96A] focus-visible:ring-offset-2 focus-visible:ring-offset-[#141713] rounded-[6px] px-1 py-1"
           >
-            <span className="w-2.5 h-2.5 rounded-full bg-[#E98A4B] inline-block shadow-[0_0_8px_#E98A4B]" aria-hidden="true" />
+            <EmberRootMark size={22} className="text-[#E98A4B]" />
             <span>Ember &amp; Root</span>
           </Link>
 

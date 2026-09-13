@@ -22,6 +22,16 @@ test.describe('Unauthenticated Route Protection', () => {
     await expect(page).toHaveURL(/\/login\?next=%2Fchronicle/);
   });
 
+  test('redirects unauthenticated user from /journal to /login?next=%2Fjournal', async ({ page }) => {
+    await page.goto('/journal');
+    await expect(page).toHaveURL(/\/login\?next=%2Fjournal/);
+  });
+
+  test('redirects unauthenticated user from /calendar to /login?next=%2Fcalendar', async ({ page }) => {
+    await page.goto('/calendar');
+    await expect(page).toHaveURL(/\/login\?next=%2Fcalendar/);
+  });
+
   test('redirects unauthenticated user from /settings to /login?next=%2Fsettings', async ({ page }) => {
     await page.goto('/settings');
     await expect(page).toHaveURL(/\/login\?next=%2Fsettings/);
@@ -48,10 +58,10 @@ test.describe('Public Auth Pages Accessibility', () => {
   test('landing page has valid heading and skip links', async ({ page }) => {
     await page.goto('/');
     await expect(page.locator('h1')).toBeVisible();
-    await expect(page.locator('a.skip-link')).toBeAttached();
-    const authLinks = page.locator('a[href="/login"], a[href="/signup"]');
-    const count = await authLinks.count();
-    expect(count).toBeGreaterThanOrEqual(2);
+    await page.getByRole('button', { name: 'Skip cinematic' }).click();
+    await expect(page.getByRole('button', { name: 'BEGIN YOUR PATH' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'RETURNING PLAYER SIGN IN' })).toBeVisible();
+    await expect(page.locator('.shore-credits')).toHaveText('Built by Algoryxz for Tech Zephyr Web Hackathon');
   });
 
   test('login page allows full keyboard navigation through all interactive controls', async ({ page }) => {

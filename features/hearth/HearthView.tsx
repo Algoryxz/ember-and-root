@@ -4,6 +4,7 @@ import {
   completeQuestAction,
   createQuestAction,
   updateQuestAction,
+  updateQuestNotesAction,
   type AttributeId,
   type CreateQuestParams,
   type UpdateQuestParams,
@@ -20,8 +21,8 @@ import { QuestJournal } from './QuestJournal';
 import { QuestCreateDialog } from './QuestCreateDialog';
 import { QuestEditDialog } from './QuestEditDialog';
 import { RewardSequence } from './RewardSequence';
+import { FocusRitual } from '../focus';
 import './HearthView.css';
-
 
 export interface HearthViewProps {
   initialSnapshot?: GameSnapshot;
@@ -36,24 +37,17 @@ export interface HearthViewProps {
 /**
  * HearthView — Top-level Hearth experience
  * Owned by: Deeptiman (Experience / Frontend Lead)
- * Visual Direction: Illuminated Field Journal
- * 
- * Architecture:
- * Authoritative Repository / Supabase RPCs
- *        ↓
- * Hearth Adapter (completeQuestAction, createQuestAction)
- *        ↓
- * HearthView (this component)
- *        ↓
- * Hearth Presentation Components
+ * Visual Direction: Botanical Field Journal Folio
  * 
  * Hierarchy:
  * 1. App Shell Nav & Character Status Strip (if showShellNav is true)
  * 2. HEARTH Title & "Today is where the path begins."
- * 3. Living Ember Momentum & Compact Root Advancement Preview
- * 4. TODAY's Inscribed Quests Journal
- * 5. Quest Actions & Inscription Modal
- * 6. Non-blocking Reward & Progression Notices
+ * 3. Living Ember Momentum (Centered Focal Warmth)
+ * 4. Editorial Field Spread:
+ *      Left: TODAY's Inscribed Quests Journal (Sequence of practices with physical seals)
+ *      Right: Living Root Specimen Plate (Canonical cutting with anatomical markers)
+ * 5. Quest Actions & Inscription / Revise Modals
+ * 6. Non-blocking Reward & Progression Notices (RewardSequence)
  */
 export const HearthView: React.FC<HearthViewProps> = ({
   initialSnapshot = DEMO_SNAPSHOT,
@@ -76,18 +70,20 @@ export const HearthView: React.FC<HearthViewProps> = ({
   const [activeEvent, setActiveEvent] = useState<MutationEvent | null>(null);
   const [activeQuestTitle, setActiveQuestTitle] = useState<string>('Quest');
   const [highlightAttribute, setHighlightAttribute] = useState<AttributeId | null>(null);
+  const [hoveredAttribute, setHoveredAttribute] = useState<AttributeId | null>(null);
   const [isEmberRelit, setIsEmberRelit] = useState<boolean>(false);
   const [showPathReadyNotice, setShowPathReadyNotice] = useState<boolean>(false);
 
-  // Dialog states
+  // Dialog & Ritual states
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState<boolean>(false);
   const [editingQuest, setEditingQuest] = useState<Quest | HearthQuest | null>(null);
+  const [focusQuest, setFocusQuest] = useState<Quest | HearthQuest | null>(null);
 
   // Failure simulation toggle (for QA and manual verification of retry behavior)
   const [simulateFailure, setSimulateFailure] = useState<boolean>(false);
 
   // --------------------------------------------------------------------------
-  // Core Quest Completion Flow (Strictly follows docs/APP_FLOW.md § 8 & 9)
+  // Core Quest Completion Flow (Strictly follows docs/APP_FLOW.md §§ 8 & 9)
   // --------------------------------------------------------------------------
   const handleCompleteQuest = async (questId: string) => {
     if (pendingQuestId) return;
@@ -98,19 +94,20 @@ export const HearthView: React.FC<HearthViewProps> = ({
 
     // Check if already completed
     const isAlreadyCompleted =
-      completedQuestIds.has(questId) || quest.completedForCurrentOccurrence;
+      completedQuestIds.has(questId) ||
+      ('completedForCurrentOccurrence' in quest && quest.completedForCurrentOccurrence);
     if (isAlreadyCompleted) return;
 
-    // 1. Immediately enter pending state & clear previous error for this quest
+    // Set optimistic in-flight state
     setPendingQuestId(questId);
     setErrorQuestMap((prev) => {
-      const next = { ...prev };
-      delete next[questId];
-      return next;
+      const copy = { ...prev };
+      delete copy[questId];
+      return copy;
     });
 
     try {
-      // 2. Call authoritative server mutation via thin Hearth adapter
+      // Invoke authoritative completeQuestAction via thin Hearth adapter
       const result = await completeQuestAction(
         snapshot,
         questId,
@@ -119,33 +116,34 @@ export const HearthView: React.FC<HearthViewProps> = ({
         simulateFailure
       );
 
-      // 3. Apply confirmed authoritative server result (NO local math)
-      setCompletedQuestIds((prev) => {
-        const next = new Set(prev);
-        next.add(questId);
-        return next;
-      });
+      // Transition to sealed state upon authoritative confirmation
+      setCompletedQuestIds((prev) => new Set([...Array.from(prev), questId]));
+
+      // Apply authoritative snapshot from server mutation (NO local math)
       setSnapshot(result.snapshot);
-      if (onMutationSuccess) onMutationSuccess(result);
 
-      // 4. Trigger reward sequence choreography from authoritative event
-      setActiveQuestTitle(quest.title);
-      setActiveEvent(result.event);
-      setHighlightAttribute(quest.attribute);
+      // Trigger reward sequence choreography
+      if (result.event) {
+        setActiveQuestTitle(quest.title);
+        setActiveEvent(result.event);
+        setHighlightAttribute(result.event.attribute ?? null);
+        setIsEmberRelit(result.event.emberRelit ?? false);
 
-      if (result.event.emberRelit) {
-        setIsEmberRelit(true);
-        setTimeout(() => setIsEmberRelit(false), 900);
+        // Check if milestone achieved
+        if (result.event.specializationAvailable || result.event.crestAvailable) {
+          setShowPathReadyNotice(true);
+        }
       }
 
-      if (result.event.specializationAvailable) {
-        setShowPathReadyNotice(true);
+      if (onMutationSuccess) {
+        onMutationSuccess(result);
       }
-    } catch (err: unknown) {
-      // Failure state: row returns to active state, inline retry error shown
-      const message =
-        err instanceof Error ? err.message : 'Could not seal quest. Try again.';
-      setErrorQuestMap((prev) => ({ ...prev, [questId]: message }));
+    } catch (err: any) {
+      // Handle network or validation failure: render inline retry affordance
+      setErrorQuestMap((prev) => ({
+        ...prev,
+        [questId]: err?.message || 'Could not seal practice. Check connection and retry.',
+      }));
     } finally {
       setPendingQuestId(null);
     }
@@ -156,28 +154,27 @@ export const HearthView: React.FC<HearthViewProps> = ({
   };
 
   // --------------------------------------------------------------------------
-  // Authoritative Quest Creation Flow
+  // Inscribe Practice Action Flow
   // --------------------------------------------------------------------------
-  const handleCreateQuest = async (newQuestData: CreateQuestParams) => {
+  const handleCreateQuest = async (params: CreateQuestParams) => {
     // Invoke authoritative createQuestAction via thin Hearth adapter
     const result = await createQuestAction(
       snapshot,
-      newQuestData,
-      supabaseClient
+      params,
+      supabaseClient,
+      undefined,
+      simulateFailure
     );
 
-    // Apply authoritative snapshot from server mutation
+    // Apply authoritative snapshot from server mutation (NO local math)
     setSnapshot(result.snapshot);
     if (onMutationSuccess) onMutationSuccess(result);
   };
 
   // --------------------------------------------------------------------------
-  // Authoritative Quest Update / Revision Flow
+  // Revise Practice Action Flow
   // --------------------------------------------------------------------------
-  const handleUpdateQuest = async (
-    questId: string,
-    updates: UpdateQuestParams
-  ) => {
+  const handleUpdateQuest = async (questId: string, updates: UpdateQuestParams) => {
     // Invoke authoritative updateQuestAction via thin Hearth adapter
     const result = await updateQuestAction(
       snapshot,
@@ -193,6 +190,20 @@ export const HearthView: React.FC<HearthViewProps> = ({
     if (onMutationSuccess) onMutationSuccess(result);
   };
 
+  // --------------------------------------------------------------------------
+  // Marginalia Quest Notes Action Flow
+  // --------------------------------------------------------------------------
+  const handleUpdateQuestNotes = async (questId: string, notes: string | null) => {
+    const result = await updateQuestNotesAction(
+      snapshot,
+      questId,
+      notes,
+      supabaseClient,
+      simulateFailure
+    );
+    setSnapshot(result.snapshot);
+  };
+
   const quests = snapshot.quests || [];
 
   return (
@@ -202,7 +213,7 @@ export const HearthView: React.FC<HearthViewProps> = ({
         Skip to Today’s Journal
       </a>
 
-      {/* App Shell Navigation Bar (rendered when standalone or showShellNav is true) */}
+      {/* App Shell Navigation Bar */}
       {showShellNav && (
         <header className="hearth-app-header">
           <div className="hearth-header-inner">
@@ -277,32 +288,43 @@ export const HearthView: React.FC<HearthViewProps> = ({
           }}
         />
 
-        {/* The Hearth Stage: Ember Momentum + Root Becoming */}
-        <div className="hearth-stage-duo">
+        {/* Focal Top Anchor: Living Ember Momentum */}
+        <section className="hearth-ember-stage" aria-label="Current Ember state">
           <EmberDisplay
             state={snapshot.emberState}
             isRelit={isEmberRelit}
           />
-          <HearthRootPreview
-            branches={snapshot.branches}
-            highlightAttribute={highlightAttribute}
-            onNavigateToRoot={onNavigateToRoot}
-          />
+        </section>
+
+        {/* Editorial Field Spread: Quest Journal (Left) & Root Specimen Plate (Right) */}
+        <div className="hearth-field-spread">
+          <div className="hearth-spread-journal">
+            <QuestJournal
+              quests={quests}
+              completedQuestIds={completedQuestIds}
+              pendingQuestId={pendingQuestId}
+              errorQuestMap={errorQuestMap}
+              onCompleteQuest={handleCompleteQuest}
+              onBeginFocusQuest={setFocusQuest}
+              onEditQuest={(q) => setEditingQuest(q)}
+              onRetryQuest={handleRetryQuest}
+              onUpdateQuestNotes={handleUpdateQuestNotes}
+              onOpenCreateDialog={() => setIsCreateDialogOpen(true)}
+              onAttributeHover={setHoveredAttribute}
+            />
+          </div>
+
+          <div className="hearth-spread-specimen">
+            <HearthRootPreview
+              branches={snapshot.branches}
+              highlightAttribute={highlightAttribute}
+              hoverAttribute={hoveredAttribute}
+              onNavigateToRoot={onNavigateToRoot}
+            />
+          </div>
         </div>
 
-        {/* TODAY Section: Field Journal & Inscribed Quests */}
-        <QuestJournal
-          quests={quests}
-          completedQuestIds={completedQuestIds}
-          pendingQuestId={pendingQuestId}
-          errorQuestMap={errorQuestMap}
-          onCompleteQuest={handleCompleteQuest}
-          onEditQuest={(q) => setEditingQuest(q)}
-          onRetryQuest={handleRetryQuest}
-          onOpenCreateDialog={() => setIsCreateDialogOpen(true)}
-        />
-
-        {/* QA Diagnostic Tool (Gated strictly to non-production and explicit dev flag) */}
+        {/* QA Diagnostic Tool */}
         {process.env.NODE_ENV !== 'production' && showDevTools && (
           <aside className="hearth-qa-diagnostic" aria-label="Testing Controls">
             <label className="qa-toggle-label">
@@ -334,6 +356,16 @@ export const HearthView: React.FC<HearthViewProps> = ({
         onClose={() => setEditingQuest(null)}
         onUpdateQuest={handleUpdateQuest}
       />
+
+      {/* Focus Ritual Atmospheric Modal */}
+      {focusQuest && (
+        <FocusRitual
+          quest={focusQuest}
+          isOpen={Boolean(focusQuest)}
+          onClose={() => setFocusQuest(null)}
+          onSeal={(questId) => handleCompleteQuest(questId)}
+        />
+      )}
     </div>
   );
 };

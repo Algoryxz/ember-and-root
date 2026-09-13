@@ -1,47 +1,70 @@
 import React from 'react';
 import { Button } from '../../components/ui/Button';
 import { QuestRow } from './QuestRow';
-import type { HearthQuest, Quest } from './contracts';
+import type { AttributeId, HearthQuest, Quest } from './contracts';
 import './QuestJournal.css';
 
 export interface QuestJournalProps {
   quests: (Quest | HearthQuest)[];
+  currentDateLabel?: string;
   completedQuestIds?: Set<string>;
   pendingQuestId: string | null;
   errorQuestMap: Record<string, string>;
   isLoading?: boolean;
   generalError?: string | null;
   onCompleteQuest: (questId: string) => void;
+  onBeginFocusQuest?: (quest: Quest | HearthQuest) => void;
   onEditQuest?: (quest: Quest | HearthQuest) => void;
   onRetryQuest?: (questId: string) => void;
+  onUpdateQuestNotes?: (questId: string, notes: string | null) => Promise<void> | void;
   onRetryGeneral?: () => void;
   onOpenCreateDialog?: () => void;
+  onAttributeHover?: (attribute: AttributeId | null) => void;
   className?: string;
 }
 
 /**
- * QuestJournal — The daily quest journal surface
+ * Format current date using product standard locale formatting (e.g., "12 SEPTEMBER")
+ * Never hardcodes a fixed date string.
+ */
+function formatCurrentDate(date = new Date()): string {
+  try {
+    const day = date.getDate();
+    const month = date.toLocaleDateString('en-US', { month: 'long' }).toUpperCase();
+    return `${day} ${month}`;
+  } catch {
+    return 'CURRENT DAY';
+  }
+}
+
+/**
+ * QuestJournal — The daily practice folio surface
  * Owned by: Deeptiman (Experience / Frontend Lead)
- * Visual Direction: Illuminated Field Journal
+ * Visual Direction: Botanical Field Journal Sequence
  * 
  * Invariants:
- * - Clear page hierarchy: TODAY divider -> Quest rows -> Add action
+ * - Clear editorial sequence: Dynamic TODAY date -> Numbered practices -> Physical seals
  * - Field journal themed Loading, Empty, and Error states
- * - Semantic HTML (<section>, <h2>, <ul>, <li>)
+ * - Semantic HTML (<section>, <h2>, <ol>, <li>)
  * - Accessible keyboard navigation and visible focus
+ * - 44px minimum target sizes across all interactive items
  */
 export const QuestJournal: React.FC<QuestJournalProps> = ({
   quests,
+  currentDateLabel,
   completedQuestIds,
   pendingQuestId,
   errorQuestMap,
   isLoading = false,
   generalError = null,
   onCompleteQuest,
+  onBeginFocusQuest,
   onEditQuest,
   onRetryQuest,
+  onUpdateQuestNotes,
   onRetryGeneral,
   onOpenCreateDialog,
+  onAttributeHover,
   className = '',
 }) => {
   const hasQuests = quests && quests.length > 0;
@@ -50,37 +73,42 @@ export const QuestJournal: React.FC<QuestJournalProps> = ({
   ).length;
   const remainingCount = quests.length - completedCount;
 
+  const todayLabel = currentDateLabel || `TODAY · ${formatCurrentDate()}`;
+
   return (
     <section className={`quest-journal-section ${className}`} aria-labelledby="today-heading">
-      {/* Ruled Section Divider: TODAY ──────────────────────────────── */}
-      <div className="journal-section-divider">
-        <div className="journal-divider-title-row">
-          <h2 id="today-heading" className="journal-section-title">
-            TODAY
+      {/* Editorial Folio Header Cluster */}
+      <div className="journal-header-cluster">
+        <div className="journal-date-marker" aria-hidden="true">
+          {todayLabel}
+        </div>
+        <div className="journal-title-row">
+          <h2 id="today-heading" className="journal-title">
+            Daily Inscriptions
           </h2>
           {hasQuests && !isLoading && (
-            <span className="journal-status-pill">
-              {remainingCount === 0 ? 'All sealed ✓' : `${remainingCount} of ${quests.length} remaining`}
+            <span className="journal-progress-pill" aria-live="polite">
+              {remainingCount === 0 ? 'All sealed ✦' : `${remainingCount} of ${quests.length} open`}
             </span>
           )}
         </div>
-        <div className="journal-rule-line" aria-hidden="true" />
+        <div className="journal-rule-divider" aria-hidden="true" />
       </div>
 
-      {/* Loading State: "The Hearth is waking..." */}
+      {/* Loading State */}
       {isLoading ? (
         <div className="journal-state-card journal-loading-state" role="status">
-          <div className="journal-pulse-flame" aria-hidden="true">✦</div>
-          <h3 className="journal-state-title">The Hearth is waking...</h3>
+          <div className="journal-pulse-glyph" aria-hidden="true">◌</div>
+          <h3 className="journal-state-title">The journal is opening...</h3>
           <p className="journal-state-text">
-            Gathering today’s inscribed quests and rekindling the coals.
+            Gathering today’s inscribed practices and kindling the ember coals.
           </p>
         </div>
       ) : generalError ? (
-        /* Error State: "Something interrupted the Ember." */
+        /* Error State */
         <div className="journal-state-card journal-error-state" role="alert">
-          <div className="journal-error-icon" aria-hidden="true">⚠</div>
-          <h3 className="journal-state-title">Something interrupted the Ember.</h3>
+          <div className="journal-error-glyph" aria-hidden="true">⚠</div>
+          <h3 className="journal-state-title">Something interrupted the Hearth.</h3>
           <p className="journal-state-text">{generalError}</p>
           {onRetryGeneral && (
             <Button variant="secondary" onClick={onRetryGeneral}>
@@ -89,57 +117,62 @@ export const QuestJournal: React.FC<QuestJournalProps> = ({
           )}
         </div>
       ) : !hasQuests ? (
-        /* Empty State: "No quests yet." */
+        /* Empty State */
         <div className="journal-state-card journal-empty-state">
-          <div className="journal-empty-mark" aria-hidden="true">✦</div>
-          <h3 className="journal-state-title">No quests yet.</h3>
+          <div className="journal-empty-glyph" aria-hidden="true">✦</div>
+          <h3 className="journal-state-title">No practices inscribed yet.</h3>
           <p className="journal-state-text">
-            Your journal page lies open, waiting for today’s intention. Every journey of becoming begins with a single declared task.
+            Your field journal page lies open, awaiting today’s intention. Every permanent branch begins with a single declared effort.
           </p>
           {onOpenCreateDialog && (
             <Button variant="primary" onClick={onOpenCreateDialog}>
-              + Inscribe a quest
+              Inscribe first practice
             </Button>
           )}
         </div>
       ) : (
-        /* Journal Entries List */
-        <div className="journal-sheet">
-          <ul className="quest-journal-list" role="list">
-            {quests.map((quest) => {
-              const isConfirmedCompleted =
-                Boolean(completedQuestIds?.has(quest.id)) ||
-                Boolean('completedForCurrentOccurrence' in quest && quest.completedForCurrentOccurrence);
+        /* Populated Sequential Field Entries */
+        <div className="journal-sequence-wrapper">
+          <ol className="journal-sequence-list" aria-label="Today’s inscribed practices">
+            {quests.map((quest, idx) => {
+              const isCompleted = Boolean(
+                completedQuestIds?.has(quest.id) ||
+                  ('completedForCurrentOccurrence' in quest && quest.completedForCurrentOccurrence)
+              );
+              const isPending = pendingQuestId === quest.id;
+              const errorMessage = errorQuestMap[quest.id] || null;
 
               return (
                 <QuestRow
                   key={quest.id}
                   quest={quest}
-                  isCompleted={isConfirmedCompleted}
-                  isPending={pendingQuestId === quest.id}
-                  errorMessage={errorQuestMap[quest.id] || null}
+                  index={idx}
+                  isCompleted={isCompleted}
+                  isPending={isPending}
+                  errorMessage={errorMessage}
                   onComplete={onCompleteQuest}
+                  onBeginFocus={onBeginFocusQuest}
                   onEdit={onEditQuest}
                   onRetry={onRetryQuest}
+                  onUpdateNotes={onUpdateQuestNotes}
+                  onAttributeHover={onAttributeHover}
                 />
               );
             })}
-          </ul>
+          </ol>
 
-
-          {/* Action Footer: + Add a quest */}
+          {/* Action to inscribe additional practices */}
           {onOpenCreateDialog && (
-            <div className="journal-actions-row">
-              <Button
-                variant="secondary"
+            <div className="journal-inscribe-row">
+              <button
+                type="button"
+                className="journal-inscribe-btn"
                 onClick={onOpenCreateDialog}
-                aria-label="Inscribe a new quest into today's journal"
+                aria-label="Inscribe new daily practice"
               >
-                + Inscribe a quest
-              </Button>
-              <span className="journal-subtle-hint" aria-hidden="true">
-                What you do today shapes who you become.
-              </span>
+                <span className="inscribe-btn-mark" aria-hidden="true">+</span>
+                <span className="inscribe-btn-text">Inscribe new daily practice</span>
+              </button>
             </div>
           )}
         </div>

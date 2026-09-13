@@ -262,7 +262,7 @@ export const FirstSeal: React.FC<FirstSealProps> = ({
               What you do becomes what grows.
             </p>
             <p className="text-xs sm:text-sm text-[#B9BEAC] max-w-md mx-auto leading-relaxed pt-1">
-              You completed your first quest. The Ember kindled, and your Root awoke.
+              You sealed your first practice. The Ember kindled, and your Root stirred to life.
             </p>
           </div>
 
@@ -334,7 +334,7 @@ export const FirstSeal: React.FC<FirstSealProps> = ({
                 }
                 className="w-full min-h-[50px] px-6 py-3.5 rounded-lg bg-[#E98A4B] hover:bg-[#d87c3f] text-[#141713] font-semibold text-base transition-all duration-100 ease-in-out active:translate-y-[1px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C4A96A] shadow-xl"
               >
-                Retry Finalization
+                Retry Entering Hearth
               </button>
             </div>
           )}
@@ -350,7 +350,7 @@ export const FirstSeal: React.FC<FirstSealProps> = ({
               BEGIN WITH ONE REAL ACT
             </h2>
             <p className="text-sm text-[#B9BEAC] mt-1.5 leading-relaxed">
-              Complete it when you&rsquo;ve actually done it, then Seal it.
+              Choose one practice you have actually completed, then press your seal.
             </p>
           </div>
 
@@ -372,7 +372,7 @@ export const FirstSeal: React.FC<FirstSealProps> = ({
           )}
 
           {/* Radio list of kept starter quests */}
-          <div className="space-y-3" role="radiogroup" aria-label="Select first quest to complete">
+          <div className="space-y-3" role="radiogroup" aria-label="Select first practice to seal">
             {keptQuests.map((q) => {
               const isSelected = selectedQuest?.id === q.id;
               const attr = ATTRIBUTE_LABELS[q.attribute];
@@ -442,11 +442,11 @@ export const FirstSeal: React.FC<FirstSealProps> = ({
             >
               <div className="inline-block text-xl">🔥</div>
               <p className="text-sm font-serif text-[#FFD38A]">
-                {motionStage === 'in_flight' && 'Sealing your first quest…'}
-                {motionStage === 'seal_land' && 'Wax seal lands on the ledger…'}
-                {motionStage === 'ember_warm' && 'The Hearth Ember awakens…'}
+                {motionStage === 'in_flight' && 'Inscribing and sealing your first practice…'}
+                {motionStage === 'seal_land' && 'Wax seal impression stamped into the folio…'}
+                {motionStage === 'ember_warm' && 'The Hearth Ember stirs to flame…'}
                 {motionStage === 'light_travel' && 'Light traces along the living filament…'}
-                {motionStage === 'root_wake' && 'First Root filament comes alive…'}
+                {motionStage === 'root_wake' && 'First Root filament awakens to life…'}
               </p>
             </div>
           )}
@@ -460,7 +460,7 @@ export const FirstSeal: React.FC<FirstSealProps> = ({
                 disabled={!selectedQuest}
                 className="w-full min-h-[50px] px-6 py-3.5 rounded-lg bg-[#E98A4B] hover:bg-[#d87c3f] text-[#141713] font-semibold text-base transition-all duration-100 ease-in-out active:translate-y-[1px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C4A96A] disabled:opacity-50 shadow-xl flex items-center justify-center gap-2"
               >
-                <span>Seal First Quest</span>
+                <span>Seal First Practice</span>
                 <span className="text-sm">✦</span>
               </button>
             </div>

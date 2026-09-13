@@ -1,0 +1,18 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Ember & Root — Prologue V1 review</title>
+<style>body{max-width:1160px;margin:0 auto;padding:32px 20px 80px;background:#080c0d;color:#e6dac5;font:16px/1.6 system-ui}h1{font:36px Georgia,serif}h2{margin-top:48px;font:25px Georgia,serif}a{color:#ffd08d}video,img{display:block;max-width:100%;height:auto;background:#000}video{width:100%}figure{margin:24px 0}figcaption{font-size:13px;color:#bdb8ab;padding-top:8px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:24px}.phones{max-width:820px}table{border-collapse:collapse;width:100%}td,th{text-align:left;padding:10px;border-bottom:1px solid #30332f}.note{color:#bdb8ab;font-size:14px}@media(max-width:650px){.grid{grid-template-columns:1fr}h1{font-size:28px}}</style>
+<h1>Ember &amp; Root<br>Playable Prologue V1</h1>
+<p>Forest → root chamber → Ember interaction → black.</p><p><a href="http://localhost:4123/awakening">Play the local build</a> · <a href="../../PLAYABLE_PROLOGUE_V1.md">Implementation and measurement notes</a></p>
+<h2>Screen recording</h2><video controls preload="metadata" poster="1440-forest.png" src="forest-to-ember.webm"></video><p class="note">Silent 1440×900 browser recording, encoded at 25 FPS. Ends before inner awakening.</p>
+<h2>Desktop · 1440 × 900</h2><div class="grid">
+<figure><a href="1440-forest.png"><img src="1440-forest.png" alt="Dark forest start with a glowing guidance tree"></a><figcaption>Forest start</figcaption></figure>
+<figure><a href="1440-guided.png"><img src="1440-guided.png" alt="Guided forest path after the first accepted interaction"></a><figcaption>Guided forest</figcaption></figure>
+<figure><a href="1440-chamber.png"><img src="1440-chamber.png" alt="Root chamber with a distant small Ember"></a><figcaption>Root chamber reveal</figcaption></figure>
+<figure><a href="1440-discovery.png"><img src="1440-discovery.png" alt="Ember close view with Reach for it prompt"></a><figcaption>Ember close</figcaption></figure></div>
+<h2>Mobile · 390 × 844</h2><div class="grid phones">
+<figure><a href="390-forest.png"><img src="390-forest.png" alt="Mobile forest crop centred on the guidance tree"></a><figcaption>Forest</figcaption></figure>
+<figure><a href="390-discovery.png"><img src="390-discovery.png" alt="Mobile Ember close view"></a><figcaption>Ember</figcaption></figure></div>
+<h2>Measured frame cadence</h2><table><tr><th>Stage</th><th>Desktop</th><th>Mobile emulation</th></tr><tr><td>Forest</td><td>60.0 FPS</td><td>60.0 FPS</td></tr><tr><td>Guided forest</td><td>59.8 FPS</td><td>55.0 FPS</td></tr><tr><td>Chamber</td><td>57.8 FPS</td><td>57.7 FPS</td></tr><tr><td>Ember close</td><td>60.0 FPS</td><td>58.5 FPS</td></tr><tr><td>Surge</td><td>52.6 FPS</td><td>54.2 FPS</td></tr></table>
+<p class="note">Production Chrome requestAnimationFrame samples; desktop DPR 1, mobile emulation DPR 2 with 4× CPU slowdown. Not physical-device or GPU-presented FPS certification. The surge falls below the strict desktop 60 FPS target.</p>
+<p>First-load JS: <strong>130 kB</strong> (+40.6 kB). Two WebP textures: <strong>364,294 bytes</strong> total (92.1% smaller than source PNGs). No added dependencies.</p>
+<p>Five tested viewport widths: 320, 375, 390, 768 and 1440. Hotspots remain visible and touch-sized. Keyboard/reduced-motion traversal, skip and replay passed. No recorded runtime exceptions or progression writes.</p>
+<p><a href="performance.json">Raw performance results</a> · <a href="verification.json">Flow verification</a> · <a href="production-capture.json">Production capture checks</a></p></html>

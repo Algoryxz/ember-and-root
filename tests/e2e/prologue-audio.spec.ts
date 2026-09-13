@@ -1,0 +1,131 @@
+import { test, expect } from '@playwright/test';
+
+test.describe('Prologue Audio & Cinematic Synchronization Suite', () => {
+
+  test('sound-enabled first run and audio toggle control', async ({ page }) => {
+    await page.goto('/');
+
+    const soundBtn = page.locator('button.prologue-sound-btn');
+    await expect(soundBtn).toBeVisible();
+    await expect(soundBtn).toContainText('Sound On');
+
+    // Click to mute
+    await soundBtn.click();
+    await expect(soundBtn).toContainText('Sound Off');
+
+    // Verify sessionStorage remembered mute choice
+    const isMuted = await page.evaluate(() => sessionStorage.getItem('ember_prologue_muted'));
+    expect(isMuted).toBe('true');
+
+    // Click to unmute
+    await soundBtn.click();
+    await expect(soundBtn).toContainText('Sound On');
+    const isMutedAfter = await page.evaluate(() => sessionStorage.getItem('ember_prologue_muted'));
+    expect(isMutedAfter).toBe('false');
+  });
+
+  test('browser autoplay policy resilience (gesture triggers audio)', async ({ page }) => {
+    await page.goto('/');
+
+    // User gesture on body triggers audio controller without error
+    await page.locator('body').click();
+    const soundBtn = page.locator('button.prologue-sound-btn');
+    await expect(soundBtn).toBeVisible();
+  });
+
+  test('skip cinematic immediately opens shore final state and preserves credits', async ({ page }) => {
+    await page.goto('/');
+    const skipBtn = page.getByRole('button', { name: 'Skip cinematic' });
+    await skipBtn.click();
+
+    // Verify shore sequence reveals final choices immediately
+    await expect(page.getByRole('button', { name: 'BEGIN YOUR PATH' })).toBeVisible({ timeout: 10000 });
+    await expect(page.getByRole('button', { name: 'RETURNING PLAYER SIGN IN' })).toBeVisible();
+    await expect(page.locator('.shore-credits')).toHaveText('Built by Algoryxz for Tech Zephyr Web Hackathon');
+  });
+
+  test('replay cinematic restarts prologue and soundtrack from forest', async ({ page }) => {
+    await page.goto('/');
+    await page.getByRole('button', { name: 'Skip cinematic' }).click();
+
+    const replayBtn = page.locator('.shore-replay-btn');
+    await expect(replayBtn).toBeVisible({ timeout: 10000 });
+    await replayBtn.click();
+
+    // Scene returns to forest
+    await expect(page.locator('.prologue')).toHaveAttribute('data-scene', 'forest');
+    await expect(page.locator('.prologue-sound-btn')).toBeVisible();
+  });
+
+  test('Begin Your Path transitions to signup', async ({ page }) => {
+    await page.goto('/');
+    await page.getByRole('button', { name: 'Skip cinematic' }).click();
+
+    const beginBtn = page.getByRole('button', { name: 'BEGIN YOUR PATH' });
+    await beginBtn.click();
+    await expect(page).toHaveURL(/\/signup\?from=ember/, { timeout: 20000 });
+  });
+
+  test('Sign In transitions to login', async ({ page }) => {
+    await page.goto('/');
+    await page.getByRole('button', { name: 'Skip cinematic' }).click();
+
+    const signInBtn = page.getByRole('button', { name: 'RETURNING PLAYER SIGN IN' });
+    await signInBtn.click();
+    await expect(page).toHaveURL(/\/login\?from=ember/, { timeout: 20000 });
+  });
+
+  test('back navigation from signup cleanly returns to landing page', async ({ page }) => {
+    await page.goto('/');
+    await page.getByRole('button', { name: 'Skip cinematic' }).click();
+    await page.getByRole('button', { name: 'BEGIN YOUR PATH' }).click();
+    await expect(page).toHaveURL(/\/signup/);
+
+    await page.goBack();
+    await expect(page.locator('.prologue')).toBeVisible();
+  });
+
+  test('audio 404 load failure does not block visual prologue progression', async ({ page }) => {
+    // Route audio request to 404
+    await page.route('**/audio/prologue.mp3', route => route.abort());
+
+    await page.goto('/');
+    // Visual prologue still mounts and operates normally
+    await expect(page.locator('.prologue')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Skip cinematic' })).toBeVisible();
+  });
+
+  test('mobile viewport 390px and 320px responsive with no horizontal overflow', async ({ page }) => {
+    for (const width of [390, 320]) {
+      await page.setViewportSize({ width, height: 800 });
+      await page.goto('/');
+      await page.getByRole('button', { name: 'Skip cinematic' }).click();
+      await expect(page.locator('.shore-credits')).toBeVisible();
+
+      const hasOverflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
+      expect(hasOverflow).toBe(false);
+    }
+  });
+
+  test('reduced motion operates seamlessly without audio impediment', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.goto('/');
+
+    const reduceBtn = page.getByRole('button', { name: 'Reduced motion' });
+    await expect(reduceBtn).toBeVisible();
+
+    await page.getByRole('button', { name: 'Skip cinematic' }).click();
+    await expect(page.getByRole('button', { name: 'BEGIN YOUR PATH' })).toBeVisible({ timeout: 5000 });
+  });
+
+  test('keyboard accessibility navigates interactive tools and hotspots', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.goto('/');
+
+    // Tab through tools
+    await page.keyboard.press('Tab');
+    const focusedEl = await page.evaluate(() => document.activeElement?.tagName);
+    expect(focusedEl).toBe('BUTTON');
+  });
+
+});

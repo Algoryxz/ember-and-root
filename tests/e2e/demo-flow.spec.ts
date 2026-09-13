@@ -30,7 +30,7 @@ test.describe('Ember & Root — Full E2E Browser Demo Flow', () => {
     // Step 1: Signup
     // ------------------------------------------------------------------------
     await page.goto('/signup');
-    await expect(page.locator('h1')).toContainText('Begin Your Chronicle');
+    await expect(page.locator('h1')).toContainText('CREATE YOUR PATH');
 
     await page.fill('#email', testEmail);
     await page.fill('#password', testPassword);

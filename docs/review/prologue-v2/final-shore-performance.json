@@ -1,0 +1,22 @@
+[
+  {
+    "name": "desktop",
+    "width": 1440,
+    "height": 900,
+    "dpr": 1,
+    "cpu": 1,
+    "rafFps": 60,
+    "sampledFrames": 361,
+    "measurement": "Local production final shore frame-callback cadence after edge compositing fix; not GPU-presented FPS"
+  },
+  {
+    "name": "mobile-emulation",
+    "width": 390,
+    "height": 844,
+    "dpr": 2,
+    "cpu": 4,
+    "rafFps": 60,
+    "sampledFrames": 361,
+    "measurement": "Local production final shore frame-callback cadence after edge compositing fix; not GPU-presented FPS"
+  }
+]

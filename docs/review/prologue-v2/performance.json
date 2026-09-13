@@ -1,0 +1,188 @@
+[
+  {
+    "name": "desktop",
+    "width": 1440,
+    "height": 900,
+    "dpr": 1,
+    "cpu": 1,
+    "measurement": "requestAnimationFrame cadence, no recording, local production Chrome; not GPU-presented FPS or physical phone certification",
+    "stages": {
+      "forest": {
+        "sampledFrames": 111,
+        "rafFps": 60,
+        "p95FrameMs": 16.8,
+        "framesOver33ms": 0
+      },
+      "guided": {
+        "sampledFrames": 252,
+        "rafFps": 59.5,
+        "p95FrameMs": 16.8,
+        "framesOver33ms": 1
+      },
+      "chamber": {
+        "sampledFrames": 309,
+        "rafFps": 58.7,
+        "p95FrameMs": 16.8,
+        "framesOver33ms": 1
+      },
+      "discovery": {
+        "sampledFrames": 257,
+        "rafFps": 60,
+        "p95FrameMs": 16.8,
+        "framesOver33ms": 0
+      },
+      "surge": {
+        "sampledFrames": 82,
+        "rafFps": 55.9,
+        "p95FrameMs": 17,
+        "framesOver33ms": 2
+      },
+      "shore-0": {
+        "sampledFrames": 191,
+        "rafFps": 59.4,
+        "p95FrameMs": 16.8,
+        "framesOver33ms": 0
+      },
+      "shore-1": {
+        "sampledFrames": 213,
+        "rafFps": 59.2,
+        "p95FrameMs": 16.8,
+        "framesOver33ms": 1
+      },
+      "shore-2": {
+        "sampledFrames": 193,
+        "rafFps": 60,
+        "p95FrameMs": 16.8,
+        "framesOver33ms": 0
+      },
+      "shore-3": {
+        "sampledFrames": 192,
+        "rafFps": 60,
+        "p95FrameMs": 16.8,
+        "framesOver33ms": 0
+      },
+      "shore-4": {
+        "sampledFrames": 258,
+        "rafFps": 60,
+        "p95FrameMs": 16.8,
+        "framesOver33ms": 0
+      }
+    },
+    "errors": [],
+    "textures": [
+      {
+        "url": "/opening/forest.webp",
+        "transferBytes": 160706,
+        "encodedBytes": 160406
+      },
+      {
+        "url": "/opening/root-chamber.webp",
+        "transferBytes": 204188,
+        "encodedBytes": 203888
+      },
+      {
+        "url": "/opening/storm-shore.webp",
+        "transferBytes": 186828,
+        "encodedBytes": 186528
+      },
+      {
+        "url": "/opening/shore-figures.webp",
+        "transferBytes": 147024,
+        "encodedBytes": 146724
+      }
+    ]
+  },
+  {
+    "name": "mobile-emulation",
+    "width": 390,
+    "height": 844,
+    "dpr": 2,
+    "cpu": 4,
+    "measurement": "requestAnimationFrame cadence, no recording, local production Chrome; not GPU-presented FPS or physical phone certification",
+    "stages": {
+      "forest": {
+        "sampledFrames": 114,
+        "rafFps": 60,
+        "p95FrameMs": 16.8,
+        "framesOver33ms": 0
+      },
+      "guided": {
+        "sampledFrames": 235,
+        "rafFps": 56.4,
+        "p95FrameMs": 16.8,
+        "framesOver33ms": 3
+      },
+      "chamber": {
+        "sampledFrames": 295,
+        "rafFps": 58.6,
+        "p95FrameMs": 16.8,
+        "framesOver33ms": 1
+      },
+      "discovery": {
+        "sampledFrames": 267,
+        "rafFps": 59.1,
+        "p95FrameMs": 16.8,
+        "framesOver33ms": 1
+      },
+      "surge": {
+        "sampledFrames": 87,
+        "rafFps": 56.7,
+        "p95FrameMs": 16.9,
+        "framesOver33ms": 1
+      },
+      "shore-0": {
+        "sampledFrames": 190,
+        "rafFps": 57.6,
+        "p95FrameMs": 16.8,
+        "framesOver33ms": 4
+      },
+      "shore-1": {
+        "sampledFrames": 215,
+        "rafFps": 59.7,
+        "p95FrameMs": 16.8,
+        "framesOver33ms": 0
+      },
+      "shore-2": {
+        "sampledFrames": 192,
+        "rafFps": 59.7,
+        "p95FrameMs": 16.8,
+        "framesOver33ms": 1
+      },
+      "shore-3": {
+        "sampledFrames": 191,
+        "rafFps": 59.4,
+        "p95FrameMs": 16.8,
+        "framesOver33ms": 0
+      },
+      "shore-4": {
+        "sampledFrames": 246,
+        "rafFps": 59.3,
+        "p95FrameMs": 16.8,
+        "framesOver33ms": 1
+      }
+    },
+    "errors": [],
+    "textures": [
+      {
+        "url": "/opening/forest.webp",
+        "transferBytes": 160706,
+        "encodedBytes": 160406
+      },
+      {
+        "url": "/opening/root-chamber.webp",
+        "transferBytes": 204188,
+        "encodedBytes": 203888
+      },
+      {
+        "url": "/opening/storm-shore.webp",
+        "transferBytes": 186828,
+        "encodedBytes": 186528
+      },
+      {
+        "url": "/opening/shore-figures.webp",
+        "transferBytes": 147024,
+        "encodedBytes": 146724
+      }
+    ]
+  }
+]

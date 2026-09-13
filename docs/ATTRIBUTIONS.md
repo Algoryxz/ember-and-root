@@ -56,6 +56,7 @@ Project-original skills (`ember-ui`, `reward-integrity`, `integration-guardian`,
 
 | Reference | Creator/source | Status in Ember & Root | What we borrow |
 |---|---|---|---|
+| Cinematic Hero V3 Concept | Algoryxz Creative Brief / Reference Artwork | **Adapted** | Full-viewport cinematic dark soil scene, hand and match ignition, living root network composition, Fraunces editorial overlay, and sequential loop storytelling. |
 | Spector | https://spector.framer.website/ | **Visual/motion inspiration only** | Scroll choreography, editorial typography, section rhythm, and integrated interaction polish. No site assets or copy are reused. |
 | Timeline | Aceternity UI — https://ui.aceternity.com/components/timeline | **Planned adaptation for Chronicle** | Sticky chronology + scroll-follow beam concept, reinterpreted as a living root/history line. |
 | Glass Button | Original interaction by Petr Knoll — https://codepen.io/Petr-Knoll/pen/QwWLZdx | **Interaction reference only** | Pressed-depth/tactile button construction. Ember & Root will not ship the glassmorphism visual treatment. |
@@ -73,7 +74,21 @@ Whenever an external component, snippet, animation, icon set, font, skill, or de
 
 If provenance or license is uncertain, do not ship copied source until it is resolved.
 
-## 5. Team credit
+## 5. Opening forest prototype — user references (2026-09-13)
+
+Five supplied images are preserved unchanged in `docs/design-references/opening/`. Creator, canonical URL and license were not supplied; no original-authorship claim is made. The forest and root-chamber images are **adapted** as scene plates using the built-in OpenAI image editing tool (https://openai.com/index/image-generation-api/). The other three images are archived references only. Production variants are `public/opening/forest.png` and `public/opening/root-chamber.png`. What was borrowed: the forest trees, guidance markings, atmosphere, and chamber root composition. What changed: figures and existing fire removed; clean path/cradle created. HTML hotspots, masks, mist, small Ember and interaction code were authored for this prototype. Exact prompts and limitations: `docs/OPENING_FOREST_PROTOTYPE.md`. No new dependency or third-party component code.
+
+## 6. Team credit
+
+Playable Prologue V1 retains those forest/chamber sources. Runtime textures are additionally encoded as `forest.webp` and `root-chamber.webp` (quality 85, unchanged dimensions). New camera stops, mask layering, interaction choreography and bounded motes are project-authored. Motion for React was already installed; no new rendering dependency or external code was introduced. See `docs/PLAYABLE_PROLOGUE_V1.md` for the review package and measured limits.
+
+### The Self Within opening study (2026-09-13)
+
+- Creative direction: user-supplied **Ember & Root — Cinematic Opening / Final Art Direction**, Concept 01 with the later descent from Concept 02. This prototype implements only darkness through the first inner Ember.
+- `public/hero/awakening-human.png` and `public/hero/awakening-ember.png`: generated with OpenAI's built-in image generation tool (https://openai.com/index/image-generation-api/), then integrated as paired lighting plates. Status: generated for this project, not stock photography or a representation of a real identified person. No third-party image was used as an input. No upstream artist copyright notice was supplied. Prompt record: `docs/AWAKENING_PROTOTYPE.md`.
+- `public/hero/hand-match.jpg`: reuses the repository's Cinematic Hero V3 asset listed above; a masked hand region is used with a new authored match and flame. Its pre-existing attribution is retained; this change does not establish additional provenance for the original asset.
+- New match, striking surface, flame paths, masks, and choreography: authored in this change from the user's narrative; no external component code copied. Existing Motion for React dependency reused. No new dependencies.
+- The generated human uses an ordinary dark garment to retain anonymity. This is a prototype compromise requiring visual review against the requested sculptural-body direction, not an approved final character asset.
 
 Ember & Root product concept, game systems, backend architecture, visual direction, integration, and implementation are developed by the Algoryxz team:
 
@@ -81,3 +96,30 @@ Ember & Root product concept, game systems, backend architecture, visual directi
 - **Deeptiman** — Experience / Frontend Lead
 - **Akriti** — Root / Specialization / Trial UI Lead
 - **Susmita** — Delivery / Auth / Product Systems Lead
+
+
+## Playable prologue V2: storm shore and world entry (2026-09-13)
+
+- Primary source: user-supplied `docs/design-references/opening/storm-shore.jpeg`. Original creator, canonical URL, and license were not provided; no claim of original ownership or public redistribution rights is made.
+- Status: materially adapted. The storm's dark blue-black palette, lone silhouette, turbulent sea, and calm chest Ember were borrowed directly.
+- OpenAI built-in image generation edited the supplied source into `public/opening/storm-shore.webp` (empty wide environment) and `public/opening/shore-figures.webp` (transparent three-angle character sheet). Generated 2026-09-13, then mechanically compressed using Pillow. No additional image sources were used.
+- Environment prompt: faithfully adapt the reference into a wide empty shore, remove person and flame, retain colossal storm clouds, restless cold sea, black wet rocks, horizon at 62%, no text or UI.
+- Figure prompt: same anonymous person in equally spaced rear-three-quarter, front-three-quarter, and frontal full-body views on transparent background; dark trousers, shadowed torso, cold rim light, small internally illuminating sternum Ember on front views, no armor or anatomy diagram.
+- Implemented as layered matte imagery with CSS compositing, authored angle crossfades, independent weather and semantic HTML controls. These are not continuous volumetric 3D camera renders.
+- Relic cabinet ornaments are locally authored CSS representations of the existing Copper Halo, Firefly Orbit, and Engraved Basin catalog items. No external art copied.
+- The canonical Root SVG geometry and server progression rules remain unchanged.
+
+## 7. Cinematic prologue audio soundtrack (2026-09-13)
+
+- Source: User-provided recording (`Recording 2026-09-13 090646.mp3`), placed in `public/audio/prologue.mp3`.
+- Status: User-supplied media for the public cinematic prologue sequence (~35s, 75 BPM).
+- What was borrowed: Atmospheric orchestral soundtrack utilized exclusively within the public cinematic prologue (`components/public/opening/`). Zero presence in interior game surfaces (Hearth, Root, Satchel, Chronicle, Settings).
+- Integration: Authored audio controller (`prologueAudio.ts`) handling HTML5 audio playback, browser gesture unlocking for autoplay restrictions, accessible sound toggle controls, and smooth volume fading. No external audio dependencies introduced.
+
+## 8. Canonical Brand Mark — Ember to Root (2026-09-13)
+
+- Source: Project-authored brand mark evolution based on user-supplied fallback mark (`media_1789273873966.png`).
+- Status: Project-authored original design (Direction A — Variant A2).
+- Concept: Evolves the diagonal 3-point branch silhouette into an illuminated Ember seed apex sprouting natural tapered organic roots, paired with Fraunces variable serif typography.
+- Assets: `public/brand/`, `public/icon.svg`, `app/icon.svg`, and `components/brand/EmberRootLogo.tsx`.
+

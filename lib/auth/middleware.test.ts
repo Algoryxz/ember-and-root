@@ -12,6 +12,8 @@ const PROTECTED_ROUTES = [
   '/root',
   '/satchel',
   '/chronicle',
+  '/journal',
+  '/calendar',
   '/settings',
   '/onboard',
 ];
@@ -28,6 +30,8 @@ function isRouteProtected(pathname: string): boolean {
     pathname.startsWith('/root') ||
     pathname.startsWith('/satchel') ||
     pathname.startsWith('/chronicle') ||
+    pathname.startsWith('/journal') ||
+    pathname.startsWith('/calendar') ||
     pathname.startsWith('/settings') ||
     pathname.startsWith('/onboard')
   );

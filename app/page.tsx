@@ -1,5 +1,5 @@
-﻿import React from 'react';
-import { LandingView } from '@/components/public/LandingView';
+import React from 'react';
+import { OpeningSequence } from '@/components/public/opening/OpeningSequence';
 
 export const metadata = {
   title: 'Ember & Root — What you do becomes who you are',
@@ -7,5 +7,5 @@ export const metadata = {
 };
 
 export default function HomePage() {
-  return <LandingView />;
+  return <OpeningSequence />;
 }

@@ -2,276 +2,376 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { BranchSvgRenderer } from '../../features/root/svg/BranchSvgRenderer';
+import { BRANCH_CONFIGS } from '../../features/root/config';
+import type { NodeState, RootNodeInfo } from '../../features/root/types';
+import type { AttributeId, BranchState } from '../../features/hearth/contracts';
+import { DEMO_SNAPSHOT } from '../../game/fixtures/snapshot';
+import { CinematicHero } from './CinematicHero';
 import { CinematicExperience } from './CinematicExperience';
 import './LandingView.css';
 
+const ATTRIBUTES: AttributeId[] = ['mind', 'body', 'will', 'craft'];
+
+const ATTRIBUTE_LABELS: Record<AttributeId, string> = {
+  mind: 'Mind',
+  body: 'Body',
+  will: 'Will',
+  craft: 'Craft',
+};
+
+interface RitualStep {
+  number: string;
+  title: string;
+  actionWord: string;
+  description: string;
+  consequence: string;
+  glyph: string;
+}
+
+const RITUAL_STEPS: RitualStep[] = [
+  {
+    number: '01',
+    title: 'Inscribe',
+    actionWord: 'Declare intention',
+    description: 'Choose meaningful daily practices aligned with Mind, Body, Will, or Craft in your field journal.',
+    consequence: 'The entry awaits your real effort in the waking world.',
+    glyph: '✎',
+  },
+  {
+    number: '02',
+    title: 'Act',
+    actionWord: 'Carry through',
+    description: 'Engage with your practice outside the screen. No synthetic timers, tracking gimmicks, or surveillance.',
+    consequence: 'Real work is done where it matters most.',
+    glyph: '✦',
+  },
+  {
+    number: '03',
+    title: 'Seal',
+    actionWord: 'Stamp impression',
+    description: 'Confirm completion with a tactile wax seal in your journal. Sealing is a deliberate personal testimony.',
+    consequence: 'The practice becomes permanent in today’s folio.',
+    glyph: '◎',
+  },
+  {
+    number: '04',
+    title: 'Ember Responds',
+    actionWord: 'Daily momentum',
+    description: 'Today’s brazier stirs from resting coals to vigorous flame, casting warmth across your field journal.',
+    consequence: 'Present-day momentum is visibly ignited.',
+    glyph: '🔥',
+  },
+  {
+    number: '05',
+    title: 'Root Grows',
+    actionWord: 'Permanent becoming',
+    description: 'Effort travels into the living organism. Branches thicken, forks awaken, and mastery crests bloom.',
+    consequence: 'Who you become is permanently shaped.',
+    glyph: '🌱',
+  },
+];
+
+interface SpecimenMarker {
+  name: string;
+  threshold: string;
+  description: string;
+}
+
+const SPECIMEN_MARKERS: SpecimenMarker[] = [
+  { name: 'Dormant Seed', threshold: '0 XP', description: 'Slumbering soil awaiting your first commitment.' },
+  { name: 'Origin Sprout', threshold: '1 XP', description: 'First practice awakens life. A resilient shoot takes root.' },
+  { name: 'Specialization Fork', threshold: '80 XP', description: 'Branches divide into distinct disciplines like Scholar or Explorer.' },
+  { name: 'Mastery Crest', threshold: '160 XP', description: 'Enduring discipline proven through trials. A permanent crest blooms.' },
+];
+
+/**
+ * Derive canonical SVG node states for Landing specimen demonstration
+ * Integration boundary: Consumes Akriti's canonical SVG anatomy and branch configs.
+ * DEPENDS ON AKRITI: Replace with canonical Root Specimen V1 when delivered.
+ */
+function deriveCanonicalBranchNodes(attribute: AttributeId, branch: BranchState): RootNodeInfo[] {
+  const config = BRANCH_CONFIGS[attribute];
+  const activeSpec = branch.specialization;
+  const originState: NodeState = branch.xp >= 1 ? 'unlocked' : 'locked';
+
+  const spec1 = config.specializations[0];
+  const spec2 = config.specializations[1];
+
+  let spec1State: NodeState = 'locked';
+  let spec2State: NodeState = 'locked';
+
+  if (activeSpec === spec1.id) {
+    spec1State = 'selected';
+    spec2State = 'locked';
+  } else if (activeSpec === spec2.id) {
+    spec2State = 'selected';
+    spec1State = 'locked';
+  } else if (branch.specializationAvailable) {
+    spec1State = 'available';
+    spec2State = 'available';
+  }
+
+  const spec1CrestState: NodeState =
+    activeSpec === spec1.id
+      ? branch.crestClaimed
+        ? 'selected'
+        : branch.crestAvailable
+        ? 'available'
+        : branch.trialComplete
+        ? 'unlocked'
+        : 'locked'
+      : 'locked';
+
+  const spec2CrestState: NodeState =
+    activeSpec === spec2.id
+      ? branch.crestClaimed
+        ? 'selected'
+        : branch.crestAvailable
+        ? 'available'
+        : branch.trialComplete
+        ? 'unlocked'
+        : 'locked'
+      : 'locked';
+
+  return [
+    {
+      id: config.originNode.id,
+      label: config.originNode.label,
+      subtitle: config.originNode.subtitle,
+      type: 'origin',
+      state: originState,
+      xpRequired: 1,
+      description: config.originNode.description,
+      coordinates: { x: 180, y: 80, percentX: 50, percentY: 16.6 },
+    },
+    {
+      id: spec1.id,
+      label: spec1.label,
+      subtitle: spec1.subtitle,
+      type: 'specialization',
+      specializationKey: spec1.id,
+      state: spec1State,
+      xpRequired: 80,
+      description: spec1.description,
+      coordinates: { x: 100, y: 220, percentX: 27.7, percentY: 45.8 },
+    },
+    {
+      id: spec2.id,
+      label: spec2.label,
+      subtitle: spec2.subtitle,
+      type: 'specialization',
+      specializationKey: spec2.id,
+      state: spec2State,
+      xpRequired: 80,
+      description: spec2.description,
+      coordinates: { x: 260, y: 220, percentX: 72.2, percentY: 45.8 },
+    },
+    {
+      id: spec1.crest.id,
+      label: spec1.crest.label,
+      subtitle: spec1.crest.subtitle,
+      type: 'crest',
+      state: spec1CrestState,
+      xpRequired: 160,
+      description: spec1.crest.description,
+      coordinates: { x: 60, y: 380, percentX: 16.6, percentY: 79.1 },
+    },
+    {
+      id: spec2.crest.id,
+      label: spec2.crest.label,
+      subtitle: spec2.crest.subtitle,
+      type: 'crest',
+      state: spec2CrestState,
+      xpRequired: 160,
+      description: spec2.crest.description,
+      coordinates: { x: 300, y: 380, percentX: 83.3, percentY: 79.1 },
+    },
+  ];
+}
+
+/**
+ * LandingView — Public Entry Surface
+ * Owned by: Deeptiman (Experience / Frontend Lead)
+ * Visual Direction: Contemporary Botanical Field Folio
+ * 
+ * Replaces generic 4-card SaaS grids with:
+ * 1. ONE authored interactive causal loop folio (Inscribe -> Act -> Seal -> Ember -> Root)
+ * 2. ONE botanical living specimen plate showing permanent becoming
+ */
 export function LandingView() {
-  const [showCinematic, setShowCinematic] = useState<boolean>(true);
+  const [activeStepIndex, setActiveStepIndex] = useState<number>(0);
+  const [selectedAttribute, setSelectedAttribute] = useState<AttributeId>('mind');
+
+  const activeStep = RITUAL_STEPS[activeStepIndex];
+  const demoBranches = DEMO_SNAPSHOT.branches;
+  const activeBranch: BranchState = demoBranches[selectedAttribute] || {
+    attribute: selectedAttribute,
+    xp: 85,
+    specialization: 'Scholar',
+    selectedAt: null,
+    sproutAvailable: false,
+    specializationAvailable: false,
+    crestAvailable: true,
+    trialStarted: false,
+    trialComplete: false,
+    crestClaimed: false,
+  };
+
+  const canonicalNodes = deriveCanonicalBranchNodes(selectedAttribute, activeBranch);
+
   return (
     <div className="landing-shell">
-      {/* Accessible Skip Link */}
-      <a href="#hero-title" className="skip-link">
-        Skip to main content
-      </a>
-
-      {/* Top Navigation */}
-      <header className="landing-nav">
-        <div className="landing-nav-inner">
-          <Link href="/" className="landing-brand" aria-label="Ember & Root Home">
-            <div className="landing-brand-glyph" aria-hidden="true" />
-            <span className="landing-brand-title">Ember &amp; Root</span>
-          </Link>
-
-          <nav className="landing-nav-actions" aria-label="Account Navigation">
-            <Link href="/login" className="btn-nav-login">
-              Sign In
-            </Link>
-            <Link href="/signup" className="btn-nav-primary">
-              Begin Path
-            </Link>
-          </nav>
-        </div>
-      </header>
+      {/* 1. Full Viewport Cinematic Botanical Hero */}
+      <CinematicHero />
 
       {/* Main Landing Canvas */}
       <main className="landing-content">
         {/* Interactive Cinematic Awakening Experience */}
-        {showCinematic && (
-          <section className="w-full mb-8" aria-label="Interactive Cinematic Awakening">
-            <CinematicExperience />
-          </section>
-        )}
-
-        {/* ==================================================================
-            SECTION 1: Large Living Ember & Hero
-            ================================================================== */}
-        <section className="landing-hero" aria-labelledby="hero-title">
-          {/* Living Brazier Vessel with Animated Flame */}
-          <div className="landing-brazier" aria-hidden="true">
-            <div className="landing-brazier-halo" />
-            <svg
-              className="landing-flame-svg"
-              viewBox="0 0 100 100"
-              focusable="false"
-            >
-              <defs>
-                <radialGradient id="landingGlow" cx="50%" cy="65%" r="45%">
-                  <stop offset="0%" stopColor="var(--color-ember-core)" stopOpacity="0.8" />
-                  <stop offset="45%" stopColor="var(--color-ember)" stopOpacity="0.5" />
-                  <stop offset="100%" stopColor="transparent" stopOpacity="0" />
-                </radialGradient>
-                <linearGradient id="landingFlame" x1="50%" y1="90%" x2="50%" y2="10%">
-                  <stop offset="0%" stopColor="var(--color-ember)" />
-                  <stop offset="60%" stopColor="var(--color-ember-core)" />
-                  <stop offset="100%" stopColor="var(--color-ember-core)" stopOpacity="0.95" />
-                </linearGradient>
-                <radialGradient id="landingSpark" cx="50%" cy="55%" r="35%">
-                  <stop offset="0%" stopColor="var(--color-ember-core)" />
-                  <stop offset="40%" stopColor="var(--color-ember-core)" />
-                  <stop offset="100%" stopColor="var(--color-ember)" stopOpacity="0" />
-                </radialGradient>
-              </defs>
-
-              {/* Charcoal bed */}
-              <ellipse cx="50" cy="80" rx="36" ry="12" fill="rgba(20, 23, 19, 0.9)" />
-              {/* Radial glow */}
-              <circle cx="50" cy="62" r="32" fill="url(#landingGlow)" />
-              {/* Primary Flame Body */}
-              <path
-                d="M50 84 C34 84 28 72 32 58 C35 48 42 42 45 32 C47 38 51 40 50 30 C53 38 62 44 65 54 C70 66 66 84 50 84 Z"
-                fill="url(#landingFlame)"
-                className="landing-flame-path"
-              />
-              {/* Inner core */}
-              <circle cx="50" cy="60" r="10" fill="url(#landingSpark)" className="landing-spark-core" />
-            </svg>
-          </div>
-
-          <div className="landing-headline-wrap">
-            <span className="landing-kicker">A Living Personal Field Journal</span>
-            <h1 id="hero-title" className="landing-title">
-              What you do each day becomes something you can see grow.
-            </h1>
-            <p className="landing-subtitle">
-              A personal practice where real daily efforts kindle today’s flame and physically cultivate a permanent root.
-            </p>
-          </div>
-
-          <div className="landing-cta-group">
-            <Link href="/signup" className="btn-primary-cta">
-              Begin your path →
-            </Link>
-            <Link href="/login" className="btn-secondary-cta">
-              I already have a path
-            </Link>
-          </div>
+        <section className="w-full mb-8" aria-label="Interactive Cinematic Awakening">
+          <CinematicExperience />
         </section>
-
         {/* ==================================================================
-            SECTION 2: The Core Loop (Inscribe → Seal → Ember → Root)
+            SECTION 2: The Causal Ritual Loop (Editorial Demonstration Folio)
+            Replaces the 4-card grid with ONE authored causal experience
             ================================================================== */}
-        <section className="landing-loop-section" aria-labelledby="loop-title">
-          <div>
+        <section id="ritual-section" className="landing-loop-section" aria-labelledby="loop-title">
+          <div className="section-heading-cluster">
             <div className="section-eyebrow">The Daily Rhythm</div>
             <h2 id="loop-title" className="section-title">
-              The Living Cycle
+              The Causal Ritual
             </h2>
             <p className="section-desc">
               Every practice follows a physical cause-and-effect loop. No abstract scores, no synthetic dopamine traps.
             </p>
           </div>
 
-          <div className="loop-track" role="list">
-            {/* Step 1: Inscribe */}
-            <div className="loop-step-card" role="listitem">
-              <div className="loop-icon-frame" aria-hidden="true">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M12 20h9" />
-                  <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
-                </svg>
-              </div>
-              <span className="loop-step-num">Step 01</span>
-              <h3 className="loop-step-title">Inscribe</h3>
-              <p className="loop-step-text">
-                Choose meaningful daily practices aligned with Mind, Body, Will, or Craft.
-              </p>
+          {/* Authored Editorial Demonstration Folio */}
+          <div className="ritual-folio-spread">
+            {/* Step Navigation Rail */}
+            <div className="ritual-step-rail" role="tablist" aria-label="Ritual progression steps">
+              {RITUAL_STEPS.map((step, idx) => {
+                const isActive = idx === activeStepIndex;
+                return (
+                  <button
+                    key={step.number}
+                    type="button"
+                    role="tab"
+                    aria-selected={isActive}
+                    className={`ritual-rail-item ${isActive ? 'is-active' : ''}`}
+                    onClick={() => setActiveStepIndex(idx)}
+                  >
+                    <span className="rail-step-num">{step.number}</span>
+                    <span className="rail-step-name">{step.title}</span>
+                    <span className="rail-step-action">{step.actionWord}</span>
+                  </button>
+                );
+              })}
             </div>
 
-            {/* Step 2: Seal */}
-            <div className="loop-step-card" role="listitem">
-              <div className="loop-icon-frame" aria-hidden="true">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-                  <polyline points="22 4 12 14.01 9 11.01" />
-                </svg>
+            {/* Active Stage Editorial Leaf */}
+            <div className="ritual-stage-leaf" role="tabpanel" aria-label={`Details for ${activeStep.title}`}>
+              <div className="leaf-header-row">
+                <span className="leaf-glyph" aria-hidden="true">{activeStep.glyph}</span>
+                <span className="leaf-step-badge">Stage {activeStep.number} · {activeStep.title}</span>
               </div>
-              <span className="loop-step-num">Step 02</span>
-              <h3 className="loop-step-title">Seal</h3>
-              <p className="loop-step-text">
-                Follow through in your day. Stamp the journal entry once completed.
-              </p>
-            </div>
 
-            {/* Step 3: Ember */}
-            <div className="loop-step-card" role="listitem">
-              <div className="loop-icon-frame" aria-hidden="true">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z" />
-                </svg>
-              </div>
-              <span className="loop-step-num">Step 03</span>
-              <h3 className="loop-step-title">Ember Responds</h3>
-              <p className="loop-step-text">
-                Today’s brazier kindles from quiet resting coals to vigorous flame.
-              </p>
-            </div>
+              <h3 className="leaf-title">{activeStep.actionWord}</h3>
+              <p className="leaf-description">{activeStep.description}</p>
 
-            {/* Step 4: Root */}
-            <div className="loop-step-card" role="listitem">
-              <div className="loop-icon-frame" aria-hidden="true">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M12 22v-9" />
-                  <path d="M12 13a5 5 0 0 0-5-5H3" />
-                  <path d="M12 13a5 5 0 0 1 5-5h4" />
-                  <path d="M12 8V2" />
-                </svg>
+              <div className="leaf-consequence-box">
+                <span className="consequence-tag" aria-hidden="true">Physical Consequence</span>
+                <p className="consequence-text">{activeStep.consequence}</p>
               </div>
-              <span className="loop-step-num">Step 04</span>
-              <h3 className="loop-step-title">Root Grows</h3>
-              <p className="loop-step-text">
-                Permanent branches thicken, forks awaken, and mastery crests bloom.
-              </p>
+
+              <div className="leaf-rule-line" aria-hidden="true" />
             </div>
           </div>
         </section>
 
         {/* ==================================================================
-            SECTION 3: The Evolving Root
+            SECTION 3: Permanent Becoming (Botanical Specimen Plate)
+            Replaces the 4 evolution cards with ONE living specimen cutting
             ================================================================== */}
-        <section className="landing-root-section" aria-labelledby="root-title">
-          <div>
+        <section className="landing-specimen-section" aria-labelledby="specimen-title">
+          <div className="section-heading-cluster">
             <div className="section-eyebrow">Permanent Becoming</div>
-            <h2 id="root-title" className="section-title">
-              A Living Organism Shaped by You
+            <h2 id="specimen-title" className="section-title">
+              An Organism Shaped by Real Days
             </h2>
             <p className="section-desc">
-              Your Root never resets at midnight. Every effort accumulates permanently into living branches.
+              Your Root never resets at midnight. Every effort accumulates permanently into living branches, branching paths, and claimed crests.
             </p>
           </div>
 
-          <div className="evolution-deck" role="list">
-            {/* Stage 1: 0 XP Seed */}
-            <div className="evolution-card" role="listitem">
-              <div className="evolution-svg-stage" aria-hidden="true">
-                <svg width="60" height="60" viewBox="0 0 60 60" fill="none">
-                  <circle cx="30" cy="40" r="6" fill="#B9BEAC" fillOpacity="0.4" stroke="#B9BEAC" strokeWidth="1.5" />
-                  <path d="M22 46c4-1 12-1 16 0" stroke="#B9BEAC" strokeWidth="1.5" strokeLinecap="round" strokeOpacity="0.5" />
-                </svg>
+          {/* Authored Botanical Plate Showcase */}
+          <div className="landing-specimen-plate">
+            <div className="specimen-plate-header">
+              <div className="specimen-tag-cluster">
+                <span className="specimen-plate-tag" aria-hidden="true">
+                  PLATE I · CANONICAL CUTTING ({ATTRIBUTE_LABELS[selectedAttribute]})
+                </span>
+                <h3 className="specimen-plate-title">The Living Root Specimen</h3>
               </div>
-              <span className="evolution-badge">0 XP</span>
-              <h3 className="evolution-stage-title">Dormant Seed</h3>
-              <p className="evolution-stage-desc">
-                Slumbering soil awaiting your very first commitment.
-              </p>
+
+              {/* Filament Discipline Selector */}
+              <div className="specimen-discipline-tabs" role="tablist" aria-label="Specimen branch disciplines">
+                {ATTRIBUTES.map((attr) => {
+                  const isSelected = attr === selectedAttribute;
+                  return (
+                    <button
+                      key={attr}
+                      type="button"
+                      role="tab"
+                      aria-selected={isSelected}
+                      className={`discipline-tab-btn ${isSelected ? 'is-selected' : ''}`}
+                      onClick={() => setSelectedAttribute(attr)}
+                    >
+                      <span className={`discipline-dot attr-${attr}`} aria-hidden="true" />
+                      <span>{ATTRIBUTE_LABELS[attr]}</span>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
 
-            {/* Stage 2: 20 XP Sprout */}
-            <div className="evolution-card" role="listitem">
-              <div className="evolution-svg-stage" aria-hidden="true">
-                <svg width="60" height="60" viewBox="0 0 60 60" fill="none">
-                  <path d="M30 50V30" stroke="#9FBA87" strokeWidth="2.5" strokeLinecap="round" />
-                  <path d="M30 36c-6-6-10-2-12 2 4 1 9-1 12-2z" fill="#9FBA87" fillOpacity="0.8" />
-                  <path d="M30 30c5-5 9-1 11 3-3 1-8-1-11-3z" fill="#9FBA87" fillOpacity="0.6" />
-                </svg>
+            {/* Specimen Visual & Marginal Progression */}
+            <div className="specimen-stage-grid">
+              {/* Canonical SVG Organism Cutting from Akriti */}
+              <div className="specimen-svg-viewport" aria-hidden="true">
+                <BranchSvgRenderer
+                  attribute={selectedAttribute}
+                  nodes={canonicalNodes}
+                  selectedSpecialization={activeBranch.specialization}
+                />
               </div>
-              <span className="evolution-badge">20 XP</span>
-              <h3 className="evolution-stage-title">Origin Sprout</h3>
-              <p className="evolution-stage-desc">
-                First practice awakens life. A resilient shoot takes root.
-              </p>
-            </div>
 
-            {/* Stage 3: 80 XP Fork */}
-            <div className="evolution-card" role="listitem">
-              <div className="evolution-svg-stage" aria-hidden="true">
-                <svg width="60" height="60" viewBox="0 0 60 60" fill="none">
-                  <path d="M30 52V36" stroke="#9FBA87" strokeWidth="3" strokeLinecap="round" />
-                  <path d="M30 36c-4-8-12-12-18-14" stroke="#D9E3B2" strokeWidth="2" strokeLinecap="round" />
-                  <path d="M30 36c4-8 12-12 18-14" stroke="#D9E3B2" strokeWidth="2" strokeLinecap="round" strokeDasharray="3 3" />
-                  <circle cx="12" cy="22" r="4" fill="#D9E3B2" />
-                  <circle cx="48" cy="22" r="4" fill="none" stroke="#D9E3B2" strokeWidth="1.5" />
-                </svg>
+              {/* Marginal Anatomical Progression Rail */}
+              <div className="specimen-anatomy-legend">
+                <span className="anatomy-legend-heading">Botanical Milestones</span>
+                <div className="anatomy-legend-list">
+                  {SPECIMEN_MARKERS.map((marker, idx) => (
+                    <div key={marker.name} className="anatomy-legend-item">
+                      <span className="legend-marker-dot" aria-hidden="true">
+                        {idx <= 2 ? '●' : '○'}
+                      </span>
+                      <div className="legend-marker-text">
+                        <div className="legend-marker-top">
+                          <span className="legend-marker-name">{marker.name}</span>
+                          <span className="legend-marker-xp">{marker.threshold}</span>
+                        </div>
+                        <p className="legend-marker-desc">{marker.description}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
-              <span className="evolution-badge">80 XP</span>
-              <h3 className="evolution-stage-title">Specialization Fork</h3>
-              <p className="evolution-stage-desc">
-                Branches divide. Choose distinct disciplines like Scholar or Explorer.
-              </p>
-            </div>
-
-            {/* Stage 4: 160 XP Crest */}
-            <div className="evolution-card" role="listitem">
-              <div className="evolution-svg-stage" aria-hidden="true">
-                <svg width="60" height="60" viewBox="0 0 60 60" fill="none">
-                  <path d="M30 52V28" stroke="#D9E3B2" strokeWidth="3.5" strokeLinecap="round" />
-                  <path d="M30 32c-6-6-14-10-18-12" stroke="#D9E3B2" strokeWidth="2.5" strokeLinecap="round" />
-                  <path d="M30 28c6-6 14-10 18-12" stroke="#D9E3B2" strokeWidth="2.5" strokeLinecap="round" />
-                  {/* Flowering Crest terminal */}
-                  <circle cx="30" cy="18" r="8" fill="rgba(255, 211, 138, 0.2)" stroke="#FFD38A" strokeWidth="1.5" />
-                  <polygon points="30,12 33,16 38,18 33,20 30,24 27,20 22,18 27,16" fill="#FFD38A" />
-                </svg>
-              </div>
-              <span className="evolution-badge">160 XP</span>
-              <h3 className="evolution-stage-title">Mastery Crest</h3>
-              <p className="evolution-stage-desc">
-                Enduring discipline proven through trials. A permanent crest blooms.
-              </p>
             </div>
           </div>
         </section>
 
         {/* ==================================================================
-            SECTION 4: Closing Field Journal Seal
+            SECTION 4: Closing Field Journal Invitation
             ================================================================== */}
         <section className="landing-closing-section" aria-labelledby="closing-title">
           <div className="closing-flame-dot" aria-hidden="true" />

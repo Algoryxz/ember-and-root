@@ -1,6 +1,8 @@
-# Ember & Root
-
-> **What you do becomes who you are.**
+<div align="center">
+  <img src="public/brand/ember-and-root-logo.svg" alt="Ember & Root" width="280" />
+  <p><strong>What you do becomes who you are.</strong></p>
+  <p><em>Built by Algoryxz for Tech Zephyr Web Hackathon</em></p>
+</div>
 
 A Life RPG where real tasks kindle today's Ember and grow a permanent Root shaped by the player's choices.
 

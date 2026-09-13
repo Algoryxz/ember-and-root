@@ -1,0 +1,128 @@
+[
+  {
+    "width": 320,
+    "route": "hearth",
+    "authenticated": true,
+    "overflow": false
+  },
+  {
+    "width": 320,
+    "route": "root",
+    "authenticated": true,
+    "overflow": false
+  },
+  {
+    "width": 320,
+    "route": "satchel",
+    "authenticated": true,
+    "overflow": false
+  },
+  {
+    "width": 320,
+    "route": "chronicle",
+    "authenticated": true,
+    "overflow": false
+  },
+  {
+    "width": 320,
+    "route": "settings",
+    "authenticated": true,
+    "overflow": false
+  },
+  {
+    "width": 375,
+    "route": "hearth",
+    "authenticated": true,
+    "overflow": false
+  },
+  {
+    "width": 375,
+    "route": "root",
+    "authenticated": true,
+    "overflow": false
+  },
+  {
+    "width": 375,
+    "route": "satchel",
+    "authenticated": true,
+    "overflow": false
+  },
+  {
+    "width": 375,
+    "route": "chronicle",
+    "authenticated": true,
+    "overflow": false
+  },
+  {
+    "width": 375,
+    "route": "settings",
+    "authenticated": true,
+    "overflow": false
+  },
+  {
+    "width": 768,
+    "route": "hearth",
+    "authenticated": true,
+    "overflow": false
+  },
+  {
+    "width": 768,
+    "route": "root",
+    "authenticated": true,
+    "overflow": false
+  },
+  {
+    "width": 768,
+    "route": "satchel",
+    "authenticated": true,
+    "overflow": false
+  },
+  {
+    "width": 768,
+    "route": "chronicle",
+    "authenticated": true,
+    "overflow": false
+  },
+  {
+    "width": 768,
+    "route": "settings",
+    "authenticated": true,
+    "overflow": false
+  },
+  {
+    "width": 720,
+    "route": "hearth",
+    "authenticated": true,
+    "overflow": false
+  },
+  {
+    "width": 720,
+    "route": "root",
+    "authenticated": true,
+    "overflow": false
+  },
+  {
+    "width": 720,
+    "route": "satchel",
+    "authenticated": true,
+    "overflow": false
+  },
+  {
+    "width": 720,
+    "route": "chronicle",
+    "authenticated": true,
+    "overflow": false
+  },
+  {
+    "width": 720,
+    "route": "settings",
+    "authenticated": true,
+    "overflow": false
+  },
+  {
+    "runtimeErrors": []
+  },
+  {
+    "temporaryUserRemoved": true
+  }
+]

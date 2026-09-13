@@ -25,7 +25,7 @@ export default async function SatchelPage() {
   const inventory = inventoryRes.data ?? [];
 
   return (
-    <div className="space-y-6">
+    <div className="world-satchel space-y-6">
       {/* Title & Sparks Balance */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -33,7 +33,7 @@ export default async function SatchelPage() {
             Satchel
           </h1>
           <p className="text-sm text-[#B9BEAC]">
-            Cosmetic hearth adornments acquired with earned Sparks.
+            Objects carried along your path. Adorn your Hearth with earned Sparks.
           </p>
         </div>
 
@@ -72,9 +72,7 @@ export default async function SatchelPage() {
                 <div className="space-y-3">
                   <div className="w-full h-32 bg-[#141713] rounded-[8px] border border-[#2A332A] flex items-center justify-center text-center p-4">
                     <div className="space-y-1">
-                      <span className="text-2xl block" aria-hidden="true">
-                        {item.id === 'copper_halo' ? '◯' : item.id === 'firefly_orbit' ? '✨' : '⚱️'}
-                      </span>
+                      <span className={`relic-object relic-${item.id}`} aria-hidden="true" />
                       <span className="text-xs text-[#B9BEAC] block">
                         {item.name}
                       </span>

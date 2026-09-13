@@ -1,0 +1,247 @@
+/* ==========================================================================
+   Journal V1 — Illuminated Personal Field Journal
+   Design Token Compliant (Fraunces + DM Sans, Frozen Palette)
+   ========================================================================== */
+
+.journal-container {
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.journal-header {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+@media (min-width: 640px) {
+  .journal-header {
+    flex-direction: row;
+    align-items: flex-end;
+    justify-content: space-between;
+  }
+}
+
+/* Journal leaf (entry card) */
+.journal-leaf {
+  background: #1D231D;
+  border: 1px solid #2A332A;
+  border-radius: 8px;
+  padding: 20px;
+  position: relative;
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.journal-leaf:hover {
+  border-color: rgba(233, 138, 75, 0.4);
+}
+
+.journal-leaf-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding-bottom: 10px;
+}
+
+.journal-leaf-title {
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: 1.125rem;
+  font-weight: 500;
+  color: #F0E7D3;
+  letter-spacing: -0.01em;
+}
+
+.journal-leaf-date {
+  font-size: 0.75rem;
+  color: #B9BEAC;
+  white-space: nowrap;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.journal-leaf-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.journal-icon-btn {
+  background: transparent;
+  border: 1px solid transparent;
+  color: #B9BEAC;
+  border-radius: 6px;
+  padding: 6px;
+  min-width: 36px;
+  min-height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.1s ease;
+}
+
+.journal-icon-btn:hover {
+  color: #F0E7D3;
+  background: rgba(255, 255, 255, 0.05);
+  border-color: #2A332A;
+}
+
+.journal-icon-btn:focus-visible {
+  outline: none;
+  border-color: #C4A96A;
+  box-shadow: 0 0 0 2px #C4A96A;
+}
+
+.journal-icon-btn.danger:hover {
+  color: #F0A79D;
+  background: rgba(240, 167, 157, 0.1);
+  border-color: rgba(240, 167, 157, 0.3);
+}
+
+/* Journal Composer */
+.journal-composer {
+  background: #1D231D;
+  border: 1px solid #2A332A;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 24px;
+}
+
+.journal-input-title {
+  width: 100%;
+  background: #141713;
+  border: 1px solid #2A332A;
+  border-radius: 6px;
+  color: #F0E7D3;
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: 1.125rem;
+  padding: 10px 14px;
+  margin-bottom: 12px;
+}
+
+.journal-input-title:focus-visible {
+  outline: none;
+  border-color: #C4A96A;
+  box-shadow: 0 0 0 2px #C4A96A;
+}
+
+.journal-textarea {
+  width: 100%;
+  min-height: 140px;
+  background: #141713;
+  border: 1px solid #2A332A;
+  border-radius: 6px;
+  color: #F0E7D3;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  padding: 12px 14px;
+  resize: vertical;
+}
+
+.journal-textarea:focus-visible {
+  outline: none;
+  border-color: #C4A96A;
+  box-shadow: 0 0 0 2px #C4A96A;
+}
+
+/* Tool belt / Action bar */
+.journal-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 20px;
+  align-items: center;
+}
+
+.journal-pill-btn {
+  background: #1D231D;
+  border: 1px solid #2A332A;
+  color: #B9BEAC;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  padding: 6px 12px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.1s ease-in-out;
+  min-height: 36px;
+}
+
+.journal-pill-btn:hover {
+  background: #252D25;
+  color: #F0E7D3;
+  border-color: #384538;
+}
+
+.journal-pill-btn.active {
+  background: rgba(233, 138, 75, 0.15);
+  color: #E98A4B;
+  border-color: #E98A4B;
+}
+
+.journal-pill-btn:focus-visible {
+  outline: none;
+  border-color: #C4A96A;
+  box-shadow: 0 0 0 2px #C4A96A;
+}
+
+/* Primary buttons */
+.journal-primary-btn {
+  background: #E98A4B;
+  color: #141713;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 600;
+  font-size: 0.875rem;
+  padding: 8px 18px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: opacity 0.1s ease;
+  min-height: 40px;
+}
+
+.journal-primary-btn:hover {
+  opacity: 0.92;
+}
+
+.journal-primary-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px #C4A96A, 0 0 0 4px #141713;
+}
+
+/* Drawer / Dialog Overlay */
+.journal-dialog-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 12, 9, 0.82);
+  backdrop-filter: blur(4px);
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.journal-dialog-card {
+  background: #1D231D;
+  border: 1px solid #2A332A;
+  border-radius: 10px;
+  width: 100%;
+  max-width: 540px;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 24px;
+  box-shadow: 0 20px 35px rgba(0, 0, 0, 0.6);
+}

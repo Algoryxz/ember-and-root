@@ -1,0 +1,9 @@
+.path-entry{position:relative;isolation:isolate;min-height:100svh;display:flex;align-items:center;justify-content:flex-end;padding:6vh 12vw;color:#f0e7d3;background:#030707 url('/opening/storm-shore.webp?v=0') center/cover fixed}
+.path-entry:before{content:'';position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,#03070766,#030707e8 58%,#030707),linear-gradient(0deg,#030707,transparent)}
+.path-entry:after{content:'';position:fixed;inset:0;z-index:20;background:#edbe89;pointer-events:none;animation:entry-arrival 1.2s ease-out both}
+.path-inscription{width:100%;max-width:410px;padding:30px 0;position:relative}
+.path-inscription:before{content:'';position:fixed;left:18vw;top:44vh;width:13px;height:22px;border-radius:65% 35% 50% 45%;background:#ffe4ae;box-shadow:0 0 24px 8px #e98a4b88,0 0 130px 50px #ba6b3333}
+.path-inscription>div:first-child{text-align:left}.path-inscription h1{font-size:36px;letter-spacing:.02em}.path-inscription input{background:#04090888;border-width:0 0 1px;border-radius:0;padding-left:0}.path-inscription button[type=submit]{background:transparent;border-radius:0;border-bottom:1px solid #c48e54;color:#ffdcaa;text-align:left;padding-left:0;letter-spacing:.14em}.path-inscription button[type=submit]:hover{background:#e98a4b0a}.path-inscription>div:last-child{text-align:left}
+@keyframes entry-arrival{from{opacity:1}to{opacity:0}}
+@media(max-width:700px){.path-entry{padding:12vh 8vw 6vh;background-position:35% center}.path-entry:before{background:#020606db}.path-inscription:before{position:absolute;left:0;top:-40px;width:8px;height:14px}.path-inscription h1{font-size:30px}}
+@media(prefers-reduced-motion:reduce){.path-entry:after{animation:none;opacity:0}}

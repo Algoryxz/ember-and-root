@@ -63,6 +63,7 @@ export type Quest = {
   deletedAt: string | null;
   createdAt: string;
   updatedAt: string;
+  notes?: string | null;
 };
 
 // ── HearthQuest ─────────────────────────────────────────────────────────────
@@ -87,6 +88,7 @@ export type QuestCompletion = {
   xpAwarded: number;
   sparksAwarded: number;
   trialEvidence: Record<string, unknown>;
+  questNotesSnapshot?: string | null;
 };
 
 // ── BranchState ──────────────────────────────────────────────────────────────
@@ -203,6 +205,7 @@ export type MutationEvent = {
   specializationAvailable?: boolean;
   crestAvailable?: boolean;
   cappedToday?: boolean;               // true if daily cap was hit; xpAwarded will be 0
+  questNotesSnapshot?: string | null;
 
   // Ember fields
   emberRelit?: boolean;                // true if first completion after a missed day
@@ -221,3 +224,58 @@ export type MutationResult = {
   event: MutationEvent;
   snapshot: GameSnapshot;
 };
+
+// ── Calendar Contracts ───────────────────────────────────────────────────────
+
+export type CalendarViewMode = 'month' | 'day';
+
+export interface CalendarDayCompletion {
+  id: string;
+  questId?: string;
+  localDate: string;
+  title: string;
+  attribute: AttributeId;
+  effort: Effort;
+  xpAwarded: number;
+  sparksAwarded: number;
+  notesSnapshot?: string | null;
+  completedAt: string;
+}
+
+export interface CalendarDayNote {
+  id: string;
+  title: string | null;
+  body: string;
+  localDate: string;
+  createdAt: string;
+}
+
+export interface CalendarDayData {
+  dateString: string;       // 'YYYY-MM-DD'
+  dayNumber: number;        // 1..31
+  isCurrentMonth: boolean;
+  isToday: boolean;
+  completions: CalendarDayCompletion[];
+  completionsCount: number;
+  emberIntensity: EmberState;
+  totalXp: number;
+  totalSparks: number;
+  attributes: AttributeId[];
+  plannedQuests: HearthQuest[];
+  journalNotes: CalendarDayNote[];
+  hasStreakContinuity: boolean;
+}
+
+export interface CalendarMonthData {
+  year: number;
+  month: number;
+  timezone: string;
+  today: string;
+  startDate: string;
+  endDate: string;
+  days: CalendarDayData[];
+  totalMonthXp: number;
+  totalMonthSparks: number;
+  totalMonthCompletions: number;
+}
+

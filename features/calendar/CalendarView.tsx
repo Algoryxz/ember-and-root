@@ -1,0 +1,249 @@
+'use client';
+
+import React, { useState, useTransition, useMemo } from 'react';
+import type { CalendarMonthData, CalendarDayData } from './contracts';
+import { calculateMonthNavigation, resolveTargetYearMonth } from './calendarMath';
+import { fetchCalendarMonthData } from './calendarAdapter';
+import { CalendarMonthView } from './CalendarMonthView';
+import { CalendarDayDetail } from './CalendarDayDetail';
+import './calendar.css';
+
+export interface CalendarViewProps {
+  initialData?: CalendarMonthData | null;
+  initialError?: string | null;
+  initialSelectedDate?: string;
+  userTimezone?: string;
+}
+
+const MONTH_NAMES = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December',
+];
+
+export function CalendarView({
+  initialData,
+  initialError,
+  initialSelectedDate,
+  userTimezone = 'UTC',
+}: CalendarViewProps) {
+  const [monthData, setMonthData] = useState<CalendarMonthData | null>(initialData || null);
+  const [error, setError] = useState<string | null>(initialError || null);
+  const [selectedDate, setSelectedDate] = useState<string>(
+    initialSelectedDate || initialData?.today || initialData?.days[0]?.dateString || ''
+  );
+  const [isPending, startTransition] = useTransition();
+
+  // Navigation targets
+  const nav = useMemo(() => {
+    if (!monthData) {
+      const { year, month } = resolveTargetYearMonth(null, userTimezone);
+      return calculateMonthNavigation(year, month);
+    }
+    return calculateMonthNavigation(monthData.year, monthData.month);
+  }, [monthData, userTimezone]);
+
+  const monthName = monthData ? MONTH_NAMES[monthData.month - 1] : '';
+
+  // Active days in this month
+  const activeDaysCount = useMemo(() => {
+    if (!monthData) return 0;
+    return monthData.days.filter((d) => d.isCurrentMonth && d.completionsCount > 0).length;
+  }, [monthData]);
+
+  // Currently selected day data
+  const selectedDayData: CalendarDayData | null = useMemo(() => {
+    if (!monthData) return null;
+    return monthData.days.find((d) => d.dateString === selectedDate) || null;
+  }, [monthData, selectedDate]);
+
+  const handleSelectDate = (dateStr: string) => {
+    setSelectedDate(dateStr);
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location.href);
+      url.searchParams.set('day', dateStr);
+      window.history.replaceState(null, '', url.toString());
+    }
+  };
+
+  const handleNavigateMonth = (targetYear: number, targetMonth: number) => {
+    startTransition(async () => {
+      try {
+        setError(null);
+        const nextData = await fetchCalendarMonthData(targetYear, targetMonth);
+        setMonthData(nextData);
+
+        const targetDateStr = `${targetYear}-${String(targetMonth).padStart(2, '0')}-01`;
+        setSelectedDate(targetDateStr);
+
+        if (typeof window !== 'undefined') {
+          const url = new URL(window.location.href);
+          url.searchParams.set('month', `${targetYear}-${String(targetMonth).padStart(2, '0')}`);
+          url.searchParams.set('day', targetDateStr);
+          window.history.replaceState(null, '', url.toString());
+        }
+      } catch (err: any) {
+        setError(err?.message || 'Failed to navigate calendar month.');
+      }
+    });
+  };
+
+  const handleToday = () => {
+    const { year: todayYear, month: todayMonth } = resolveTargetYearMonth(null, userTimezone);
+    if (monthData && monthData.year === todayYear && monthData.month === todayMonth) {
+      if (monthData.today) {
+        handleSelectDate(monthData.today);
+      }
+    } else {
+      startTransition(async () => {
+        try {
+          setError(null);
+          const nextData = await fetchCalendarMonthData(todayYear, todayMonth);
+          setMonthData(nextData);
+          setSelectedDate(nextData.today);
+
+          if (typeof window !== 'undefined') {
+            const url = new URL(window.location.href);
+            url.searchParams.set('month', `${todayYear}-${String(todayMonth).padStart(2, '0')}`);
+            url.searchParams.set('day', nextData.today);
+            window.history.replaceState(null, '', url.toString());
+          }
+        } catch (err: any) {
+          setError(err?.message || 'Failed to navigate to today.');
+        }
+      });
+    }
+  };
+
+  const handleRetry = () => {
+    const targetYear = monthData?.year ?? nav.currentYear;
+    const targetMonth = monthData?.month ?? nav.currentMonth;
+    handleNavigateMonth(targetYear, targetMonth);
+  };
+
+  // Explicit Unavailable / Error State
+  if (error || !monthData) {
+    return (
+      <main className="path-calendar-container" aria-label="Path Calendar">
+        <header className="calendar-header">
+          <div className="calendar-title-area">
+            <span className="calendar-eyebrow">Botanical Folio · Path Calendar</span>
+            <h1 className="calendar-month-title">Path Archive</h1>
+            <span className="calendar-timezone-badge">Timezone: {userTimezone}</span>
+          </div>
+        </header>
+
+        <section className="calendar-error-banner" role="alert">
+          <h2 className="calendar-error-title">Path Archive Unavailable</h2>
+          <p className="calendar-error-message">
+            {error || 'Unable to synchronize path records with the archive.'}
+          </p>
+          <button
+            type="button"
+            className="calendar-retry-btn"
+            onClick={handleRetry}
+            disabled={isPending}
+          >
+            {isPending ? 'Reconnecting...' : 'Retry Connection'}
+          </button>
+        </section>
+      </main>
+    );
+  }
+
+  return (
+    <main className="path-calendar-container" aria-label="Path Calendar">
+      {/* Header & Controls */}
+      <header className="calendar-header">
+        <div className="calendar-title-area">
+          <span className="calendar-eyebrow">Botanical Folio · Path Calendar</span>
+          <h1 className="calendar-month-title">
+            {monthName} {monthData.year}
+          </h1>
+          <span className="calendar-timezone-badge">
+            Timezone: {monthData.timezone}
+          </span>
+        </div>
+
+        <nav className="calendar-nav-controls" aria-label="Month Navigation">
+          <button
+            type="button"
+            className="calendar-nav-btn"
+            onClick={() => handleNavigateMonth(nav.prevYear, nav.prevMonth)}
+            disabled={isPending}
+            aria-label={`Previous month: ${MONTH_NAMES[nav.prevMonth - 1]} ${nav.prevYear}`}
+          >
+            ← Prev
+          </button>
+
+          <button
+            type="button"
+            className="calendar-nav-btn today-btn"
+            onClick={handleToday}
+            disabled={isPending}
+            aria-label="Jump to Today"
+          >
+            Today
+          </button>
+
+          <button
+            type="button"
+            className="calendar-nav-btn"
+            onClick={() => handleNavigateMonth(nav.nextYear, nav.nextMonth)}
+            disabled={isPending}
+            aria-label={`Next month: ${MONTH_NAMES[nav.nextMonth - 1]} ${nav.nextYear}`}
+          >
+            Next →
+          </button>
+        </nav>
+      </header>
+
+      {/* Overview Metrics Strip */}
+      <section className="calendar-metrics-strip" aria-label="Monthly Overview">
+        <div className="calendar-metric-card">
+          <span className="metric-label">Sealed Practices</span>
+          <span className="metric-value highlight-sealed">
+            {monthData.totalMonthCompletions}
+          </span>
+        </div>
+
+        <div className="calendar-metric-card">
+          <span className="metric-label">XP Harvested</span>
+          <span className="metric-value highlight-xp">
+            +{monthData.totalMonthXp}
+          </span>
+        </div>
+
+        <div className="calendar-metric-card">
+          <span className="metric-label">Sparks Garnered</span>
+          <span className="metric-value highlight-sparks">
+            +{monthData.totalMonthSparks}
+          </span>
+        </div>
+
+        <div className="calendar-metric-card">
+          <span className="metric-label">Active Days</span>
+          <span className="metric-value">
+            {activeDaysCount}
+          </span>
+        </div>
+      </section>
+
+      {/* Two-Column Grid + Detail Layout */}
+      <div className={`calendar-layout ${isPending ? 'opacity-60 pointer-events-none' : ''}`}>
+        <section aria-label="Calendar Month Grid">
+          <CalendarMonthView
+            monthData={monthData}
+            selectedDate={selectedDate}
+            onSelectDate={handleSelectDate}
+          />
+        </section>
+
+        <section aria-label="Selected Day Record">
+          <CalendarDayDetail
+            dayData={selectedDayData}
+          />
+        </section>
+      </div>
+    </main>
+  );
+}

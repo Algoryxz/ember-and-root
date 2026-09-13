@@ -1,0 +1,255 @@
+======================================================================
+EMBER & ROOT: LIVE SUPABASE VALIDATION HARNESS
+======================================================================
+
+--- Step 1: Unauthenticated & Anon Access Controls ---
+  ✅ PASS: get_game_snapshot rejects unauthenticated caller
+  ✅ PASS: complete_quest rejects unauthenticated caller
+
+--- Step 2: User Creation & Bootstrap Triggers ---
+  ✅ PASS: User A registered and received session token
+  ✅ PASS: User B registered and received session token
+  ✅ PASS: User A profile auto-created by bootstrap trigger
+  ✅ PASS: Profile user_id matches User A
+  ✅ PASS: Default timezone is UTC
+  ✅ PASS: Initial total_xp is 0
+  ✅ PASS: Initial sparks_balance is 0
+  ✅ PASS: Initial current_streak is 0
+  ✅ PASS: All 4 canonical branches auto-created
+  ✅ PASS: Canonical attributes: mind, body, will, craft
+  ✅ PASS: Trials table initially empty before trial activation
+
+--- Step 3: Timezone Validation (pg_catalog.pg_timezone_names) ---
+validTzRes: {"status":200,"ok":true,"data":{"userId":"0442f7d3-f992-424f-a9fc-ba010baa3c63","timezone":"Asia/Kolkata","preferences":{"sound":true,"reducedMotion":false}},"headers":{}}
+  ✅ PASS: Valid timezone Asia/Kolkata accepted
+  ✅ PASS: Profile timezone updated to Asia/Kolkata
+  ✅ PASS: Invalid timezone banana/time rejected by database
+  ✅ PASS: Database returned clear application error for invalid timezone
+
+--- Step 4: Quest CRUD & Cross-User Isolation (RLS) ---
+  ✅ PASS: User A created daily quest
+  ✅ PASS: User B cannot see User A quests (RLS isolation)
+  ✅ PASS: User B cannot delete User A quest (0 rows affected)
+
+--- Step 5: get_game_snapshot Contract Validation ---
+snapRes: {"status":200,"ok":true,"data":{"level":1,"quests":[{"id":"4fd716a9-9e49-42fe-a04a-1586ed4d38c0","title":"Morning Focus Meditation","effort":"standard","userId":"0442f7d3-f992-424f-a9fc-ba010baa3c63","cadence":"daily","trialId":null,"version":1,"attribute":"mind","createdAt":"2026-09-12T22:28:57.905Z","deletedAt":null,"updatedAt":"2026-09-12T22:28:57.905Z","currentOccurrenceKey":"2026-09-13","completedForCurrentOccurrence":false}],"trials":{},"userId":"0442f7d3-f992-424f-a9fc-ba010baa3c63","totalXp":0,"branches":{"body":{"xp":0,"attribute":"body","selectedAt":null,"crestClaimed":false,"trialStarted":false,"trialComplete":false,"crestAvailable":false,"specialization":null,"sproutAvailable":false,"specializationAvailable":false},"mind":{"xp":0,"attribute":"mind","selectedAt":null,"crestClaimed":false,"trialStarted":false,"trialComplete":false,"crestAvailable":false,"specialization":null,"sproutAvailable":false,"specializationAvailable":false},"will":{"xp":0,"attribute":"will","selectedAt":null,"crestClaimed":false,"trialStarted":false,"trialComplete":false,"crestAvailable":false,"specialization":null,"sproutAvailable":false,"specializationAvailable":false},"craft":{"xp":0,"attribute":"craft","selectedAt":null,"crestClaimed":false,"trialStarted":false,"trialComplete":false,"crestAvailable":false,"specialization":null,"sproutAvailable":false,"specializationAvailable":false}},"revision":0,"inventory":{"items":[]},"emberState":"resting","currentStreak":0,"longestStreak":0,"sparksBalance":0,"equippedItemId":null,"todayXpAwarded":0},"headers":{}}
+  ✅ PASS: get_game_snapshot succeeded
+  ✅ PASS: Snapshot userId matches User A
+  ✅ PASS: Initial snapshot level is 1
+  ✅ PASS: Initial snapshot totalXp is 0
+  ✅ PASS: Initial snapshot sparksBalance is 0
+  ✅ PASS: Initial snapshot currentStreak is 0
+  ✅ PASS: Initial Ember state is resting
+  ✅ PASS: Snapshot includes all 4 branches
+  ✅ PASS: Snapshot includes User A quest
+  ✅ PASS: Quest title preserved in snapshot
+  ✅ PASS: Quest includes authoritative currentOccurrenceKey matching local date
+  ✅ PASS: Quest completedForCurrentOccurrence starts as false before completion
+  ✅ PASS: Snapshot includes inventory array
+
+--- Step 6: complete_quest RPC (First Mutation) ---
+  ✅ PASS: complete_quest succeeded for User A
+  ✅ PASS: MutationResult revision is 1
+  ✅ PASS: MutationEvent kind is quest_completed
+  ✅ PASS: Awarded 20 XP for standard effort
+  ✅ PASS: Awarded 4 Sparks for standard effort (20 / 5)
+  ✅ PASS: newTotalXp in snapshot is 20
+  ✅ PASS: newSparksBalance in snapshot is 4
+  ✅ PASS: First day completion increments streak to 1
+  ✅ PASS: First completion of the day elevates Ember to kindled
+  ✅ PASS: MutationResult.snapshot immediately shows completedForCurrentOccurrence = true
+  ✅ PASS: Database profile total_xp is 20
+  ✅ PASS: Database profile sparks_balance is 4
+  ✅ PASS: Database profile current_streak is 1
+  ✅ PASS: Mind branch xp updated to 20
+  ✅ PASS: Currency ledger recorded +4 sparks
+
+--- Step 7: Idempotent Replay (Same Request ID) ---
+  ✅ PASS: Idempotent replay succeeded
+  ✅ PASS: Idempotent replay returns identical MutationResult
+  ✅ PASS: Total XP remained 20 (no double award)
+  ✅ PASS: Sparks remained 4 (no double award)
+  ✅ PASS: Currency ledger still has exactly 1 entry
+
+--- Step 8: Conflict Detection on Reused Request ID ---
+  ✅ PASS: Reusing requestId with different payload rejected with error
+  ✅ PASS: Returned Idempotency conflict error
+
+--- Step 9: Duplicate Occurrence Rejection (New Request ID) ---
+  ✅ PASS: Duplicate occurrence rejected
+  ✅ PASS: Returned already completed error
+
+--- Step 10: Cross-User Security (User B touches User A Quest) ---
+  ✅ PASS: User B denied from completing User A quest
+  ✅ PASS: Returned ownership rejection error
+
+--- Step 11: 140 XP Daily Cap & Level Crossing (100 XP -> L2) ---
+  ✅ PASS: Q2 awarded 35 XP (Total: 55)
+  ✅ PASS: Level is still 1 at 55 XP
+  ✅ PASS: Ember is steady at 2 completions
+  ✅ PASS: Q3 awarded 35 XP (Total: 90)
+  ✅ PASS: Level is still 1 at 90 XP
+  ✅ PASS: Ember elevates to bright at 3 completions
+  ✅ PASS: Q4 awarded 35 XP (Total: 125)
+  ✅ PASS: Level successfully crossed boundary from 1 to 2 at 125 XP!
+  ✅ PASS: Q5 partial award: exactly 15 XP awarded to hit 140 cap
+  ✅ PASS: Total XP is exactly 140
+  ✅ PASS: Sparks awarded for partial XP (15 / 5 = 3)
+  ✅ PASS: Q6 awarded 0 XP because daily cap (140) is reached
+  ✅ PASS: Total XP remains at 140
+  ✅ PASS: Sparks awarded is 0 because cap is reached (0 / 5 = 0)
+
+--- Step 12: Concurrency & Race Condition Safety ---
+  ✅ PASS: Exactly 1 concurrent request succeeded (actual: 1)
+  ✅ PASS: Remaining 4 concurrent requests failed with duplicate occurrence error (actual: 4)
+
+--- Step 13: choose_specialization RPC ---
+  ✅ PASS: choose_specialization rejects unauthenticated caller
+  ✅ PASS: choose_specialization rejects branch with 79 XP
+  ✅ PASS: choose_specialization rejects mismatched specialization (mind + endurance)
+  ✅ PASS: choose_specialization succeeds at exactly 80 XP
+  ✅ PASS: Snapshot reflects chosen specialization scholar
+  ✅ PASS: Snapshot marks specializationAvailable as false
+  ✅ PASS: choose_specialization rejects changing chosen specialization
+  ✅ PASS: choose_specialization idempotent replay returns prior result
+  ✅ PASS: choose_specialization rejects reused request ID with different payload
+
+--- Step 14: start_trial RPC ---
+  ✅ PASS: start_trial rejects unauthenticated caller
+  ✅ PASS: start_trial rejects starting trial before choosing specialization
+  ✅ PASS: start_trial rejects mismatched specialization
+  ✅ PASS: start_trial succeeds for active specialization
+  ✅ PASS: Snapshot marks trialStarted as true
+  ✅ PASS: Snapshot marks trialComplete as false
+  ✅ PASS: Server authoritatively configures scholar trial as distinct_days
+  ✅ PASS: Server authoritatively sets requiredDays to 5
+  ✅ PASS: Trial distinctDaysCompleted starts at 0
+  ✅ PASS: start_trial rejects duplicate trial on same branch
+  ✅ PASS: start_trial idempotent replay returns prior result
+
+--- Step 15: progress_trial (Distinct Days) RPC ---
+  ✅ PASS: progress_trial rejects unauthenticated caller
+  ✅ PASS: progress_trial records first progress day
+  ✅ PASS: Snapshot distinctDaysCompleted incremented to 1
+  ✅ PASS: Trial is not yet complete (1/5 days)
+  ✅ PASS: progress_trial rejects second progress event on the same calendar date
+  ✅ PASS: progress_trial idempotent replay returns identical prior result
+  ✅ PASS: Trial complete status is true in snapshot when required distinct days reached
+  ✅ PASS: Crest is UNAVAILABLE when Trial is complete but branch XP < 160 (current: 80 XP)
+  ✅ PASS: Crest becomes AVAILABLE when Trial is complete AND branch XP >= 160
+
+--- Step 16: record_trial_milestone RPC ---
+  ✅ PASS: record_trial_milestone rejects empty reflection text
+  ✅ PASS: record_trial_milestone rejects whitespace-only reflection text
+  ✅ PASS: record_trial_milestone rejects text exceeding 500 characters
+  ✅ PASS: record_trial_milestone succeeds with valid reflection
+  ✅ PASS: Snapshot contains recorded milestone text
+  ✅ PASS: Snapshot marks mobility trialComplete as true
+  ✅ PASS: Crest is unavailable because body XP is 80 (< 160)
+  ✅ PASS: record_trial_milestone rejects second milestone submission on completed trial
+  ✅ PASS: record_trial_milestone idempotent replay returns prior result
+
+--- Step 17: claim_trial RPC ---
+  ✅ PASS: claim_trial rejects unauthenticated caller
+  ✅ PASS: claim_trial rejects branch with no trial
+  ✅ PASS: claim_trial rejects when branch XP < 160
+  ✅ PASS: claim_trial succeeds when completed and branch XP >= 160
+  ✅ PASS: Snapshot marks crestClaimed as true
+  ✅ PASS: Snapshot marks crestAvailable as false after claim
+  ✅ PASS: Trial record has non-null claimedAt
+  ✅ PASS: claim_trial rejects repeat claim of already claimed crest
+  ✅ PASS: claim_trial idempotent replay returns prior result
+
+--- Step 18: Cross-User Root Isolation ---
+  ✅ PASS: User B mind branch is unspecialized
+  ✅ PASS: User B action operates on User B profile only (0 XP)
+  ✅ PASS: User C specialization remained scholar
+  ✅ PASS: User C crest claim remained intact
+
+--- Step 19: Root Concurrency Safety ---
+  ✅ PASS: Exactly 1 parallel specialization request succeeded (actual: 1)
+  ✅ PASS: Remaining 4 parallel specialization requests failed (actual: 4)
+  ✅ PASS: Exactly 1 parallel milestone record succeeded (actual: 1)
+  ✅ PASS: Remaining 4 parallel milestone requests failed on completed trial (actual: 4)
+
+--- Step 20: Authoritative Quest Occurrence State ---
+  ✅ PASS: User A created once-cadence quest
+  ✅ PASS: get_game_snapshot succeeded before once quest completion
+  ✅ PASS: Once quest found in snapshot before completion
+  ✅ PASS: Once quest currentOccurrenceKey is strictly "once"
+  ✅ PASS: Once quest completedForCurrentOccurrence is false before completion
+  ✅ PASS: complete_quest succeeded for once-cadence quest
+  ✅ PASS: MutationResult.snapshot immediately shows completedForCurrentOccurrence = true for once quest
+  ✅ PASS: Fresh get_game_snapshot shows completedForCurrentOccurrence = true for once quest
+  ✅ PASS: Fresh snapshot preserves currentOccurrenceKey = "once"
+  ✅ PASS: User A created daily reflection quest
+  ✅ PASS: Daily quest found in snapshot before completion
+  ✅ PASS: Daily quest currentOccurrenceKey matches user local date in Asia/Kolkata (2026-09-13)
+  ✅ PASS: Daily quest completedForCurrentOccurrence is false before completion
+  ✅ PASS: complete_quest succeeded for daily quest in Asia/Kolkata
+  ✅ PASS: MutationResult.snapshot immediately shows completedForCurrentOccurrence = true for daily quest
+  ✅ PASS: Fresh get_game_snapshot shows completedForCurrentOccurrence = true for daily quest
+  ✅ PASS: Fresh snapshot preserves currentOccurrenceKey as current local date
+  ✅ PASS: Rollover quest found in snapshot
+  ✅ PASS: Rollover quest currentOccurrenceKey is today in Asia/Kolkata
+  ✅ PASS: completedForCurrentOccurrence is false for new local day despite historical completion
+  ✅ PASS: Old completion history remains permanently present in quest_completions
+  ✅ PASS: Historical completion record retains original occurrence_key
+  ✅ PASS: User B get_game_snapshot succeeded
+  ✅ PASS: User B snapshot excludes all of User A quests (cross-user isolation)
+  ✅ PASS: User B created identical quest title
+  ✅ PASS: User B quest is uncompleted (not affected by User A completion)
+
+--- Step 21: Authoritative Quest CRUD RPCs ---
+  ✅ PASS: create_quest rejects unauthenticated caller
+  ✅ PASS: update_quest rejects unauthenticated caller
+  ✅ PASS: soft_delete_quest rejects unauthenticated caller
+  ✅ PASS: create_quest rejects whitespace-only title
+  ✅ PASS: create_quest rejects title exceeding 120 characters
+  ✅ PASS: create_quest rejects non-canonical attribute
+  ✅ PASS: create_quest rejects non-canonical effort
+  ✅ PASS: create_quest rejects non-canonical cadence
+  ✅ PASS: create_quest succeeds with valid parameters
+  ✅ PASS: create_quest returns quest_created event with questId
+  ✅ PASS: create_quest increments profile revision
+  ✅ PASS: Newly created quest is present in returned snapshot
+  ✅ PASS: Created quest title matches trimmed input
+  ✅ PASS: Created quest fields match input
+  ✅ PASS: Created quest initial version is 1
+  ✅ PASS: Created quest deletedAt is null
+  ✅ PASS: Created quest completedForCurrentOccurrence is initially false
+  ✅ PASS: create_quest idempotent replay returns prior result
+  ✅ PASS: create_quest idempotent replay preserves revision
+  ✅ PASS: create_quest rejects reused request ID with different payload
+  ✅ PASS: User B cannot update User A quest (ownership isolation)
+  ✅ PASS: User B cannot soft-delete User A quest (ownership isolation)
+  ✅ PASS: update_quest rejects stale version conflict with P0015
+  ✅ PASS: update_quest succeeds with matching expected version
+  ✅ PASS: update_quest returns quest_updated event with version = 2
+  ✅ PASS: update_quest increments profile revision
+  ✅ PASS: Updated quest in snapshot reflects version = 2
+  ✅ PASS: Updated quest in snapshot reflects new title
+  ✅ PASS: Updated quest in snapshot reflects updated attribute and effort
+  ✅ PASS: update_quest rejects expected_version = 1 when version is 2
+  ✅ PASS: update_quest idempotent replay returns prior result
+  ✅ PASS: update_quest rejects reused request ID with different payload
+  ✅ PASS: complete_quest succeeds on updated quest
+  ✅ PASS: Completion record exists in quest_completions before soft delete
+  ✅ PASS: soft_delete_quest succeeds
+  ✅ PASS: soft_delete_quest returns quest_deleted event with questId
+  ✅ PASS: soft_delete_quest increments profile revision
+  ✅ PASS: Snapshot returned by soft_delete_quest excludes deleted quest
+  ✅ PASS: Fresh get_game_snapshot excludes deleted quest
+  ✅ PASS: Quest row remains in database
+  ✅ PASS: Quest row has deleted_at timestamp populated
+  ✅ PASS: Quest row version incremented to 3 upon soft deletion
+  ✅ PASS: Completion history in quest_completions remains intact after soft-delete
+  ✅ PASS: soft_delete_quest rejects already deleted quest with fresh request ID
+  ✅ PASS: soft_delete_quest idempotent replay returns prior result
+  ✅ PASS: update_quest rejects updating a soft-deleted quest
+  ✅ PASS: Exactly 1 parallel update request succeeded (actual: 1)
+  ✅ PASS: Remaining 4 parallel update requests failed with stale_version_conflict (actual: 4)
+
+======================================================================
+VALIDATION COMPLETE: 204 / 204 CHECKS PASSED
+======================================================================
