@@ -161,21 +161,55 @@ export const HearthView: React.FC<HearthViewProps> = ({
         lower.includes('failed to fetch') ||
         lower.includes('network error') ||
         lower.includes('networkrequestfailed') ||
-        lower.includes('timeout')
+        lower.includes('econnrefused') ||
+        lower.includes('timeout') ||
+        lower.includes('abort')
       ) {
-        userFriendlyMsg = 'Connection interrupted. Please check your network and retry.';
-      } else if (lower.includes('rate limit') || lower.includes('429')) {
+        userFriendlyMsg = 'Network connection interrupted. Please check your network and retry.';
+      } else if (
+        lower.includes('does not exist') ||
+        lower.includes('42883') ||
+        lower.includes('pgrst202') ||
+        lower.includes('schema cache')
+      ) {
+        userFriendlyMsg = 'Progression service is updating. Please reload the page to apply the latest game state.';
+      } else if (
+        lower.includes('violates') ||
+        lower.includes('23505') ||
+        lower.includes('23503') ||
+        lower.includes('23514') ||
+        lower.includes('constraint') ||
+        lower.includes('p0003')
+      ) {
+        userFriendlyMsg = 'Progression records encountered a data conflict. Please refresh to synchronize.';
+      } else if (lower.includes('rate limit') || lower.includes('429') || lower.includes('too many requests')) {
         userFriendlyMsg = 'Too many requests were made. Please wait a moment before retrying.';
-      } else if (lower.includes('jwt') || lower.includes('unauthorized') || lower.includes('session') || lower.includes('p0001')) {
+      } else if (
+        lower.includes('jwt') ||
+        lower.includes('unauthorized') ||
+        lower.includes('session') ||
+        lower.includes('p0001') ||
+        lower.includes('401')
+      ) {
         userFriendlyMsg = 'Your session expired. Please sign in again to seal this quest.';
+      } else if (
+        lower.includes('permission denied') ||
+        lower.includes('403') ||
+        lower.includes('42501') ||
+        lower.includes('p0004')
+      ) {
+        userFriendlyMsg = 'You do not have permission to seal this quest.';
       } else if (lower.includes('already completed') || lower.includes('p0007')) {
-        userFriendlyMsg = 'This quest has already been sealed for today.';
+        userFriendlyMsg = 'This quest has already been sealed for this cycle.';
       } else if (lower.includes('occurrence mismatch') || lower.includes('p0006')) {
         userFriendlyMsg = 'Day boundary changed. Please refresh to seal today’s occurrence.';
+      } else if (lower.includes('deleted') || lower.includes('p0005')) {
+        userFriendlyMsg = 'Cannot seal a quest that has been removed.';
+      } else if (lower.includes('complete_quest failed') || lower.includes('plpgsql') || lower.includes('rpc')) {
+        userFriendlyMsg = 'Unable to seal quest due to a game server error. Please try again shortly.';
       } else {
         userFriendlyMsg = "We couldn't seal this quest right now. Please try again.";
       }
-
       setErrorQuestMap((prev) => ({
         ...prev,
         [questId]: userFriendlyMsg,
@@ -269,10 +303,12 @@ export const HearthView: React.FC<HearthViewProps> = ({
         <main id="hearth-main" className="hearth-canvas" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '50vh', textAlign: 'center' }}>
           <div className="hearth-error-banner" role="alert" style={{ maxWidth: '480px', padding: '2rem', background: 'rgba(29, 35, 29, 0.6)', border: '1px solid rgba(233, 138, 75, 0.3)', borderRadius: 'var(--radius-panel, 8px)' }}>
             <h2 style={{ fontFamily: 'var(--font-display)', color: 'var(--color-ember, #e98a4b)', marginBottom: '0.75rem', fontSize: '1.25rem' }}>
-              Connection Interrupted
+              {serverError && (serverError.toLowerCase().includes('does not exist') || serverError.toLowerCase().includes('database') || serverError.toLowerCase().includes('rpc'))
+                ? 'Progression System Update'
+                : 'Connection Interrupted'}
             </h2>
             <p style={{ color: 'var(--color-text-secondary, #b9beac)', fontSize: '0.9rem', lineHeight: '1.5', marginBottom: '1.5rem' }}>
-              {serverError || 'Authoritative game snapshot is unavailable. Please check your connection and retry.'}
+              {serverError || 'Authoritative game records are updating. Please refresh to load the current state.'}
             </p>
             <button
               type="button"
@@ -288,7 +324,7 @@ export const HearthView: React.FC<HearthViewProps> = ({
                 fontFamily: 'var(--font-body)'
               }}
             >
-              Retry Connection
+              Reload Game Records
             </button>
           </div>
         </main>
