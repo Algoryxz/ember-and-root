@@ -48,10 +48,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          # 20260914030000 is intentionally idempotent (CREATE OR REPLACE + GRANTs).
-          # Re-run it directly so an incorrect migration-history row cannot leave
-          # the hosted database with a missing/stale complete_quest function.
-          psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -f supabase/migrations/20260914030000_canonical_quest_sealing.sql
+          psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -f supabase/migrations/20260914031500_fix_canonical_quest_sealing_against_current_schema.sql
+          psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -f supabase/migrations/20260914033000_repair_live_complete_quest.sql
 
       - name: Verify production quest-sealing contract
         shell: bash
@@ -61,14 +59,17 @@ jobs:
           snapshot=$(psql "$SUPABASE_DB_URL" -Atqc "SELECT COALESCE(to_regprocedure('public.get_game_snapshot()')::text, 'MISSING');")
           level=$(psql "$SUPABASE_DB_URL" -Atqc "SELECT COALESCE(to_regprocedure('public.level_from_xp(integer)')::text, 'MISSING');")
           xp=$(psql "$SUPABASE_DB_URL" -Atqc "SELECT COALESCE(to_regprocedure('public.base_xp_from_effort(text)')::text, 'MISSING');")
+          ember=$(psql "$SUPABASE_DB_URL" -Atqc "SELECT COALESCE(to_regprocedure('public.ember_state_from_count(integer)')::text, 'MISSING');")
           echo "complete_quest: $rpc"
           echo "get_game_snapshot: $snapshot"
           echo "level_from_xp: $level"
           echo "base_xp_from_effort: $xp"
+          echo "ember_state_from_count: $ember"
           [[ "$rpc" == "complete_quest(uuid,uuid,text)" ]]
           [[ "$snapshot" == "get_game_snapshot()" ]]
           [[ "$level" == "level_from_xp(integer)" ]]
           [[ "$xp" == "base_xp_from_effort(text)" ]]
+          [[ "$ember" == "ember_state_from_count(integer)" ]]
 
       - name: Verify migration state
         shell: bash
