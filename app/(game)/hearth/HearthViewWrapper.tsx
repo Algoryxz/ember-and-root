@@ -7,14 +7,16 @@ import type { GameSnapshot } from '@/game/contracts';
 
 export interface HearthViewWrapperProps {
   initialSnapshot?: GameSnapshot;
+  serverError?: string;
 }
 
-export function HearthViewWrapper({ initialSnapshot }: HearthViewWrapperProps) {
+export function HearthViewWrapper({ initialSnapshot, serverError }: HearthViewWrapperProps) {
   const supabase = useMemo(() => createClient(), []);
 
   return (
     <HearthView
       initialSnapshot={initialSnapshot}
+      serverError={serverError}
       supabaseClient={supabase}
       showShellNav={false}
     />

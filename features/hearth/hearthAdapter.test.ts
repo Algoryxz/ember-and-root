@@ -205,6 +205,25 @@ describe('Hearth Adapters — Authoritative RPC Dispatch & Contract Verification
     assert.equal(res.userId, 'fixture-user-id');
   });
 
+  it('rejects non-UUID quest IDs when process.env.NODE_ENV is production and supabaseClient is provided', async () => {
+    const originalEnv = process.env.NODE_ENV;
+    try {
+      process.env.NODE_ENV = 'production';
+      const mockClient = {
+        rpc: async () => ({ data: null, error: null }),
+      };
+
+      await assert.rejects(
+        async () => {
+          await completeQuestAction(DEMO_SNAPSHOT, 'q-fixture-1', mockClient);
+        },
+        /Data integrity error: Quest ID "q-fixture-1" is not a valid server UUID/
+      );
+    } finally {
+      process.env.NODE_ENV = originalEnv;
+    }
+  });
+
   describe('Quest Notes Hardening & Snapshot Immutability', () => {
     it('rejects notes exceeding 1000 characters in updateQuestNotesAction', async () => {
       const longNote = 'X'.repeat(1001);

@@ -205,10 +205,23 @@ export function ShoreSequence({
               <motion.div
                 className="shore-footer-row"
                 initial={{ opacity: 0 }}
-                animate={{ opacity: revealStage >= 4 ? 1 : 0 }}
+                animate={{ opacity: revealStage >= 3 ? 1 : 0 }}
                 transition={{ duration: reduced ? 0.1 : 0.8 }}
               >
-                <p className="shore-credits">Built by Algoryxz for Tech Zephyr Web Hackathon</p>
+                <div className="shore-provenance">
+                  <p className="shore-credits">Built by Algoryxz · Tech Zephyr Web Hackathon</p>
+                  <p className="shore-repo">
+                    <span className="shore-repo-label">GitHub Repository:</span>{' '}
+                    <a
+                      href="https://github.com/Algoryxz/ember-and-root"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="shore-repo-link"
+                    >
+                      https://github.com/Algoryxz/ember-and-root
+                    </a>
+                  </p>
+                </div>
                 {onReplay && (
                   <button
                     type="button"

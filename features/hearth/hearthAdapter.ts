@@ -74,6 +74,14 @@ export async function completeQuestAction(
 
   // 1. Production Mode: Call authoritative Supabase PostgreSQL RPC
   if (client) {
+    const isProduction = process.env.NODE_ENV === 'production';
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(questId);
+    if (isProduction && !isUuid) {
+      throw new Error(
+        `Data integrity error: Quest ID "${questId}" is not a valid server UUID. Fixture quests cannot be sealed in production.`
+      );
+    }
+
     const quest = currentSnapshot.quests?.find((q) => q.id === questId);
     const expectedOccurrence = quest && 'currentOccurrenceKey' in quest ? quest.currentOccurrenceKey : null;
 

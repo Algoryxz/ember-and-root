@@ -24,10 +24,17 @@
 .shore-sequence[data-paused='true'] *{animation-play-state:paused!important}.shore-sequence[data-reduced='true'] *{animation:none!important;transition:opacity .15s!important}.shore-sequence[data-reduced='true'] .shore-player{transform:translateX(-50%)!important}
 @media(max-width:700px){.shore-player{height:60%;bottom:23%}.shore-sequence[data-beat='3'] .shore-player,.shore-sequence[data-beat='4'] .shore-player{height:66%;left:50%;bottom:28%}.shore-copy{left:7%;right:7%;top:auto;bottom:9%;text-align:center}.shore-copy h2{font-size:clamp(23px,6.5vw,34px)}.shore-eyebrow{margin-bottom:13px}.shore-support{margin-top:12px;font-size:12px}.shore-choices{margin-top:15px;align-items:center;gap:0}.shore-choices button:first-child{min-width:190px}.shore-shade{background:linear-gradient(0deg,#020405 7%,#020405d9 32%,transparent 62%)}.shore-sequence[data-beat='0'] .shore-player{height:105%;bottom:-7%}.shore-credits{margin-top:16px;font-size:10px}}
 .shore-credits{margin-top:0;font-size:11px;letter-spacing:.12em;color:#8e9785;text-transform:uppercase;opacity:.85}
+.shore-provenance{display:flex;flex-direction:column;gap:5px}
+.shore-repo{font-size:11px;letter-spacing:.03em;color:#b9beac;margin:0;display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.shore-repo-label{color:#8e9785;text-transform:uppercase;letter-spacing:.08em;font-size:10px}
+.shore-repo-link{color:#c4a96a;text-decoration:underline;text-underline-offset:3px;word-break:break-all;transition:color .2s,text-shadow .2s}
+.shore-repo-link:hover{color:#ffd38a;text-shadow:0 0 10px rgba(233,138,75,.4)}
+.shore-repo-link:focus-visible{outline:2px solid #ffd38a;outline-offset:2px;border-radius:2px}
 .shore-footer-row{display:flex;align-items:baseline;justify-content:flex-start;gap:20px;flex-wrap:wrap;margin-top:24px}
 .shore-replay-btn{background:none;border:0;color:#8e9785;font-size:11px;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;padding:4px 0;min-height:44px;transition:color .2s}
 .shore-replay-btn:hover{color:#e9b984;text-shadow:0 0 12px #e98a4b55}
 .shore-replay-btn:focus-visible{outline:2px solid #ffd38a;outline-offset:2px}
+@media(max-width:700px){.shore-footer-row{justify-content:center;margin-top:16px;gap:12px}.shore-provenance{align-items:center;text-align:center}.shore-repo{justify-content:center;font-size:10px}}
 @media(prefers-reduced-motion:reduce){.shore-sequence *{animation:none!important;transition:opacity .15s!important}}
 /* ==========================================================================
    LIVING ORGANIC HEARTBEAT (Final Shore / Chest Ember Breath Cycle)

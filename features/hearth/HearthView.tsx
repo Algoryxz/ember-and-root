@@ -26,6 +26,7 @@ import './HearthView.css';
 
 export interface HearthViewProps {
   initialSnapshot?: GameSnapshot;
+  serverError?: string;
   supabaseClient?: any;
   showShellNav?: boolean;
   showDevTools?: boolean;
@@ -50,7 +51,8 @@ export interface HearthViewProps {
  * 6. Non-blocking Reward & Progression Notices (RewardSequence)
  */
 export const HearthView: React.FC<HearthViewProps> = ({
-  initialSnapshot = DEMO_SNAPSHOT,
+  initialSnapshot,
+  serverError: initialServerError,
   supabaseClient = null,
   showShellNav = true,
   showDevTools = false,
@@ -58,8 +60,17 @@ export const HearthView: React.FC<HearthViewProps> = ({
   onNavigateToRoot,
   className = '',
 }) => {
+  const isProduction = process.env.NODE_ENV === 'production';
+  const hasRealSnapshot = Boolean(initialSnapshot && initialSnapshot.userId !== 'wanderer-demo-uuid');
+  const effectiveInitial = hasRealSnapshot
+    ? initialSnapshot!
+    : (isProduction || supabaseClient ? null : DEMO_SNAPSHOT);
+
   // Authoritative snapshot state (replaces local state upon confirmed server response)
-  const [snapshot, setSnapshot] = useState<GameSnapshot>(initialSnapshot);
+  const [snapshot, setSnapshot] = useState<GameSnapshot | null>(effectiveInitial);
+  const [serverError, setServerError] = useState<string | null>(
+    initialServerError ?? (!effectiveInitial && (isProduction || supabaseClient) ? 'Unable to load authoritative game records' : null)
+  );
 
   // In-flight mutation & error tracking
   const [completedQuestIds, setCompletedQuestIds] = useState<Set<string>>(new Set());
@@ -86,7 +97,7 @@ export const HearthView: React.FC<HearthViewProps> = ({
   // Core Quest Completion Flow (Strictly follows docs/APP_FLOW.md §§ 8 & 9)
   // --------------------------------------------------------------------------
   const handleCompleteQuest = async (questId: string) => {
-    if (pendingQuestId) return;
+    if (pendingQuestId || !snapshot) return;
 
     const quests = snapshot.quests || [];
     const quest = quests.find((q) => q.id === questId);
@@ -157,6 +168,7 @@ export const HearthView: React.FC<HearthViewProps> = ({
   // Inscribe Practice Action Flow
   // --------------------------------------------------------------------------
   const handleCreateQuest = async (params: CreateQuestParams) => {
+    if (!snapshot) return;
     // Invoke authoritative createQuestAction via thin Hearth adapter
     const result = await createQuestAction(
       snapshot,
@@ -175,6 +187,7 @@ export const HearthView: React.FC<HearthViewProps> = ({
   // Revise Practice Action Flow
   // --------------------------------------------------------------------------
   const handleUpdateQuest = async (questId: string, updates: UpdateQuestParams) => {
+    if (!snapshot) return;
     // Invoke authoritative updateQuestAction via thin Hearth adapter
     const result = await updateQuestAction(
       snapshot,
@@ -194,6 +207,7 @@ export const HearthView: React.FC<HearthViewProps> = ({
   // Marginalia Quest Notes Action Flow
   // --------------------------------------------------------------------------
   const handleUpdateQuestNotes = async (questId: string, notes: string | null) => {
+    if (!snapshot) return;
     const result = await updateQuestNotesAction(
       snapshot,
       questId,
@@ -203,6 +217,59 @@ export const HearthView: React.FC<HearthViewProps> = ({
     );
     setSnapshot(result.snapshot);
   };
+
+  if (!snapshot) {
+    return (
+      <div className={`hearth-shell ${className}`}>
+        {showShellNav && (
+          <header className="hearth-app-header">
+            <div className="hearth-header-inner">
+              <div className="hearth-brand">
+                <div className="hearth-brand-flame" aria-hidden="true" />
+                <span className="hearth-brand-name">Ember &amp; Root</span>
+              </div>
+              <nav aria-label="Primary game destinations" className="hearth-main-nav">
+                <ul className="hearth-nav-list">
+                  <li className="hearth-nav-item is-active">
+                    <a href="/hearth" aria-current="page">Hearth</a>
+                  </li>
+                  <li className="hearth-nav-item"><a href="/root">Root</a></li>
+                  <li className="hearth-nav-item"><a href="/satchel">Satchel</a></li>
+                  <li className="hearth-nav-item"><a href="/chronicle">Chronicle</a></li>
+                </ul>
+              </nav>
+            </div>
+          </header>
+        )}
+        <main id="hearth-main" className="hearth-canvas" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '50vh', textAlign: 'center' }}>
+          <div className="hearth-error-banner" role="alert" style={{ maxWidth: '480px', padding: '2rem', background: 'rgba(29, 35, 29, 0.6)', border: '1px solid rgba(233, 138, 75, 0.3)', borderRadius: 'var(--radius-panel, 8px)' }}>
+            <h2 style={{ fontFamily: 'var(--font-display)', color: 'var(--color-ember, #e98a4b)', marginBottom: '0.75rem', fontSize: '1.25rem' }}>
+              Connection Interrupted
+            </h2>
+            <p style={{ color: 'var(--color-text-secondary, #b9beac)', fontSize: '0.9rem', lineHeight: '1.5', marginBottom: '1.5rem' }}>
+              {serverError || 'Authoritative game snapshot is unavailable. Please check your connection and retry.'}
+            </p>
+            <button
+              type="button"
+              className="hearth-btn hearth-btn-secondary"
+              onClick={() => window.location.reload()}
+              style={{
+                padding: '0.6rem 1.25rem',
+                backgroundColor: 'rgba(233, 138, 75, 0.15)',
+                border: '1px solid rgba(233, 138, 75, 0.4)',
+                borderRadius: 'var(--radius-btn, 4px)',
+                color: 'var(--color-text-primary, #f5f6f1)',
+                cursor: 'pointer',
+                fontFamily: 'var(--font-body)'
+              }}
+            >
+              Retry Connection
+            </button>
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   const quests = snapshot.quests || [];
 

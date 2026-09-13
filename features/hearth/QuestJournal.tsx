@@ -67,11 +67,16 @@ export const QuestJournal: React.FC<QuestJournalProps> = ({
   onAttributeHover,
   className = '',
 }) => {
-  const hasQuests = quests && quests.length > 0;
-  const completedCount = quests.filter(
+  const isProduction = process.env.NODE_ENV === 'production';
+  const effectiveQuests = isProduction
+    ? (quests || []).filter((q) => !q.id.startsWith('q-fixture-'))
+    : quests || [];
+
+  const hasQuests = effectiveQuests && effectiveQuests.length > 0;
+  const completedCount = effectiveQuests.filter(
     (q) => Boolean(completedQuestIds?.has(q.id)) || ('completedForCurrentOccurrence' in q && Boolean(q.completedForCurrentOccurrence))
   ).length;
-  const remainingCount = quests.length - completedCount;
+  const remainingCount = effectiveQuests.length - completedCount;
 
   const todayLabel = currentDateLabel || `TODAY · ${formatCurrentDate()}`;
 
@@ -134,7 +139,7 @@ export const QuestJournal: React.FC<QuestJournalProps> = ({
         /* Populated Sequential Field Entries */
         <div className="journal-sequence-wrapper">
           <ol className="journal-sequence-list" aria-label="Today’s inscribed practices">
-            {quests.map((quest, idx) => {
+            {effectiveQuests.map((quest, idx) => {
               const isCompleted = Boolean(
                 completedQuestIds?.has(quest.id) ||
                   ('completedForCurrentOccurrence' in quest && quest.completedForCurrentOccurrence)

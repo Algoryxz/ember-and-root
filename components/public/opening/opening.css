@@ -84,6 +84,42 @@
 .prologue-sound-btn:hover { color: #ffe1a0; text-shadow: 0 0 10px #e98a4b88; }
 .prologue-tools button:focus-visible, .prologue-loading button:focus-visible { outline: 2px solid #ffd38a; outline-offset: 2px; }
 .prologue-tools button:disabled { cursor: default; }
+.prologue-provenance {
+  position: absolute;
+  bottom: max(12px, env(safe-area-inset-bottom));
+  left: 24px;
+  z-index: 10;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  color: #8e9785;
+  text-shadow: 0 1px 4px #000;
+  pointer-events: auto;
+  max-width: calc(100vw - 320px);
+}
+.prologue-provenance-meta { color: #8e9785; }
+.prologue-provenance-sep { color: rgba(185, 190, 172, 0.35); }
+.prologue-provenance-repo { color: #8e9785; }
+.prologue-provenance-label { color: #8e9785; }
+.prologue-provenance-link {
+  color: #c4a96a;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  word-break: break-all;
+  transition: color 0.2s, text-shadow 0.2s;
+}
+.prologue-provenance-link:hover {
+  color: #ffd38a;
+  text-shadow: 0 0 8px rgba(233, 138, 75, 0.4);
+}
+.prologue-provenance-link:focus-visible {
+  outline: 2px solid #ffd38a;
+  outline-offset: 2px;
+  border-radius: 2px;
+}
 .prologue-end { position: absolute; left: 0; right: 0; top: 48%; text-align: center; font-size: 12px; letter-spacing: .12em; z-index: 8; }
 .prologue-loading { position: absolute; inset: 0; background: #020404; display: flex; align-items: center; justify-content: center; gap: 16px; flex-wrap: wrap; font-size: 13px; z-index: 9; }
 .prologue-loading-inline { inset: auto 0 10%; padding: 12px; background: #020404b0; }
@@ -121,6 +157,13 @@
   .prologue-hotspot span { opacity: .8; font-size: 11px; }
   .prologue-whisper { bottom: 13%; }
   .prologue-tools { right: 18px; gap: 16px; }
+  .prologue-provenance {
+    left: 16px;
+    bottom: calc(max(12px, env(safe-area-inset-bottom)) + 42px);
+    max-width: calc(100vw - 32px);
+    font-size: 9px;
+    gap: 4px;
+  }
   .prologue-foreground { opacity: .7; }
 }
 
