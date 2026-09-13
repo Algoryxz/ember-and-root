@@ -9,7 +9,6 @@ export interface ShoreSequenceProps {
   reduced: boolean;
   paused: boolean;
   skip?: boolean;
-  onFadeAudio?: () => void;
   onReplay?: () => void;
 }
 
@@ -17,7 +16,6 @@ export function ShoreSequence({
   reduced,
   paused,
   skip = false,
-  onFadeAudio,
   onReplay,
 }: ShoreSequenceProps) {
   const router = useRouter();
@@ -102,16 +100,14 @@ export function ShoreSequence({
 
   useEffect(() => {
     if (!destination) return;
-    onFadeAudio?.();
     const timer = setTimeout(
       () => router.push(`/${destination}?from=ember`),
       reduced ? 150 : 1500
     );
     return () => clearTimeout(timer);
-  }, [destination, reduced, router, onFadeAudio]);
+  }, [destination, reduced, router]);
 
   const handleChoice = (dest: 'signup' | 'login') => {
-    onFadeAudio?.();
     setDestination(dest);
   };
 

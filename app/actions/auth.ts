@@ -8,6 +8,7 @@ export type AuthActionResult = {
   error?: string;
   successMessage?: string;
   fieldErrors?: Record<string, string[]>;
+  redirectTo?: string;
 };
 
 export async function loginAction(
@@ -48,16 +49,14 @@ export async function loginAction(
   const preferences = (profile?.preferences as { onboarded?: boolean } | null) || {};
   const nextUrl = (formData.get('next') as string) || '';
 
-  // Only redirect to /onboard if onboarding has not been completed
+  let target = '/hearth';
   if (!preferences.onboarded) {
-    redirect('/onboard');
+    target = '/onboard';
+  } else if (nextUrl && nextUrl.startsWith('/') && !nextUrl.startsWith('//')) {
+    target = nextUrl;
   }
 
-  if (nextUrl && nextUrl.startsWith('/') && !nextUrl.startsWith('//')) {
-    redirect(nextUrl);
-  }
-
-  redirect('/hearth');
+  return { redirectTo: target };
 }
 
 export async function signupAction(
@@ -98,7 +97,7 @@ export async function signupAction(
     };
   }
 
-  redirect('/onboard');
+  return { redirectTo: '/onboard' };
 }
 
 export async function logoutAction(): Promise<void> {

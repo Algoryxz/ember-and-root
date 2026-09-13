@@ -6,15 +6,18 @@ import '@/components/public/opening/entry.css';
 import { useSearchParams } from 'next/navigation';
 import { loginAction, type AuthActionResult } from '@/app/actions/auth';
 import { EmberRootMark } from '@/components/brand/EmberRootLogo';
+import { useEntryAudio } from '@/components/public/opening/EntryAudioProvider';
 
 function LoginForm() {
   const searchParams = useSearchParams();
   const next = searchParams.get('next') || '';
   const [isPending, startTransition] = useTransition();
   const [result, setResult] = useState<AuthActionResult | null>(null);
+  const { startExitTransition, isExiting } = useEntryAudio();
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (isPending || isExiting) return;
     setResult(null);
     const formData = new FormData(event.currentTarget);
     if (next) {
@@ -24,7 +27,13 @@ function LoginForm() {
     startTransition(async () => {
       const res = await loginAction(null, formData);
       if (res) {
-        setResult(res);
+        if (res.redirectTo) {
+          // Confirmed successful authentication: initiate slow 2-3s cinematic fade
+          await startExitTransition(res.redirectTo);
+        } else {
+          // Failure / invalid credentials: audio stays alive, no fade
+          setResult(res);
+        }
       }
     });
   }
@@ -78,7 +87,7 @@ function LoginForm() {
             type="email"
             autoComplete="email"
             required
-            disabled={isPending}
+            disabled={isPending || isExiting}
             aria-describedby={result?.fieldErrors?.email ? 'email-error' : undefined}
             className="w-full h-12 px-3.5 rounded-[6px] bg-[#141713] border border-[#B9BEAC]/25 text-[#F0E7D3] placeholder-[#6E7B6E] focus:outline-none focus:ring-2 focus:ring-[#C4A96A] focus:border-transparent transition-colors text-sm"
             placeholder="wanderer@ember.game"
@@ -103,7 +112,7 @@ function LoginForm() {
             type="password"
             autoComplete="current-password"
             required
-            disabled={isPending}
+            disabled={isPending || isExiting}
             aria-describedby={result?.fieldErrors?.password ? 'password-error' : undefined}
             className="w-full h-12 px-3.5 rounded-[6px] bg-[#141713] border border-[#B9BEAC]/25 text-[#F0E7D3] placeholder-[#6E7B6E] focus:outline-none focus:ring-2 focus:ring-[#C4A96A] focus:border-transparent transition-colors text-sm"
             placeholder="••••••••••••"
@@ -117,10 +126,10 @@ function LoginForm() {
 
         <button
           type="submit"
-          disabled={isPending}
+          disabled={isPending || isExiting}
           className="w-full h-12 min-h-[48px] mt-3 px-4 rounded-[6px] bg-[#E98A4B] hover:brightness-105 text-[#141713] font-semibold text-sm tracking-wide uppercase transition-all duration-100 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C4A96A] focus-visible:ring-offset-2 focus-visible:ring-offset-[#1D231D] disabled:opacity-60 disabled:cursor-not-allowed active:scale-[0.98]"
         >
-          {isPending ? 'Entering the Hearth…' : 'Return to the Hearth'}
+          {isExiting ? 'Entering your path…' : isPending ? 'Entering the Hearth…' : 'Return to the Hearth'}
         </button>
       </form>
 
@@ -138,8 +147,20 @@ function LoginForm() {
 }
 
 export default function LoginPage() {
+  const { isMuted, toggleMute, isExiting } = useEntryAudio();
   return (
-    <main className="path-entry">
+    <main className="path-entry" data-exiting={isExiting}>
+      <div className="path-entry-tools">
+        <button
+          type="button"
+          className="prologue-sound-btn"
+          onClick={toggleMute}
+          aria-label={isMuted ? 'Enable entry sound' : 'Mute entry sound'}
+          aria-pressed={!isMuted}
+        >
+          {isMuted ? 'Sound Off' : 'Sound On'}
+        </button>
+      </div>
       <Suspense fallback={<div className="text-sm text-[#B9BEAC]">Loading Hearth gateway…</div>}>
         <LoginForm />
       </Suspense>

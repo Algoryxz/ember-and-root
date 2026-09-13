@@ -1,9 +1,18 @@
-.path-entry{position:relative;isolation:isolate;min-height:100svh;display:flex;align-items:center;justify-content:flex-end;padding:6vh 12vw;color:#f0e7d3;background:#030707 url('/opening/storm-shore.webp?v=0') center/cover fixed}
-.path-entry:before{content:'';position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,#03070766,#030707e8 58%,#030707),linear-gradient(0deg,#030707,transparent)}
+.path-entry{position:relative;isolation:isolate;min-height:100svh;display:flex;align-items:center;justify-content:flex-end;padding:6vh 12vw;color:#f0e7d3;background:#030707 url('/opening/storm-shore.webp?v=0') center/cover fixed;transition:filter 2.4s ease-out}
+.path-entry:before{content:'';position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,#03070766,#030707e8 58%,#030707),linear-gradient(0deg,#030707,transparent);transition:opacity 2s ease-in-out,background 2s ease-in-out}
 .path-entry:after{content:'';position:fixed;inset:0;z-index:20;background:#edbe89;pointer-events:none;animation:entry-arrival 1.2s ease-out both}
-.path-inscription{width:100%;max-width:410px;padding:30px 0;position:relative}
-.path-inscription:before{content:'';position:fixed;left:18vw;top:44vh;width:13px;height:22px;border-radius:65% 35% 50% 45%;background:#ffe4ae;box-shadow:0 0 24px 8px #e98a4b88,0 0 130px 50px #ba6b3333}
+.path-entry-tools{position:absolute;top:max(20px,env(safe-area-inset-top));right:max(24px,env(safe-area-inset-right));display:flex;align-items:center;gap:16px;z-index:25}
+.path-entry-tools button{min-height:44px;min-width:44px;background:transparent;border:0;padding:8px 12px;color:#b9b9ad;font-size:11px;letter-spacing:.08em;text-transform:uppercase;text-shadow:0 1px 5px #000;cursor:pointer;transition:color .2s,text-shadow .2s;border-radius:6px}
+.path-entry-tools button:hover{color:#ffe1a0;text-shadow:0 0 10px #e98a4b88}
+.path-entry-tools button:focus-visible{outline:2px solid #ffd38a;outline-offset:2px}
+.path-inscription{width:100%;max-width:410px;padding:30px 0;position:relative;transition:opacity 1.8s ease-out,transform 1.8s ease-out}
+.path-inscription:before{content:'';position:fixed;left:18vw;top:44vh;width:13px;height:22px;border-radius:65% 35% 50% 45%;background:#ffe4ae;box-shadow:0 0 24px 8px #e98a4b88,0 0 130px 50px #ba6b3333;transition:opacity 2.4s cubic-bezier(.25,1,.5,1),box-shadow 2.4s cubic-bezier(.25,1,.5,1),transform 2.4s ease-out}
 .path-inscription>div:first-child{text-align:left}.path-inscription h1{font-size:36px;letter-spacing:.02em}.path-inscription input{background:#04090888;border-width:0 0 1px;border-radius:0;padding-left:0}.path-inscription button[type=submit]{background:transparent;border-radius:0;border-bottom:1px solid #c48e54;color:#ffdcaa;text-align:left;padding-left:0;letter-spacing:.14em}.path-inscription button[type=submit]:hover{background:#e98a4b0a}.path-inscription>div:last-child{text-align:left}
+.path-entry[data-exiting='true']{pointer-events:none}
+.path-entry[data-exiting='true']:before{background:#141713;opacity:.96}
+.path-entry[data-exiting='true'] .path-entry-tools{opacity:0;transition:opacity 1s ease-out}
+.path-entry[data-exiting='true'] .path-inscription{opacity:0;transform:translateY(-8px)}
+.path-entry[data-exiting='true'] .path-inscription:before{opacity:0;transform:scale(1.15);box-shadow:0 0 35px 14px #ffe4ae55,0 0 150px 60px #e98a4b22;transition-delay:.25s}
 @keyframes entry-arrival{from{opacity:1}to{opacity:0}}
-@media(max-width:700px){.path-entry{padding:12vh 8vw 6vh;background-position:35% center}.path-entry:before{background:#020606db}.path-inscription:before{position:absolute;left:0;top:-40px;width:8px;height:14px}.path-inscription h1{font-size:30px}}
-@media(prefers-reduced-motion:reduce){.path-entry:after{animation:none;opacity:0}}
+@media(max-width:700px){.path-entry{padding:12vh 8vw 6vh;background-position:35% center}.path-entry:before{background:#020606db}.path-inscription:before{position:absolute;left:0;top:-40px;width:8px;height:14px}.path-inscription h1{font-size:30px}.path-entry-tools{top:12px;right:16px}}
+@media(prefers-reduced-motion:reduce){.path-entry:after{animation:none;opacity:0}.path-entry[data-exiting='true'] .path-inscription{transition-duration:.3s;transform:none}.path-entry[data-exiting='true'] .path-inscription:before{transition-duration:.4s;transform:none}.path-entry[data-exiting='true']:before{transition-duration:.4s}}

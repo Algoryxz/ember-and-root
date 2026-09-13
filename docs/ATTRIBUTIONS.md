@@ -109,12 +109,12 @@ Ember & Root product concept, game systems, backend architecture, visual directi
 - Relic cabinet ornaments are locally authored CSS representations of the existing Copper Halo, Firefly Orbit, and Engraved Basin catalog items. No external art copied.
 - The canonical Root SVG geometry and server progression rules remain unchanged.
 
-## 7. Cinematic prologue audio soundtrack (2026-09-13)
+## 7. Canonical Starting Prologue & Entry Chapter Soundtrack (2026-09-13)
 
-- Source: User-provided recording (`Recording 2026-09-13 090646.mp3`), placed in `public/audio/prologue.mp3`.
-- Status: User-supplied media for the public cinematic prologue sequence (~35s, 75 BPM).
-- What was borrowed: Atmospheric orchestral soundtrack utilized exclusively within the public cinematic prologue (`components/public/opening/`). Zero presence in interior game surfaces (Hearth, Root, Satchel, Chronicle, Settings).
-- Integration: Authored audio controller (`prologueAudio.ts`) handling HTML5 audio playback, browser gesture unlocking for autoplay restrictions, accessible sound toggle controls, and smooth volume fading. No external audio dependencies introduced.
+- Source: User-provided recording (`Recording 2026-09-13 105457.mp3`), placed in `public/audio/prologue.mp3`.
+- Status: User-supplied media for the entire Entry Chapter (~102s duration), spanning the cinematic prologue, Root descent, Ember contact, storm shore title, and `/signup` / `/login` auth folios.
+- What was borrowed: Atmospheric orchestral soundtrack utilized continuously across the public entry chapter (`components/public/opening/`, `/signup`, `/login`). On confirmed successful entry, performs a slow non-linear cinematic fade (100% -> ~40% -> 0% over 2–3 seconds) and halts completely with zero presence in interior game surfaces (Hearth, Root, Satchel, Chronicle, Settings, Onboarding).
+- Integration: Authored audio controller (`prologueAudio.ts`) and React provider (`EntryAudioProvider.tsx`) handling HTML5 audio playback, browser gesture unlocking for autoplay restrictions, accessible sound toggle controls across all entry surfaces, non-linear exit fade, and seamless continuous playback between route transitions. No external audio dependencies introduced.
 
 ## 8. Canonical Brand Mark — Ember to Root (2026-09-13)
 

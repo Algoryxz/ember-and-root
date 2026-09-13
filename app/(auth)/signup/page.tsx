@@ -5,26 +5,45 @@ import Link from 'next/link';
 import '@/components/public/opening/entry.css';
 import { signupAction, type AuthActionResult } from '@/app/actions/auth';
 import { EmberRootMark } from '@/components/brand/EmberRootLogo';
+import { useEntryAudio } from '@/components/public/opening/EntryAudioProvider';
 
 export default function SignupPage() {
   const [isPending, startTransition] = useTransition();
   const [result, setResult] = useState<AuthActionResult | null>(null);
+  const { isMuted, toggleMute, startExitTransition, isExiting } = useEntryAudio();
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (isPending || isExiting) return;
     setResult(null);
     const formData = new FormData(event.currentTarget);
 
     startTransition(async () => {
       const res = await signupAction(null, formData);
       if (res) {
-        setResult(res);
+        if (res.redirectTo) {
+          // Confirmed successful account creation with session: run slow 2-3s cinematic fade
+          await startExitTransition(res.redirectTo);
+        } else {
+          setResult(res);
+        }
       }
     });
   }
 
   return (
-    <main className="path-entry">
+    <main className="path-entry" data-exiting={isExiting}>
+      <div className="path-entry-tools">
+        <button
+          type="button"
+          className="prologue-sound-btn"
+          onClick={toggleMute}
+          aria-label={isMuted ? 'Enable entry sound' : 'Mute entry sound'}
+          aria-pressed={!isMuted}
+        >
+          {isMuted ? 'Sound Off' : 'Sound On'}
+        </button>
+      </div>
       <div className="path-inscription">
         {/* Editorial Folio Header */}
         <div className="text-center mb-8">
@@ -91,7 +110,7 @@ export default function SignupPage() {
                   type="email"
                   autoComplete="email"
                   required
-                  disabled={isPending}
+                  disabled={isPending || isExiting}
                   aria-describedby={result?.fieldErrors?.email ? 'email-error' : undefined}
                   className="w-full h-12 px-3.5 rounded-[6px] bg-[#141713] border border-[#B9BEAC]/25 text-[#F0E7D3] placeholder-[#6E7B6E] focus:outline-none focus:ring-2 focus:ring-[#C4A96A] focus:border-transparent transition-colors text-sm"
                   placeholder="wanderer@ember.game"
@@ -116,7 +135,7 @@ export default function SignupPage() {
                   type="password"
                   autoComplete="new-password"
                   required
-                  disabled={isPending}
+                  disabled={isPending || isExiting}
                   aria-describedby={result?.fieldErrors?.password ? 'password-error' : undefined}
                   className="w-full h-12 px-3.5 rounded-[6px] bg-[#141713] border border-[#B9BEAC]/25 text-[#F0E7D3] placeholder-[#6E7B6E] focus:outline-none focus:ring-2 focus:ring-[#C4A96A] focus:border-transparent transition-colors text-sm"
                   placeholder="••••••••••••"
@@ -141,7 +160,7 @@ export default function SignupPage() {
                   type="password"
                   autoComplete="new-password"
                   required
-                  disabled={isPending}
+                  disabled={isPending || isExiting}
                   aria-describedby={result?.fieldErrors?.confirmPassword ? 'confirm-password-error' : undefined}
                   className="w-full h-12 px-3.5 rounded-[6px] bg-[#141713] border border-[#B9BEAC]/25 text-[#F0E7D3] placeholder-[#6E7B6E] focus:outline-none focus:ring-2 focus:ring-[#C4A96A] focus:border-transparent transition-colors text-sm"
                   placeholder="••••••••••••"
@@ -155,10 +174,10 @@ export default function SignupPage() {
 
               <button
                 type="submit"
-                disabled={isPending}
+                disabled={isPending || isExiting}
                 className="w-full h-12 min-h-[48px] mt-3 px-4 rounded-[6px] bg-[#E98A4B] hover:brightness-105 text-[#141713] font-semibold text-sm tracking-wide uppercase transition-all duration-100 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C4A96A] focus-visible:ring-offset-2 focus-visible:ring-offset-[#1D231D] disabled:opacity-60 disabled:cursor-not-allowed active:scale-[0.98]"
               >
-                {isPending ? 'Creating your path…' : 'Begin your path'}
+                {isExiting ? 'Entering your path…' : isPending ? 'Creating your path…' : 'Begin your path'}
               </button>
             </form>
 

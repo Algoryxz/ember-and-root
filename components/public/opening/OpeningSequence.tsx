@@ -4,7 +4,7 @@ import { useEffect, useRef, useState, useCallback, type CSSProperties, type RefO
 import { motion, useReducedMotion } from 'motion/react';
 import './opening.css';
 import { ShoreSequence } from './ShoreSequence';
-import { createPrologueAudioController, type PrologueAudioController } from './prologueAudio';
+import { useEntryAudio } from './EntryAudioProvider';
 
 type Scene = 'forest' | 'guided' | 'chamber' | 'discovery' | 'surge' | 'black';
 
@@ -144,9 +144,8 @@ export function OpeningSequence() {
   const [assets, setAssets] = useState({ forest: false, roots: false });
   const [failed, setFailed] = useState(false);
   const [attempt, setAttempt] = useState(0);
-  const [isMuted, setIsMuted] = useState(false);
 
-  const audioController = useRef<PrologueAudioController | null>(null);
+  const { isMuted, toggleMute, play, restart } = useEntryAudio();
   const osReduced = useReducedMotion();
   const reduced = Boolean(osReduced || still);
   const hotspot = useRef<HTMLButtonElement>(null);
@@ -157,20 +156,10 @@ export function OpeningSequence() {
   const ready = assets.forest && (!needsRoots || assets.roots);
   const enabled = phase === 'idle' && ready && !failed && Boolean(NEXT[scene]);
 
-  // Audio lifecycle initialization
+  // Audio lifecycle initialization: start playback on prologue mount
   useEffect(() => {
-    const controller = createPrologueAudioController((muted) => {
-      setIsMuted(muted);
-    });
-    audioController.current = controller;
-    setIsMuted(controller.isMuted);
-
-    controller.play();
-
-    return () => {
-      controller.cleanup();
-    };
-  }, []);
+    play();
+  }, [play]);
 
   // Asset preloading
   useEffect(() => {
@@ -238,12 +227,9 @@ export function OpeningSequence() {
     setPhase('enter');
   }
 
-  const handleFadeAudio = useCallback(() => {
-    audioController.current?.fadeOut(600);
-  }, []);
-
   function skip() {
-    audioController.current?.fadeOut(500);
+    // Flow naturally into shore/title without killing the soundtrack
+    play();
     setSkipShore(true);
     keyboardAdvance.current = true;
     setScene('black');
@@ -257,7 +243,7 @@ export function OpeningSequence() {
     setScene('forest');
     setPhase('enter');
     setNear(false);
-    audioController.current?.restart();
+    restart();
   }
 
   return (
@@ -332,7 +318,7 @@ export function OpeningSequence() {
         <button
           type="button"
           className="prologue-sound-btn"
-          onClick={() => audioController.current?.toggleMute()}
+          onClick={toggleMute}
           aria-label={isMuted ? 'Enable prologue sound' : 'Mute prologue sound'}
           aria-pressed={!isMuted}
         >
@@ -356,7 +342,6 @@ export function OpeningSequence() {
           reduced={reduced}
           paused={paused}
           skip={skipShore}
-          onFadeAudio={handleFadeAudio}
           onReplay={handleReplay}
         />
       )}

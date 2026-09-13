@@ -22,6 +22,7 @@ export interface PrologueAudioController {
   toggleMute: () => void;
   play: () => Promise<void>;
   fadeOut: (durationMs?: number) => Promise<void>;
+  fadeExit: (durationMs?: number) => Promise<void>;
   restart: () => Promise<void>;
   cleanup: () => void;
 }
@@ -92,15 +93,67 @@ export function fadeVolume(
   });
 }
 
+/**
+ * Slow non-linear cinematic exit fade for confirmed successful entry.
+ * Curve: 100% -> ~40% at midpoint (~1.2s) -> 0% at completion (2.4s).
+ * Cleans up and pauses audio on completion.
+ */
+export function fadeExitAudio(
+  audio: HTMLAudioElement,
+  durationMs = 2400
+): Promise<void> {
+  return new Promise((resolve) => {
+    if (fadeInterval) clearInterval(fadeInterval);
+
+    const startVol = audio.volume;
+    if (startVol < 0.01) {
+      audio.pause();
+      audio.currentTime = 0;
+      audio.volume = 0;
+      resolve();
+      return;
+    }
+
+    const startTime = performance.now();
+    fadeInterval = setInterval(() => {
+      const elapsed = performance.now() - startTime;
+      const p = Math.min(1, elapsed / durationMs);
+
+      let factor: number;
+      if (p <= 0.5) {
+        // First half: 1.0 -> 0.4 with cosine ease
+        const u = p / 0.5;
+        const easedU = 0.5 * (1 - Math.cos(Math.PI * u));
+        factor = 1.0 - 0.6 * easedU;
+      } else {
+        // Second half: 0.4 -> 0.0 with cosine ease
+        const v = (p - 0.5) / 0.5;
+        const easedV = 0.5 * (1 - Math.cos(Math.PI * v));
+        factor = 0.4 - 0.4 * easedV;
+      }
+
+      audio.volume = Math.max(0, Math.min(1, startVol * factor));
+
+      if (p >= 1) {
+        if (fadeInterval) clearInterval(fadeInterval);
+        fadeInterval = null;
+        audio.volume = 0;
+        audio.pause();
+        audio.currentTime = 0;
+        resolve();
+      }
+    }, 25);
+  });
+}
+
 export function createPrologueAudioController(
   onStateChange?: (isMuted: boolean, isPlaying: boolean) => void
 ): PrologueAudioController {
   let isMuted = getStoredMutePreference();
-  let isPlaying = false;
+  const audio = getPrologueAudio();
+  let isPlaying = Boolean(audio && !audio.paused && audio.currentTime > 0 && !audio.ended);
   let isReady = false;
   let gestureRegistered = false;
-
-  const audio = getPrologueAudio();
 
   const notify = () => {
     onStateChange?.(isMuted, isPlaying);
@@ -192,6 +245,15 @@ export function createPrologueAudioController(
     notify();
   };
 
+  const fadeExit = async (durationMs = 2400) => {
+    if (!audio) return;
+    removeGestureListeners();
+    await fadeExitAudio(audio, durationMs);
+    isPlaying = false;
+    globalAudio = null;
+    notify();
+  };
+
   const restart = async () => {
     if (!audio) return;
     if (fadeInterval) {
@@ -235,6 +297,7 @@ export function createPrologueAudioController(
     toggleMute,
     play,
     fadeOut,
+    fadeExit,
     restart,
     cleanup,
   };

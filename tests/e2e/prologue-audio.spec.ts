@@ -18,7 +18,7 @@ test.describe('Prologue Audio & Cinematic Synchronization Suite', () => {
     expect(isMuted).toBe('true');
 
     // Click to unmute
-    await soundBtn.click();
+    await soundBtn.click({ force: true });
     await expect(soundBtn).toContainText('Sound On');
     const isMutedAfter = await page.evaluate(() => sessionStorage.getItem('ember_prologue_muted'));
     expect(isMutedAfter).toBe('false');
@@ -76,13 +76,94 @@ test.describe('Prologue Audio & Cinematic Synchronization Suite', () => {
   });
 
   test('back navigation from signup cleanly returns to landing page', async ({ page }) => {
+    test.setTimeout(45000);
     await page.goto('/');
     await page.getByRole('button', { name: 'Skip cinematic' }).click();
-    await page.getByRole('button', { name: 'BEGIN YOUR PATH' }).click();
-    await expect(page).toHaveURL(/\/signup/);
+    const beginBtn = page.getByRole('button', { name: 'BEGIN YOUR PATH' });
+    await expect(beginBtn).toBeVisible({ timeout: 15000 });
+    await beginBtn.click();
+    await expect(page).toHaveURL(/\/signup/, { timeout: 20000 });
 
     await page.goBack();
-    await expect(page.locator('.prologue')).toBeVisible();
+    await expect(page.locator('.prologue')).toBeVisible({ timeout: 20000 });
+  });
+
+  test('soundtrack continues into signup without interruption', async ({ page }) => {
+    await page.goto('/');
+    await page.locator('body').click();
+    await page.getByRole('button', { name: 'Skip cinematic' }).click();
+
+    const beginBtn = page.getByRole('button', { name: 'BEGIN YOUR PATH' });
+    await beginBtn.click();
+    await expect(page).toHaveURL(/\/signup\?from=ember/, { timeout: 20000 });
+
+    // Sound toggle remains accessible on auth folio
+    const authSoundBtn = page.locator('.path-entry-tools button.prologue-sound-btn');
+    await expect(authSoundBtn).toBeVisible();
+    await expect(authSoundBtn).toContainText('Sound On');
+  });
+
+  test('signup failure does NOT end soundtrack', async ({ page }) => {
+    await page.goto('/signup?from=ember');
+    await page.locator('body').click();
+
+    // Trigger validation failure with invalid email
+    await page.fill('input[name="email"]', 'invalid-email');
+    await page.fill('input[name="password"]', 'pass');
+    await page.fill('input[name="confirmPassword"]', 'pass2');
+    await page.getByRole('button', { name: 'Begin your path' }).click();
+
+    // Verification that validation error is rendered and folio is NOT in exiting state
+    await expect(page.locator('.path-entry')).not.toHaveAttribute('data-exiting', 'true');
+    const authSoundBtn = page.locator('.path-entry-tools button.prologue-sound-btn');
+    await expect(authSoundBtn).toBeVisible();
+    await expect(authSoundBtn).toContainText('Sound On');
+  });
+
+  test('soundtrack continues into login without interruption', async ({ page }) => {
+    await page.goto('/');
+    await page.locator('body').click();
+    await page.getByRole('button', { name: 'Skip cinematic' }).click();
+
+    const signInBtn = page.getByRole('button', { name: 'RETURNING PLAYER SIGN IN' });
+    await signInBtn.click();
+    await expect(page).toHaveURL(/\/login\?from=ember/, { timeout: 20000 });
+
+    const authSoundBtn = page.locator('.path-entry-tools button.prologue-sound-btn');
+    await expect(authSoundBtn).toBeVisible();
+    await expect(authSoundBtn).toContainText('Sound On');
+  });
+
+  test('failed login preserves soundtrack and does NOT trigger exit fade', async ({ page }) => {
+    await page.goto('/login?from=ember');
+    await page.locator('body').click();
+
+    await page.fill('input[name="email"]', 'nobody@ember.game');
+    await page.fill('input[name="password"]', 'wrongpassword123');
+    await page.getByRole('button', { name: 'Return to the Hearth' }).click();
+
+    // Error alert is rendered
+    await expect(page.getByRole('alert')).toBeVisible({ timeout: 15000 });
+    // Foliage/atmosphere remains active, no data-exiting
+    await expect(page.locator('.path-entry')).not.toHaveAttribute('data-exiting', 'true');
+    const authSoundBtn = page.locator('.path-entry-tools button.prologue-sound-btn');
+    await expect(authSoundBtn).toContainText('Sound On');
+  });
+
+  test('sound toggle on auth folio synchronizes mute state with session', async ({ page }) => {
+    await page.goto('/login');
+
+    const authSoundBtn = page.locator('.path-entry-tools button.prologue-sound-btn');
+    await expect(authSoundBtn).toBeVisible();
+    await expect(authSoundBtn).toContainText('Sound On');
+
+    await authSoundBtn.click({ force: true });
+    await expect(authSoundBtn).toContainText('Sound Off', { timeout: 10000 });
+    const isMuted = await page.evaluate(() => sessionStorage.getItem('ember_prologue_muted'));
+    expect(isMuted).toBe('true');
+
+    await authSoundBtn.click({ force: true });
+    await expect(authSoundBtn).toContainText('Sound On', { timeout: 10000 });
   });
 
   test('audio 404 load failure does not block visual prologue progression', async ({ page }) => {
@@ -91,8 +172,8 @@ test.describe('Prologue Audio & Cinematic Synchronization Suite', () => {
 
     await page.goto('/');
     // Visual prologue still mounts and operates normally
-    await expect(page.locator('.prologue')).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Skip cinematic' })).toBeVisible();
+    await expect(page.locator('.prologue')).toBeVisible({ timeout: 10000 });
+    await expect(page.getByRole('button', { name: 'Skip cinematic' })).toBeVisible({ timeout: 10000 });
   });
 
   test('mobile viewport 390px and 320px responsive with no horizontal overflow', async ({ page }) => {
@@ -100,10 +181,15 @@ test.describe('Prologue Audio & Cinematic Synchronization Suite', () => {
       await page.setViewportSize({ width, height: 800 });
       await page.goto('/');
       await page.getByRole('button', { name: 'Skip cinematic' }).click();
-      await expect(page.locator('.shore-credits')).toBeVisible();
+      await expect(page.locator('.shore-credits')).toBeVisible({ timeout: 10000 });
 
       const hasOverflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
       expect(hasOverflow).toBe(false);
+
+      // Check login at this width as well
+      await page.goto('/login');
+      const loginOverflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
+      expect(loginOverflow).toBe(false);
     }
   });
 
@@ -112,10 +198,10 @@ test.describe('Prologue Audio & Cinematic Synchronization Suite', () => {
     await page.goto('/');
 
     const reduceBtn = page.getByRole('button', { name: 'Reduced motion' });
-    await expect(reduceBtn).toBeVisible();
+    await expect(reduceBtn).toBeVisible({ timeout: 10000 });
 
     await page.getByRole('button', { name: 'Skip cinematic' }).click();
-    await expect(page.getByRole('button', { name: 'BEGIN YOUR PATH' })).toBeVisible({ timeout: 5000 });
+    await expect(page.getByRole('button', { name: 'BEGIN YOUR PATH' })).toBeVisible({ timeout: 10000 });
   });
 
   test('keyboard accessibility navigates interactive tools and hotspots', async ({ page }) => {

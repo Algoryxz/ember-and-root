@@ -1,5 +1,6 @@
 import React from 'react';
 import '@/components/global.css';
+import { EntryAudioProvider } from '@/components/public/opening/EntryAudioProvider';
 
 export const metadata = {
   title: 'Ember & Root — What you do becomes who you are',
@@ -19,7 +20,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="min-h-screen bg-[#141713] text-[#F0E7D3] antialiased">
-        {children}
+        <EntryAudioProvider>
+          {children}
+        </EntryAudioProvider>
       </body>
     </html>
   );
