@@ -1,0 +1,80 @@
+name: Supabase Migrations
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'supabase/migrations/**'
+      - 'supabase/config.toml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: supabase-production-migrations
+  cancel-in-progress: false
+
+jobs:
+  push-migrations:
+    name: Apply production database migrations
+    runs-on: ubuntu-latest
+    env:
+      SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Validate database connection secret
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -z "${SUPABASE_DB_URL:-}" ]]; then
+            echo "SUPABASE_DB_URL GitHub Actions secret is not configured."
+            echo "Add the production Supabase Postgres connection string before running this workflow."
+            exit 1
+          fi
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Apply pending production migrations
+        shell: bash
+        run: |
+          set -euo pipefail
+          supabase db push --db-url "$SUPABASE_DB_URL"
+
+      - name: Reassert canonical quest-sealing RPC
+        shell: bash
+        run: |
+          set -euo pipefail
+          # 20260914030000 is intentionally idempotent (CREATE OR REPLACE + GRANTs).
+          # Re-run it directly so an incorrect migration-history row cannot leave
+          # the hosted database with a missing/stale complete_quest function.
+          psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -f supabase/migrations/20260914030000_canonical_quest_sealing.sql
+
+      - name: Verify production quest-sealing contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          rpc=$(psql "$SUPABASE_DB_URL" -Atqc "SELECT COALESCE(to_regprocedure('public.complete_quest(uuid,uuid,text)')::text, 'MISSING');")
+          snapshot=$(psql "$SUPABASE_DB_URL" -Atqc "SELECT COALESCE(to_regprocedure('public.get_game_snapshot()')::text, 'MISSING');")
+          level=$(psql "$SUPABASE_DB_URL" -Atqc "SELECT COALESCE(to_regprocedure('public.level_from_xp(integer)')::text, 'MISSING');")
+          xp=$(psql "$SUPABASE_DB_URL" -Atqc "SELECT COALESCE(to_regprocedure('public.base_xp_from_effort(text)')::text, 'MISSING');")
+          echo "complete_quest: $rpc"
+          echo "get_game_snapshot: $snapshot"
+          echo "level_from_xp: $level"
+          echo "base_xp_from_effort: $xp"
+          [[ "$rpc" == "complete_quest(uuid,uuid,text)" ]]
+          [[ "$snapshot" == "get_game_snapshot()" ]]
+          [[ "$level" == "level_from_xp(integer)" ]]
+          [[ "$xp" == "base_xp_from_effort(text)" ]]
+
+      - name: Verify migration state
+        shell: bash
+        run: |
+          set -euo pipefail
+          supabase migration list --db-url "$SUPABASE_DB_URL"
