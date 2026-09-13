@@ -1,8 +1,12 @@
-/**
- * Journal V1 Data Adapter
+﻿/**
+ * Journal V1 Data Adapter — Server-Authoritative Persistence
  * 
- * Handles Supabase database persistence for personal field journal notes
- * with strict per-user isolation, error surfacing, and client fallback.
+ * Invariants:
+ * 1. Authoritative persistence backed strictly by Supabase Postgres `journal_notes`.
+ * 2. On remote failure, throws explicit Error; NEVER silently swallows errors or falls back to stale local storage.
+ * 3. Delete returns success=true ONLY upon confirmed server deletion.
+ * 4. Offline/demo fallback is strictly gated behind non-production/test environments when unauthenticated,
+ *    and every fallback entry is explicitly marked with `isDemo: true`.
  */
 
 import { createClient as createBrowserClient } from '@/lib/supabase/client';
@@ -15,9 +19,16 @@ export interface SupabaseClientLike {
   };
 }
 
+function isDevOrTest(): boolean {
+  return process.env.NODE_ENV !== 'production';
+}
+
 function getClient(passedClient?: any): any {
   if (passedClient && typeof passedClient.from === 'function') {
     return passedClient;
+  }
+  if (passedClient === null) {
+    return null;
   }
   if (typeof window !== 'undefined') {
     try {
@@ -29,34 +40,90 @@ function getClient(passedClient?: any): any {
   return null;
 }
 
-// Local storage key for offline fallback / unauthenticated demo
-const LOCAL_STORAGE_KEY = 'ember_journal_notes_v1';
-let memoryFallbackNotes: JournalNote[] = [];
+// ── Development / Test Offline Demo Fallback ────────────────────────────────
+// Strictly isolated to non-production environments when unauthenticated.
+const DEMO_STORAGE_KEY = 'ember_journal_demo_notes_v1';
+let memoryDemoNotes: JournalNote[] = [];
 
-function getLocalNotes(): JournalNote[] {
+function getLocalDemoNotes(): JournalNote[] {
+  if (!isDevOrTest()) return [];
   if (typeof localStorage !== 'undefined') {
     try {
-      const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
+      const raw = localStorage.getItem(DEMO_STORAGE_KEY);
       if (raw !== null) {
-        return JSON.parse(raw);
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed.map((n: JournalNote) => ({ ...n, isDemo: true })) : [];
       }
-      return [];
+      return memoryDemoNotes;
     } catch {
-      return memoryFallbackNotes;
+      return memoryDemoNotes;
     }
   }
-  return memoryFallbackNotes;
+  return memoryDemoNotes;
 }
 
-function setLocalNotes(notes: JournalNote[]): void {
-  memoryFallbackNotes = notes;
+function setLocalDemoNotes(notes: JournalNote[]): void {
+  if (!isDevOrTest()) return;
+  memoryDemoNotes = notes;
   if (typeof localStorage !== 'undefined') {
     try {
-      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(notes));
+      localStorage.setItem(DEMO_STORAGE_KEY, JSON.stringify(notes));
     } catch {
-      // Ignore quota errors
+      // Ignore quota errors in demo mode
     }
   }
+}
+
+function createLocalDemoNote(title: string | null, body: string): JournalNote {
+  if (!isDevOrTest()) {
+    throw new Error('Local demo storage is disabled in production.');
+  }
+  const now = new Date().toISOString();
+  const demoNote: JournalNote = {
+    id: typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `demo_leaf_${Date.now()}`,
+    userId: 'demo_user',
+    title,
+    body,
+    createdAt: now,
+    updatedAt: now,
+    isDemo: true,
+  };
+  const current = getLocalDemoNotes();
+  setLocalDemoNotes([demoNote, ...current]);
+  return demoNote;
+}
+
+function updateLocalDemoNote(id: string, title: string | null, body: string): JournalNote {
+  if (!isDevOrTest()) {
+    throw new Error('Local demo storage is disabled in production.');
+  }
+  const current = getLocalDemoNotes();
+  const existing = current.find((n) => n.id === id);
+  if (!existing) {
+    throw new Error('Demo journal leaf not found.');
+  }
+  const updated: JournalNote = {
+    ...existing,
+    title,
+    body,
+    updatedAt: new Date().toISOString(),
+    isDemo: true,
+  };
+  setLocalDemoNotes(current.map((n) => (n.id === updated.id ? updated : n)));
+  return updated;
+}
+
+function deleteLocalDemoNote(id: string): { success: boolean } {
+  if (!isDevOrTest()) {
+    throw new Error('Local demo storage is disabled in production.');
+  }
+  const current = getLocalDemoNotes();
+  const filtered = current.filter((n) => n.id !== id);
+  if (filtered.length === current.length) {
+    throw new Error('Demo journal leaf not found or already deleted.');
+  }
+  setLocalDemoNotes(filtered);
+  return { success: true };
 }
 
 function mapRowToNote(row: any): JournalNote {
@@ -71,46 +138,46 @@ function mapRowToNote(row: any): JournalNote {
 }
 
 /**
- * Fetch all journal notes for the current user, ordered newest first.
+ * Fetch all journal notes for the authenticated user, ordered newest first.
+ * Throws on failure; never silently falls back to stale local storage.
  */
 export async function fetchJournalNotes(client?: any): Promise<JournalNote[]> {
   const supabase = getClient(client);
+
   if (!supabase) {
-    return getLocalNotes();
+    if (!isDevOrTest()) {
+      throw new Error('Authentication required: please sign in to access your field journal.');
+    }
+    return getLocalDemoNotes();
   }
 
-  try {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
 
-    if (!user?.id) {
-      return getLocalNotes();
+  if (authError || !user?.id) {
+    if (!isDevOrTest()) {
+      throw new Error('Authentication required: please sign in to access your field journal.');
     }
-
-    const { data, error } = await supabase
-      .from('journal_notes')
-      .select('id, user_id, title, body, created_at, updated_at')
-      .order('created_at', { ascending: false });
-
-    if (error) {
-      console.warn('Could not fetch from Supabase journal_notes, using local fallback:', error.message);
-      return getLocalNotes();
-    }
-
-    const notes = (data || []).map(mapRowToNote);
-    if (typeof window !== 'undefined' && notes.length > 0) {
-      setLocalNotes(notes);
-    }
-    return notes;
-  } catch (err) {
-    console.warn('Failed to query journal_notes:', err);
-    return getLocalNotes();
+    return getLocalDemoNotes();
   }
+
+  const { data, error } = await supabase
+    .from('journal_notes')
+    .select('id, user_id, title, body, created_at, updated_at')
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    throw new Error(`Failed to load journal leaves: ${error.message || JSON.stringify(error)}`);
+  }
+
+  return (data || []).map(mapRowToNote);
 }
 
 /**
  * Create a new journal note with optional title and plain text body.
+ * Surfaces errors directly; never returns fake local results when authenticated.
  */
 export async function createJournalNote(
   input: CreateNoteInput,
@@ -124,52 +191,49 @@ export async function createJournalNote(
   const cleanTitle = input.title ? input.title.trim() : null;
   const supabase = getClient(client);
 
-  if (supabase) {
-    try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
-      if (user?.id) {
-        const { data, error } = await supabase
-          .from('journal_notes')
-          .insert({
-            user_id: user.id,
-            title: cleanTitle,
-            body: cleanBody,
-          })
-          .select()
-          .single();
-
-        if (!error && data) {
-          const newNote = mapRowToNote(data);
-          const current = getLocalNotes();
-          setLocalNotes([newNote, ...current.filter((n) => n.id !== newNote.id)]);
-          return newNote;
-        }
-      }
-    } catch (err) {
-      console.warn('createJournalNote database write failed, using local note:', err);
+  if (!supabase) {
+    if (!isDevOrTest()) {
+      throw new Error('Authentication required: please sign in to bind a journal leaf.');
     }
+    return createLocalDemoNote(cleanTitle, cleanBody);
   }
 
-  // Fallback for demo or offline
-  const now = new Date().toISOString();
-  const fallbackNote: JournalNote = {
-    id: typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `note_${Date.now()}`,
-    userId: 'local_user',
-    title: cleanTitle,
-    body: cleanBody,
-    createdAt: now,
-    updatedAt: now,
-  };
-  const current = getLocalNotes();
-  setLocalNotes([fallbackNote, ...current]);
-  return fallbackNote;
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+
+  if (authError || !user?.id) {
+    if (!isDevOrTest()) {
+      throw new Error('Authentication required: please sign in to bind a journal leaf.');
+    }
+    return createLocalDemoNote(cleanTitle, cleanBody);
+  }
+
+  const { data, error } = await supabase
+    .from('journal_notes')
+    .insert({
+      user_id: user.id,
+      title: cleanTitle,
+      body: cleanBody,
+    })
+    .select('id, user_id, title, body, created_at, updated_at')
+    .single();
+
+  if (error) {
+    throw new Error(`Failed to bind journal leaf: ${error.message || JSON.stringify(error)}`);
+  }
+
+  if (!data) {
+    throw new Error('Server did not return created journal leaf.');
+  }
+
+  return mapRowToNote(data);
 }
 
 /**
  * Update an existing journal note.
+ * Confirms update on server; never returns fake local results when authenticated.
  */
 export async function updateJournalNote(
   input: UpdateNoteInput,
@@ -183,47 +247,50 @@ export async function updateJournalNote(
   const cleanTitle = input.title ? input.title.trim() : null;
   const supabase = getClient(client);
 
-  if (supabase) {
-    try {
-      const { data, error } = await supabase
-        .from('journal_notes')
-        .update({
-          title: cleanTitle,
-          body: cleanBody,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', input.id)
-        .select()
-        .single();
-
-      if (!error && data) {
-        const updated = mapRowToNote(data);
-        const current = getLocalNotes();
-        setLocalNotes(current.map((n) => (n.id === updated.id ? updated : n)));
-        return updated;
-      }
-    } catch (err) {
-      console.warn('updateJournalNote database update failed, using local update:', err);
+  if (!supabase) {
+    if (!isDevOrTest()) {
+      throw new Error('Authentication required: please sign in to update a journal leaf.');
     }
+    return updateLocalDemoNote(input.id, cleanTitle, cleanBody);
   }
 
-  // Fallback update
-  const current = getLocalNotes();
-  const existing = current.find((n) => n.id === input.id);
-  const updated: JournalNote = {
-    id: input.id,
-    userId: existing?.userId || 'local_user',
-    title: cleanTitle,
-    body: cleanBody,
-    createdAt: existing?.createdAt || new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  };
-  setLocalNotes(current.map((n) => (n.id === updated.id ? updated : n)));
-  return updated;
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+
+  if (authError || !user?.id) {
+    if (!isDevOrTest()) {
+      throw new Error('Authentication required: please sign in to update a journal leaf.');
+    }
+    return updateLocalDemoNote(input.id, cleanTitle, cleanBody);
+  }
+
+  const { data, error } = await supabase
+    .from('journal_notes')
+    .update({
+      title: cleanTitle,
+      body: cleanBody,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', input.id)
+    .select('id, user_id, title, body, created_at, updated_at')
+    .single();
+
+  if (error) {
+    throw new Error(`Failed to update journal leaf: ${error.message || JSON.stringify(error)}`);
+  }
+
+  if (!data) {
+    throw new Error('Journal leaf could not be updated or permission denied.');
+  }
+
+  return mapRowToNote(data);
 }
 
 /**
  * Delete a journal note by ID.
+ * Returns { success: true } ONLY after confirmed server deletion.
  */
 export async function deleteJournalNote(
   id: string,
@@ -231,22 +298,38 @@ export async function deleteJournalNote(
 ): Promise<{ success: boolean }> {
   const supabase = getClient(client);
 
-  if (supabase) {
-    try {
-      const { error } = await supabase
-        .from('journal_notes')
-        .delete()
-        .eq('id', id);
-
-      if (error) {
-        console.warn('deleteJournalNote error:', error.message);
-      }
-    } catch (err) {
-      console.warn('deleteJournalNote failed:', err);
+  if (!supabase) {
+    if (!isDevOrTest()) {
+      throw new Error('Authentication required: please sign in to delete a journal leaf.');
     }
+    return deleteLocalDemoNote(id);
   }
 
-  const current = getLocalNotes();
-  setLocalNotes(current.filter((n) => n.id !== id));
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+
+  if (authError || !user?.id) {
+    if (!isDevOrTest()) {
+      throw new Error('Authentication required: please sign in to delete a journal leaf.');
+    }
+    return deleteLocalDemoNote(id);
+  }
+
+  const { data, error } = await supabase
+    .from('journal_notes')
+    .delete()
+    .eq('id', id)
+    .select('id');
+
+  if (error) {
+    throw new Error(`Failed to delete journal leaf: ${error.message || JSON.stringify(error)}`);
+  }
+
+  if (!data || data.length === 0) {
+    throw new Error('Journal leaf could not be deleted or permission denied.');
+  }
+
   return { success: true };
 }

@@ -245,3 +245,103 @@
   padding: 24px;
   box-shadow: 0 20px 35px rgba(0, 0, 0, 0.6);
 }
+
+/* ==========================================================================
+   JOURNAL V1.1 — Persistence Hardening, Error & Demo States
+   ========================================================================== */
+
+.journal-error-banner {
+  background: rgba(226, 74, 74, 0.08);
+  border: 1px solid rgba(226, 74, 74, 0.4);
+  border-radius: 8px;
+  padding: 16px 20px;
+  margin-bottom: 24px;
+}
+
+.journal-error-title {
+  font-family: 'Fraunces', serif;
+  font-size: 1.125rem;
+  font-weight: 500;
+  color: #E24A4A;
+  margin: 0 0 6px 0;
+}
+
+.journal-error-message {
+  font-size: 0.875rem;
+  color: #B9BEAC;
+  margin: 0 0 14px 0;
+  line-height: 1.5;
+}
+
+.journal-retry-btn {
+  background: #252D25;
+  color: #F0E7D3;
+  border: 1px solid #384538;
+  border-radius: 6px;
+  padding: 6px 14px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  min-height: 32px;
+}
+
+.journal-retry-btn:hover:not(:disabled) {
+  background: #2E382E;
+  border-color: #4B5A4B;
+  color: #FFF;
+}
+
+.journal-retry-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.journal-composer-error {
+  background: rgba(226, 74, 74, 0.1);
+  border: 1px solid rgba(226, 74, 74, 0.3);
+  border-radius: 6px;
+  color: #E24A4A;
+  font-size: 0.8125rem;
+  padding: 8px 12px;
+  margin-bottom: 12px;
+}
+
+.journal-global-error {
+  background: rgba(226, 74, 74, 0.12);
+  border: 1px solid rgba(226, 74, 74, 0.35);
+  border-radius: 6px;
+  color: #F0E7D3;
+  font-size: 0.875rem;
+  padding: 10px 16px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.journal-demo-indicator {
+  background: rgba(196, 169, 106, 0.08);
+  border: 1px solid rgba(196, 169, 106, 0.25);
+  border-radius: 6px;
+  color: #C4A96A;
+  font-size: 0.8125rem;
+  padding: 8px 14px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.journal-demo-badge {
+  background: rgba(196, 169, 106, 0.15);
+  color: #C4A96A;
+  border: 1px solid rgba(196, 169, 106, 0.3);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+

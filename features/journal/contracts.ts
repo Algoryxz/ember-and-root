@@ -14,6 +14,7 @@ export interface JournalNote {
   body: string;
   createdAt: string;
   updatedAt: string;
+  isDemo?: boolean;
 }
 
 export interface CreateNoteInput {

@@ -21,11 +21,18 @@ import './journal.css';
 
 interface JournalViewProps {
   initialNotes?: JournalNote[];
+  initialError?: string | null;
   initialSnapshot?: GameSnapshot;
 }
 
-export function JournalView({ initialNotes = [], initialSnapshot }: JournalViewProps) {
+export function JournalView({ initialNotes = [], initialError = null, initialSnapshot }: JournalViewProps) {
   const [notes, setNotes] = useState<JournalNote[]>(initialNotes);
+  const [fetchError, setFetchError] = useState<string | null>(initialError);
+  const [isRetrying, setIsRetrying] = useState(false);
+  const [mutationError, setMutationError] = useState<string | null>(null);
+  const [globalError, setGlobalError] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [deletingNoteId, setDeletingNoteId] = useState<string | null>(null);
   const [isComposing, setIsComposing] = useState(false);
   const [draftTitle, setDraftTitle] = useState('');
   const [draftBody, setDraftBody] = useState('');
@@ -46,6 +53,9 @@ export function JournalView({ initialNotes = [], initialSnapshot }: JournalViewP
 
   // Available tags
   const uniqueTags = useMemo(() => extractUniqueTags(notes), [notes]);
+
+  // Check if viewing unpersisted demo notes
+  const hasDemoNotes = useMemo(() => notes.some((n) => n.isDemo), [notes]);
 
   // Filtered & sorted notes
   const displayedNotes = useMemo(() => {
@@ -73,31 +83,54 @@ export function JournalView({ initialNotes = [], initialSnapshot }: JournalViewP
     return list;
   }, [notes, searchQuery, activeTag, sortOrder]);
 
+  // Retry fetching notes from server
+  async function handleRetryFetch() {
+    setIsRetrying(true);
+    setFetchError(null);
+    try {
+      const reloaded = await fetchJournalNotes();
+      setNotes(reloaded);
+    } catch (err: any) {
+      setFetchError(err.message || 'Journal archive remains unreachable.');
+    } finally {
+      setIsRetrying(false);
+    }
+  }
+
   // Handle Save (Create or Edit)
   async function handleSaveNote() {
-    if (!draftBody.trim()) return;
+    if (!draftBody.trim() || isSaving) return;
+    setIsSaving(true);
+    setMutationError(null);
 
-    if (editingNoteId) {
-      const updated = await updateJournalNote({
-        id: editingNoteId,
-        title: draftTitle,
-        body: draftBody,
-      });
-      setNotes((prev) => prev.map((n) => (n.id === updated.id ? updated : n)));
-    } else {
-      const created = await createJournalNote({
-        title: draftTitle,
-        body: draftBody,
-      });
-      setNotes((prev) => [created, ...prev]);
+    try {
+      if (editingNoteId) {
+        const updated = await updateJournalNote({
+          id: editingNoteId,
+          title: draftTitle.trim() || null,
+          body: draftBody,
+        });
+        setNotes((prev) => prev.map((n) => (n.id === editingNoteId ? updated : n)));
+      } else {
+        const created = await createJournalNote({
+          title: draftTitle.trim() || null,
+          body: draftBody,
+        });
+        setNotes((prev) => [created, ...prev]);
+      }
+
+      // Reset composer ONLY upon confirmed server success
+      setDraftTitle('');
+      setDraftBody('');
+      setEditingNoteId(null);
+      setIsComposing(false);
+      setPreviewMode(false);
+    } catch (err: any) {
+      // Surface error without discarding draft contents so the user can retry
+      setMutationError(err.message || 'Failed to save journal leaf. Please try again.');
+    } finally {
+      setIsSaving(false);
     }
-
-    // Reset composer
-    setDraftTitle('');
-    setDraftBody('');
-    setEditingNoteId(null);
-    setIsComposing(false);
-    setPreviewMode(false);
   }
 
   // Handle Edit click
@@ -105,6 +138,7 @@ export function JournalView({ initialNotes = [], initialSnapshot }: JournalViewP
     setEditingNoteId(note.id);
     setDraftTitle(note.title || '');
     setDraftBody(note.body);
+    setMutationError(null);
     setIsComposing(true);
     setPreviewMode(false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -113,8 +147,16 @@ export function JournalView({ initialNotes = [], initialSnapshot }: JournalViewP
   // Handle Delete click
   async function handleDeleteNote(id: string) {
     if (confirm('Are you sure you want to remove this journal leaf?')) {
-      await deleteJournalNote(id);
-      setNotes((prev) => prev.filter((n) => n.id !== id));
+      setDeletingNoteId(id);
+      setGlobalError(null);
+      try {
+        await deleteJournalNote(id);
+        setNotes((prev) => prev.filter((n) => n.id !== id));
+      } catch (err: any) {
+        setGlobalError(err.message || 'Failed to remove journal leaf.');
+      } finally {
+        setDeletingNoteId(null);
+      }
     }
   }
 
@@ -132,11 +174,18 @@ export function JournalView({ initialNotes = [], initialSnapshot }: JournalViewP
     const newBody = lines.join('\n');
 
     // Optimistic update
+    const previousNote = note;
     const updatedNote = { ...note, body: newBody, updatedAt: new Date().toISOString() };
     setNotes((prev) => prev.map((n) => (n.id === note.id ? updatedNote : n)));
 
-    // Persist
-    await updateJournalNote({ id: note.id, title: note.title, body: newBody });
+    // Persist to server
+    try {
+      await updateJournalNote({ id: note.id, title: note.title, body: newBody });
+    } catch (err: any) {
+      // Roll back on failure
+      setNotes((prev) => prev.map((n) => (n.id === note.id ? previousNote : n)));
+      setGlobalError(err.message || 'Failed to update checklist item on server.');
+    }
   }
 
   // Open "Turn into Quests" modal
@@ -185,10 +234,47 @@ export function JournalView({ initialNotes = [], initialSnapshot }: JournalViewP
 
   return (
     <div className="journal-container py-4 sm:py-6">
+      {/* Fetch Error / Unavailable State */}
+      {fetchError && (
+        <div className="journal-error-banner" role="alert">
+          <div className="journal-error-title">Journal Archive Unavailable</div>
+          <div className="journal-error-message">{fetchError}</div>
+          <button
+            type="button"
+            onClick={handleRetryFetch}
+            disabled={isRetrying}
+            className="journal-retry-btn"
+          >
+            {isRetrying ? 'Reconnecting…' : 'Retry Connection'}
+          </button>
+        </div>
+      )}
+
+      {/* Global Mutation Error */}
+      {globalError && (
+        <div className="journal-global-error" role="alert">
+          <span>{globalError}</span>
+          <button
+            type="button"
+            onClick={() => setGlobalError(null)}
+            className="ml-2 underline text-xs text-[#E24A4A] hover:text-[#F0E7D3]"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
+
+      {/* Offline/Dev Demo Indicator */}
+      {!fetchError && hasDemoNotes && (
+        <div className="journal-demo-indicator" role="status">
+          <span>✦ Offline / Dev Demo Mode — Leaves are stored locally and will not persist to Supabase.</span>
+        </div>
+      )}
+
       {/* Header */}
       <header className="journal-header">
         <div>
-          <h1 className="font-['Fraunces'] text-3xl sm:text-4xl font-normal text-[#F0E7D3] tracking-tight">
+          <h1 className="journal-title font-['Fraunces'] text-3xl sm:text-4xl font-normal text-[#F0E7D3] tracking-tight">
             Personal Field Journal
           </h1>
           <p className="text-sm text-[#B9BEAC] mt-1">
@@ -204,6 +290,7 @@ export function JournalView({ initialNotes = [], initialSnapshot }: JournalViewP
               setEditingNoteId(null);
               setDraftTitle('');
               setDraftBody('');
+              setMutationError(null);
             }}
             className="journal-primary-btn"
           >
@@ -320,6 +407,7 @@ export function JournalView({ initialNotes = [], initialSnapshot }: JournalViewP
                 onClick={() => {
                   setIsComposing(false);
                   setEditingNoteId(null);
+                  setMutationError(null);
                 }}
                 className="journal-icon-btn"
                 aria-label="Cancel editing"
@@ -329,7 +417,14 @@ export function JournalView({ initialNotes = [], initialSnapshot }: JournalViewP
             </div>
           </div>
 
+          {mutationError && (
+            <div className="journal-composer-error" role="alert">
+              {mutationError}
+            </div>
+          )}
+
           <input
+            id="note-title"
             type="text"
             value={draftTitle}
             onChange={(e) => setDraftTitle(e.target.value)}
@@ -344,6 +439,7 @@ export function JournalView({ initialNotes = [], initialSnapshot }: JournalViewP
             </div>
           ) : (
             <textarea
+              id="note-body"
               value={draftBody}
               onChange={(e) => setDraftBody(e.target.value)}
               placeholder="Record your observations, tasks, and reflections…&#10;&#10;Use:&#10;- [ ] Checklist item&#10;> Quotes or reflections&#10;# Heading&#10;#mind, #body, #will, #craft"
@@ -362,95 +458,109 @@ export function JournalView({ initialNotes = [], initialSnapshot }: JournalViewP
                 onClick={() => {
                   setIsComposing(false);
                   setEditingNoteId(null);
+                  setMutationError(null);
                 }}
                 className="journal-pill-btn"
+                disabled={isSaving}
               >
                 Cancel
               </button>
               <button
                 type="button"
                 onClick={handleSaveNote}
-                disabled={!draftBody.trim()}
+                disabled={!draftBody.trim() || isSaving}
                 className="journal-primary-btn disabled:opacity-50"
               >
-                {editingNoteId ? 'Save Edits' : 'Bind Leaf'}
+                {isSaving
+                  ? (editingNoteId ? 'Saving Edits…' : 'Binding Leaf…')
+                  : (editingNoteId ? 'Save Edits' : 'Bind Leaf')}
               </button>
             </div>
           </div>
         </section>
       )}
 
-      {/* Note Leaf List */}
-      <section aria-label="Journal Entries" className="space-y-4">
-        {displayedNotes.length === 0 ? (
-          <div className="text-center py-12 px-4 bg-[#1D231D]/40 border border-[#2A332A] rounded-[8px]">
-            <p className="font-['Fraunces'] text-lg text-[#F0E7D3] mb-1">
-              Your field journal is quiet.
-            </p>
-            <p className="text-sm text-[#B9BEAC] max-w-sm mx-auto mb-4">
-              {searchQuery || activeTag
-                ? 'No leaves match the current query.'
-                : 'Inscribe your first observation, thought, or daily practice.'}
-            </p>
-            {!isComposing && (
-              <button
-                type="button"
-                onClick={() => setIsComposing(true)}
-                className="journal-primary-btn"
-              >
-                Inscribe First Leaf
-              </button>
-            )}
-          </div>
-        ) : (
-          displayedNotes.map((note) => {
-            const dateStr = new Date(note.createdAt).toLocaleDateString(undefined, {
-              weekday: 'short',
-              month: 'short',
-              day: 'numeric',
-              year: 'numeric',
-            });
-            const hasChecklists = /[-*]\s+\[[ xX]\]/.test(note.body);
+      {/* Note Leaf List — Suppressed when fetchError is present to avoid showing stale notes as canonical */}
+      {!fetchError && (
+        <section aria-label="Journal Entries" className="space-y-4">
+          {displayedNotes.length === 0 ? (
+            <div className="text-center py-12 px-4 bg-[#1D231D]/40 border border-[#2A332A] rounded-[8px]">
+              <p className="font-['Fraunces'] text-lg text-[#F0E7D3] mb-1">
+                Your field journal is quiet.
+              </p>
+              <p className="text-sm text-[#B9BEAC] max-w-sm mx-auto mb-4">
+                {searchQuery || activeTag
+                  ? 'No leaves match the current query.'
+                  : 'Inscribe your first observation, thought, or daily practice.'}
+              </p>
+              {!isComposing && (
+                <button
+                  type="button"
+                  onClick={() => setIsComposing(true)}
+                  className="journal-primary-btn"
+                >
+                  Inscribe First Leaf
+                </button>
+              )}
+            </div>
+          ) : (
+            displayedNotes.map((note) => {
+              const dateStr = new Date(note.createdAt).toLocaleDateString(undefined, {
+                weekday: 'short',
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric',
+              });
+              const hasChecklists = /[-*]\s+\[[ xX]\]/.test(note.body);
 
-            return (
-              <article key={note.id} className="journal-leaf">
-                <div className="journal-leaf-header">
-                  <div>
-                    {note.title && <h3 className="journal-leaf-title">{note.title}</h3>}
-                    <time dateTime={note.createdAt} className="journal-leaf-date">
-                      {dateStr}
-                    </time>
-                  </div>
+              return (
+                <article key={note.id} className="journal-leaf">
+                  <div className="journal-leaf-header">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        {note.title && <h3 className="journal-leaf-title">{note.title}</h3>}
+                        {note.isDemo && (
+                          <span className="journal-demo-badge" title="Demo leaf not stored on server">
+                            Demo Leaf
+                          </span>
+                        )}
+                      </div>
+                      <time dateTime={note.createdAt} className="journal-leaf-date">
+                        {dateStr}
+                      </time>
+                    </div>
 
-                  <div className="journal-leaf-actions">
-                    {hasChecklists && (
+                    <div className="journal-leaf-actions">
+                      {hasChecklists && (
+                        <button
+                          type="button"
+                          onClick={() => handleOpenQuestModal(note)}
+                          className="journal-pill-btn text-xs py-1"
+                          title="Turn actionable items into Hearth quests"
+                        >
+                          <span aria-hidden="true">⚔</span> Turn into Quest
+                        </button>
+                      )}
                       <button
                         type="button"
-                        onClick={() => handleOpenQuestModal(note)}
-                        className="journal-pill-btn text-xs py-1"
-                        title="Turn actionable items into Hearth quests"
+                        onClick={() => handleStartEdit(note)}
+                        className="journal-icon-btn"
+                        aria-label={`Edit ${note.title || 'entry'}`}
+                        disabled={deletingNoteId === note.id}
                       >
-                        <span aria-hidden="true">⚔</span> Turn into Quest
+                        ✎
                       </button>
-                    )}
-                    <button
-                      type="button"
-                      onClick={() => handleStartEdit(note)}
-                      className="journal-icon-btn"
-                      aria-label={`Edit ${note.title || 'entry'}`}
-                    >
-                      ✎
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleDeleteNote(note.id)}
-                      className="journal-icon-btn danger"
-                      aria-label={`Delete ${note.title || 'entry'}`}
-                    >
-                      ✕
-                    </button>
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteNote(note.id)}
+                        className="journal-icon-btn danger"
+                        aria-label={`Delete ${note.title || 'entry'}`}
+                        disabled={deletingNoteId === note.id}
+                      >
+                        {deletingNoteId === note.id ? '…' : '✕'}
+                      </button>
+                    </div>
                   </div>
-                </div>
 
                 <JournalRenderer
                   content={note.body}
@@ -463,6 +573,7 @@ export function JournalView({ initialNotes = [], initialSnapshot }: JournalViewP
           })
         )}
       </section>
+      )}
 
       {/* Modal: Turn into Quests */}
       {questModalNote && (

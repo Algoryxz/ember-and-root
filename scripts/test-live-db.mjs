@@ -1602,6 +1602,71 @@ async function main() {
   }
 
   // -------------------------------------------------------------------------
+  // Step 20: Field Journal RLS & Cross-User Isolation (journal_notes)
+  // -------------------------------------------------------------------------
+  console.log('\n--- Step 20: Field Journal RLS & Cross-User Isolation (journal_notes) ---');
+  {
+    // 1. User A inserts a journal note
+    const insertRes = await api('/rest/v1/journal_notes', {
+      method: 'POST',
+      headers: { Prefer: 'return=representation' },
+      body: JSON.stringify({
+        user_id: userA.id,
+        title: 'Dawn Field Notes',
+        body: 'Observation on white cedar growth #craft',
+      }),
+    }, userA.token);
+
+    assert(insertRes.ok && Array.isArray(insertRes.data) && insertRes.data.length === 1,
+      'User A successfully creates journal leaf in journal_notes');
+    const leafId = insertRes.data[0]?.id;
+
+    // 2. User B tries to read User A's note via RLS
+    const userBRead = await api(`/rest/v1/journal_notes?id=eq.${leafId}&select=*`, {}, userB.token);
+    assert(userBRead.ok && Array.isArray(userBRead.data) && userBRead.data.length === 0,
+      "User B cannot select User A's journal leaf (RLS read isolation)");
+
+    // 3. User B tries to update User A's note via RLS
+    const userBUpdate = await api(`/rest/v1/journal_notes?id=eq.${leafId}`, {
+      method: 'PATCH',
+      headers: { Prefer: 'return=representation' },
+      body: JSON.stringify({ title: 'Tampered by User B' }),
+    }, userB.token);
+    assert(userBUpdate.ok && Array.isArray(userBUpdate.data) && userBUpdate.data.length === 0,
+      "User B cannot update User A's journal leaf (RLS update isolation)");
+
+    // 4. User B tries to delete User A's note via RLS
+    const userBDelete = await api(`/rest/v1/journal_notes?id=eq.${leafId}`, {
+      method: 'DELETE',
+      headers: { Prefer: 'return=representation' },
+    }, userB.token);
+    assert(userBDelete.ok && Array.isArray(userBDelete.data) && userBDelete.data.length === 0,
+      "User B cannot delete User A's journal leaf (RLS delete isolation)");
+
+    // 5. User A updates the note
+    const userAUpdate = await api(`/rest/v1/journal_notes?id=eq.${leafId}`, {
+      method: 'PATCH',
+      headers: { Prefer: 'return=representation' },
+      body: JSON.stringify({ title: 'Dawn Field Notes — Refined' }),
+    }, userA.token);
+    assert(userAUpdate.ok && userAUpdate.data[0]?.title === 'Dawn Field Notes — Refined',
+      "User A successfully updates journal leaf");
+
+    // 6. User A deletes the note
+    const userADelete = await api(`/rest/v1/journal_notes?id=eq.${leafId}`, {
+      method: 'DELETE',
+      headers: { Prefer: 'return=representation' },
+    }, userA.token);
+    assert(userADelete.ok && userADelete.data.length === 1 && userADelete.data[0]?.id === leafId,
+      "User A successfully deletes journal leaf (1 row confirmed)");
+
+    // 7. Verify 0 rows remain
+    const verifyDelete = await api(`/rest/v1/journal_notes?id=eq.${leafId}&select=*`, {}, userA.token);
+    assert(verifyDelete.ok && verifyDelete.data.length === 0,
+      "Journal leaf confirmed completely deleted from Postgres table");
+  }
+
+  // -------------------------------------------------------------------------
   // SUMMARY
   // -------------------------------------------------------------------------
   console.log('\n======================================================================');
