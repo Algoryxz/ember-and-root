@@ -132,11 +132,15 @@ export type TrialState = {
 
 // ── Item and Inventory ───────────────────────────────────────────────────────
 
+export type ItemCategory = 'cosmetic' | 'relic';
+
 export type Item = {
-  id: string;       // 'copper_halo' | 'firefly_orbit' | 'engraved_basin'
+  id: string;       // 'copper_halo' | 'firefly_orbit' | 'engraved_basin' | 'ember_ward'
   name: string;
   price: number;    // Sparks cost
   visualKey: string;
+  category?: ItemCategory;
+  description?: string;
 };
 
 export type InventoryState = {
@@ -217,6 +221,11 @@ export type MutationEvent = {
   // Quest CRUD fields
   questId?: string;
   version?: number;
+
+  // Satchel & Relic fields
+  itemId?: string;
+  price?: number;
+  wardConsumed?: boolean;
 };
 
 export type MutationResult = {

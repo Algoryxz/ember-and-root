@@ -456,3 +456,91 @@
     line-height: 1.25;
   }
 }
+
+/* ==========================================================================
+   Hearth Adornment Presentation Layers
+   ========================================================================== */
+.ember-adornment-layer {
+  position: absolute;
+  pointer-events: none;
+}
+
+/* Adornment 1: Copper Halo */
+.layer-copper_halo {
+  inset: -10px;
+  border-radius: var(--radius-circle);
+  border: 2px solid #E98A4B;
+  box-shadow: 0 0 22px rgba(233, 138, 75, 0.45), inset 0 0 12px rgba(233, 138, 75, 0.3);
+  opacity: 0.9;
+  transition: box-shadow 300ms ease;
+}
+
+.brazier-adorned-copper_halo {
+  border-color: rgba(233, 138, 75, 0.5) !important;
+}
+
+/* Adornment 2: Firefly Orbit */
+.layer-firefly_orbit {
+  inset: -20px;
+  border-radius: var(--radius-circle);
+  animation: hearthOrbit 10s linear infinite;
+}
+
+.hearth-firefly-mote {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #FFD38A;
+  box-shadow: 0 0 10px #FFD38A, 0 0 18px rgba(255, 211, 138, 0.8);
+}
+
+.mote-a { top: 0; left: 50%; transform: translateX(-50%); }
+.mote-b { top: 50%; right: 0; transform: translateY(-50%); }
+.mote-c { bottom: 0; left: 50%; transform: translateX(-50%); }
+.mote-d { top: 50%; left: 0; transform: translateY(-50%); }
+
+@keyframes hearthOrbit {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Adornment 3: Engraved Basin */
+.layer-engraved_basin {
+  inset: -8px;
+  border-radius: 46%;
+  border: 2px solid #8FA382;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.65), inset 0 0 14px rgba(143, 163, 130, 0.35);
+  background: radial-gradient(circle, transparent 65%, rgba(143, 163, 130, 0.12) 100%);
+}
+
+.brazier-adorned-engraved_basin {
+  border-color: rgba(143, 163, 130, 0.45) !important;
+}
+
+/* Adornment Label Tag */
+.ember-adornment-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: var(--space-8, 8px);
+  padding: 3px 10px;
+  border-radius: 9999px;
+  background-color: rgba(255, 211, 138, 0.08);
+  border: 1px solid rgba(255, 211, 138, 0.25);
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: #FFD38A;
+}
+
+.adornment-glyph {
+  font-size: 0.75rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .layer-firefly_orbit {
+    animation: none;
+  }
+}
+

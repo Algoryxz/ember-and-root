@@ -5,8 +5,15 @@ import './EmberDisplay.css';
 export interface EmberDisplayProps {
   state: EmberState;
   isRelit?: boolean;
+  adornment?: string | null;
   className?: string;
 }
+
+const ADORNMENT_NAMES: Record<string, string> = {
+  copper_halo: 'Copper Halo',
+  firefly_orbit: 'Firefly Orbit',
+  engraved_basin: 'Engraved Basin',
+};
 
 const EMBER_CONFIG: Record<
   EmberState,
@@ -62,10 +69,12 @@ const EMBER_CONFIG: Record<
 export const EmberDisplay: React.FC<EmberDisplayProps> = ({
   state = 'resting',
   isRelit = false,
+  adornment = null,
   className = '',
 }) => {
   const [isTabHidden, setIsTabHidden] = useState(false);
   const currentConfig = EMBER_CONFIG[state] || EMBER_CONFIG.resting;
+  const adornmentName = adornment ? ADORNMENT_NAMES[adornment] : null;
 
   // Performance rule: Pause idle animation when document.visibilityState === 'hidden'
   useEffect(() => {
@@ -82,6 +91,7 @@ export const EmberDisplay: React.FC<EmberDisplayProps> = ({
   const containerClasses = [
     'ember-container',
     `ember-${state}`,
+    adornment ? `has-adornment-${adornment}` : '',
     isTabHidden ? 'is-paused' : '',
     className,
   ]
@@ -91,6 +101,7 @@ export const EmberDisplay: React.FC<EmberDisplayProps> = ({
   const brazierClasses = [
     'ember-brazier',
     isRelit ? 'is-relit' : '',
+    adornment ? `brazier-adorned-${adornment}` : '',
   ]
     .filter(Boolean)
     .join(' ');
@@ -99,7 +110,7 @@ export const EmberDisplay: React.FC<EmberDisplayProps> = ({
     <section
       className={containerClasses}
       role="region"
-      aria-label={`Daily Ember Momentum: ${currentConfig.title}`}
+      aria-label={`Daily Ember Momentum: ${currentConfig.title}${adornmentName ? `, Adorned with ${adornmentName}` : ''}`}
     >
       {/* Decorative hearth chamber aura */}
       <div className="ember-chamber-aura" aria-hidden="true" />
@@ -108,6 +119,24 @@ export const EmberDisplay: React.FC<EmberDisplayProps> = ({
       <div className={brazierClasses}>
         {/* Outer radial warmth halo */}
         <div className="ember-halo" aria-hidden="true" />
+
+        {/* Equipped Hearth Adornment Layer */}
+        {adornment === 'copper_halo' && (
+          <div className="ember-adornment-layer layer-copper_halo" aria-hidden="true" />
+        )}
+
+        {adornment === 'firefly_orbit' && (
+          <div className="ember-adornment-layer layer-firefly_orbit" aria-hidden="true">
+            <span className="hearth-firefly-mote mote-a" />
+            <span className="hearth-firefly-mote mote-b" />
+            <span className="hearth-firefly-mote mote-c" />
+            <span className="hearth-firefly-mote mote-d" />
+          </div>
+        )}
+
+        {adornment === 'engraved_basin' && (
+          <div className="ember-adornment-layer layer-engraved_basin" aria-hidden="true" />
+        )}
 
         {/* Multi-layered Hearth Flame SVG */}
         <svg
@@ -167,6 +196,12 @@ export const EmberDisplay: React.FC<EmberDisplayProps> = ({
           <span className="ember-stage-badge">{currentConfig.stageBadge}</span>
         </div>
         <p className="ember-description">{currentConfig.description}</p>
+        {adornmentName && (
+          <div className="ember-adornment-tag" aria-label={`Adornment: ${adornmentName}`}>
+            <span className="adornment-glyph" aria-hidden="true">✦</span>
+            <span>Adorned with {adornmentName}</span>
+          </div>
+        )}
       </div>
     </section>
   );

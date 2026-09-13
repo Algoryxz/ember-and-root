@@ -293,6 +293,7 @@ export const HearthView: React.FC<HearthViewProps> = ({
           <EmberDisplay
             state={snapshot.emberState}
             isRelit={isEmberRelit}
+            adornment={snapshot.equippedItemId ?? (snapshot as any).equippedItem}
           />
         </section>
 
