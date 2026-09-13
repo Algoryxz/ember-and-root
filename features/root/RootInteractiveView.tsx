@@ -1,3 +1,4 @@
+import { RootProgressionRail } from './RootProgressionRail';
 ﻿import React, { useState, useEffect } from 'react';
 import { AttributeId, GameSnapshot, Specialization } from '../../game/contracts';
 import { RootSvg } from './RootSvg';

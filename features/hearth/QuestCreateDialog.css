@@ -1,3 +1,9 @@
+:root,
+html,
+body {
+  color-scheme: dark;
+}
+
 /* ==========================================================================
    Ember & Root — Quest Inscription Dialog Styles
    Owned by: Deeptiman (Experience / Frontend Lead)
