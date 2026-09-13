@@ -1,8 +1,16 @@
+import type { Metadata } from 'next';
 import React from 'react';
 import '@/components/game-world.css';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { GameNav } from '@/components/navigation/GameNav';
+
+export const metadata: Metadata = {
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 export default async function GameLayout({
   children,
