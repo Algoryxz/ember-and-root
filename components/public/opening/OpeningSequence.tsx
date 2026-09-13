@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useEffect, useRef, useState, useCallback, type CSSProperties, type RefObject } from 'react';
 import { motion, useReducedMotion } from 'motion/react';
@@ -326,6 +326,24 @@ export function OpeningSequence() {
           Skip cinematic
         </button>
       </div>
+
+      {scene !== 'black' && (
+        <footer className="prologue-provenance" aria-label="Project provenance and source repository">
+          <span className="prologue-provenance-meta">Built by Algoryxz · Tech Zephyr Web Hackathon</span>
+          <span className="prologue-provenance-sep" aria-hidden="true">·</span>
+          <span className="prologue-provenance-repo">
+            <span className="prologue-provenance-label">GitHub Repository:</span>{' '}
+            <a
+              href="https://github.com/Algoryxz/ember-and-root"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="prologue-provenance-link"
+            >
+              https://github.com/Algoryxz/ember-and-root
+            </a>
+          </span>
+        </footer>
+      )}
 
       {scene === 'black' && (
         <ShoreSequence

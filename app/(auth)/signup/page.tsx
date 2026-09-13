@@ -192,6 +192,22 @@ export default function SignupPage() {
             </div>
           </>
         )}
+
+        {/* Source & Hackathon Provenance */}
+        <footer className="mt-8 pt-4 border-t border-[#B9BEAC]/10 text-center text-xs text-[#8E9785]">
+          <p className="tracking-wide">Built by Algoryxz for Tech Zephyr Web Hackathon</p>
+          <p className="mt-1">
+            <span>Source: </span>
+            <a
+              href="https://github.com/Algoryxz/ember-and-root"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[#C4A96A] hover:text-[#FFD38A] underline underline-offset-2 break-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C4A96A] rounded"
+            >
+              https://github.com/Algoryxz/ember-and-root
+            </a>
+          </p>
+        </footer>
       </div>
     </main>
   );

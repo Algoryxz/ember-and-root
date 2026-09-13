@@ -2,9 +2,21 @@
   <img src="public/brand/ember-and-root-logo.svg" alt="Ember & Root" width="280" />
   <p><strong>What you do becomes who you are.</strong></p>
   <p><em>Built by Algoryxz for Tech Zephyr Web Hackathon</em></p>
+  <p>
+    <a href="https://ember-and-root.vercel.app"><strong>Live Application:</strong> https://ember-and-root.vercel.app</a>
+    &nbsp;•&nbsp;
+    <a href="https://github.com/Algoryxz/ember-and-root"><strong>Source Repository:</strong> https://github.com/Algoryxz/ember-and-root</a>
+  </p>
 </div>
 
 A Life RPG where real tasks kindle today's Ember and grow a permanent Root shaped by the player's choices.
+
+---
+
+### Live Demo & Source
+
+- **Live Application:** [https://ember-and-root.vercel.app](https://ember-and-root.vercel.app)
+- **Source Repository:** [https://github.com/Algoryxz/ember-and-root](https://github.com/Algoryxz/ember-and-root)
 
 ---
 
