@@ -27,6 +27,11 @@ test.describe('Unauthenticated Route Protection', () => {
     await expect(page).toHaveURL(/\/login\?next=%2Fjournal/);
   });
 
+  test('redirects unauthenticated user from /calendar to /login?next=%2Fcalendar', async ({ page }) => {
+    await page.goto('/calendar');
+    await expect(page).toHaveURL(/\/login\?next=%2Fcalendar/);
+  });
+
   test('redirects unauthenticated user from /settings to /login?next=%2Fsettings', async ({ page }) => {
     await page.goto('/settings');
     await expect(page).toHaveURL(/\/login\?next=%2Fsettings/);

@@ -16,6 +16,7 @@ export interface QuestJournalProps {
   onBeginFocusQuest?: (quest: Quest | HearthQuest) => void;
   onEditQuest?: (quest: Quest | HearthQuest) => void;
   onRetryQuest?: (questId: string) => void;
+  onUpdateQuestNotes?: (questId: string, notes: string | null) => Promise<void> | void;
   onRetryGeneral?: () => void;
   onOpenCreateDialog?: () => void;
   onAttributeHover?: (attribute: AttributeId | null) => void;
@@ -60,6 +61,7 @@ export const QuestJournal: React.FC<QuestJournalProps> = ({
   onBeginFocusQuest,
   onEditQuest,
   onRetryQuest,
+  onUpdateQuestNotes,
   onRetryGeneral,
   onOpenCreateDialog,
   onAttributeHover,
@@ -152,6 +154,7 @@ export const QuestJournal: React.FC<QuestJournalProps> = ({
                   onBeginFocus={onBeginFocusQuest}
                   onEdit={onEditQuest}
                   onRetry={onRetryQuest}
+                  onUpdateNotes={onUpdateQuestNotes}
                   onAttributeHover={onAttributeHover}
                 />
               );

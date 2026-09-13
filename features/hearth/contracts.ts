@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Canonical Game Contracts
  * 
  * Re-exported from @/game/contracts and @/game/fixtures/snapshot.
@@ -30,6 +30,7 @@ export {
   completeQuestAction,
   createQuestAction,
   updateQuestAction,
+  updateQuestNotesAction,
   softDeleteQuestAction,
   fetchGameSnapshotAction,
   type CreateQuestParams,

@@ -4,6 +4,7 @@ import {
   completeQuestAction,
   createQuestAction,
   updateQuestAction,
+  updateQuestNotesAction,
   type AttributeId,
   type CreateQuestParams,
   type UpdateQuestParams,
@@ -189,6 +190,20 @@ export const HearthView: React.FC<HearthViewProps> = ({
     if (onMutationSuccess) onMutationSuccess(result);
   };
 
+  // --------------------------------------------------------------------------
+  // Marginalia Quest Notes Action Flow
+  // --------------------------------------------------------------------------
+  const handleUpdateQuestNotes = async (questId: string, notes: string | null) => {
+    const result = await updateQuestNotesAction(
+      snapshot,
+      questId,
+      notes,
+      supabaseClient,
+      simulateFailure
+    );
+    setSnapshot(result.snapshot);
+  };
+
   const quests = snapshot.quests || [];
 
   return (
@@ -293,6 +308,7 @@ export const HearthView: React.FC<HearthViewProps> = ({
               onBeginFocusQuest={setFocusQuest}
               onEditQuest={(q) => setEditingQuest(q)}
               onRetryQuest={handleRetryQuest}
+              onUpdateQuestNotes={handleUpdateQuestNotes}
               onOpenCreateDialog={() => setIsCreateDialogOpen(true)}
               onAttributeHover={setHoveredAttribute}
             />

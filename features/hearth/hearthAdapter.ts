@@ -1,4 +1,4 @@
-﻿import type {
+import type {
   AttributeId,
   Cadence,
   Effort,
@@ -22,6 +22,7 @@ export interface UpdateQuestParams {
   attribute?: AttributeId;
   effort?: Effort;
   cadence?: Cadence;
+  notes?: string | null;
   expectedVersion?: number;
   version?: number;
 }
@@ -331,6 +332,7 @@ export async function updateQuestAction(
         attribute: updates.attribute !== undefined ? updates.attribute : existingQuest.attribute,
         effort: updates.effort !== undefined ? updates.effort : existingQuest.effort,
         cadence: updates.cadence !== undefined ? updates.cadence : existingQuest.cadence,
+        notes: updates.notes !== undefined ? updates.notes : existingQuest.notes,
         version: existingQuest.version + 1,
         updatedAt: new Date().toISOString(),
       };
@@ -422,4 +424,83 @@ export async function fetchGameSnapshotAction(
   }
 
   return data as GameSnapshot;
+}
+
+/**
+ * Authoritative updateQuestNotes action.
+ * Directly saves or clears the user's marginalia notes on a quest.
+ */
+export async function updateQuestNotesAction(
+  currentSnapshot: GameSnapshot,
+  questId: string,
+  notes: string | null,
+  supabaseClient?: any,
+  shouldSimulateFailure = false
+): Promise<{ quest: HearthQuest; snapshot: GameSnapshot }> {
+  const cleanNotes = notes ? notes.trim() : null;
+  if (cleanNotes && cleanNotes.length > 1000) {
+    throw new Error('Quest note cannot exceed 1000 characters.');
+  }
+
+  const client = getRpcClient(supabaseClient);
+  if (client) {
+    try {
+      const { data, error } = await client.rpc('update_quest_notes', {
+        p_quest_id: questId,
+        p_notes: cleanNotes,
+      });
+
+      if (!error && data) {
+        const updatedQuests = (currentSnapshot.quests || []).map((q) =>
+          q.id === questId ? { ...q, notes: cleanNotes, updatedAt: new Date().toISOString() } : q
+        );
+        const nextSnapshot: GameSnapshot = {
+          ...currentSnapshot,
+          quests: updatedQuests,
+        };
+        const targetQuest = updatedQuests.find((q) => q.id === questId)!;
+        return { quest: targetQuest, snapshot: nextSnapshot };
+      }
+    } catch {
+      // Fall through to client write or simulation
+    }
+  }
+
+  // Direct table write fallback if client has .from
+  if (supabaseClient && typeof supabaseClient.from === 'function') {
+    try {
+      await supabaseClient
+        .from('quests')
+        .update({ notes: cleanNotes, updated_at: new Date().toISOString() })
+        .eq('id', questId);
+    } catch {
+      // Fall through
+    }
+  }
+
+  if (shouldSimulateFailure) {
+    throw new Error('Network connection interrupted while saving quest note.');
+  }
+
+  const questIndex = currentSnapshot.quests?.findIndex((q) => q.id === questId);
+  if (questIndex === undefined || questIndex === -1) {
+    throw new Error(`Quest ${questId} not found in records.`);
+  }
+
+  const existing = currentSnapshot.quests![questIndex];
+  const updatedQuest: HearthQuest = {
+    ...existing,
+    notes: cleanNotes,
+    updatedAt: new Date().toISOString(),
+  };
+  const updatedQuests = [...currentSnapshot.quests!];
+  updatedQuests[questIndex] = updatedQuest;
+
+  return {
+    quest: updatedQuest,
+    snapshot: {
+      ...currentSnapshot,
+      quests: updatedQuests,
+    },
+  };
 }

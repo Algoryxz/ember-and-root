@@ -12,6 +12,7 @@ export interface QuestRowProps {
   onBeginFocus?: (quest: Quest | HearthQuest) => void;
   onEdit?: (quest: Quest | HearthQuest) => void;
   onRetry?: (questId: string) => void;
+  onUpdateNotes?: (questId: string, notes: string | null) => Promise<void> | void;
   onAttributeHover?: (attribute: AttributeId | null) => void;
 }
 
@@ -40,9 +41,17 @@ export const QuestRow: React.FC<QuestRowProps> = ({
   onBeginFocus,
   onEdit,
   onRetry,
+  onUpdateNotes,
   onAttributeHover,
 }) => {
   const { id, title, attribute, effort, cadence } = quest;
+  const [isEditingNote, setIsEditingNote] = React.useState(false);
+  const [noteDraft, setNoteDraft] = React.useState(quest.notes || '');
+  const [isSavingNote, setIsSavingNote] = React.useState(false);
+
+  React.useEffect(() => {
+    setNoteDraft(quest.notes || '');
+  }, [quest.notes]);
 
   const rowClasses = [
     'quest-journal-entry',
@@ -109,19 +118,39 @@ export const QuestRow: React.FC<QuestRowProps> = ({
         <div className="entry-header-row">
           <span className="entry-title">{title}</span>
           
-          {/* Subtle field-journal quill edit affordance */}
-          {onEdit && !isCompleted && (
-            <button
-              type="button"
-              className="entry-edit-btn"
-              onClick={handleEdit}
-              disabled={isPending}
-              aria-label={`Edit practice: ${title}`}
-              title="Edit practice"
-            >
-              <span className="entry-edit-icon" aria-hidden="true">✎</span>
-            </button>
-          )}
+          <div className="entry-header-actions">
+            {/* Field-journal marginalia note toggle button */}
+            {!isCompleted && onUpdateNotes && (
+              <button
+                type="button"
+                className={`entry-note-btn ${quest.notes ? 'has-note' : ''}`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsEditingNote((prev) => !prev);
+                }}
+                disabled={isPending}
+                aria-label={quest.notes ? `Edit note for ${title}` : `Add note to ${title}`}
+                title={quest.notes ? 'Edit field note' : 'Add field note'}
+              >
+                <span className="entry-note-icon" aria-hidden="true">🗎</span>
+                <span className="entry-note-btn-label">{quest.notes ? 'Note' : '+Note'}</span>
+              </button>
+            )}
+
+            {/* Subtle field-journal quill edit affordance */}
+            {onEdit && !isCompleted && (
+              <button
+                type="button"
+                className="entry-edit-btn"
+                onClick={handleEdit}
+                disabled={isPending}
+                aria-label={`Edit practice: ${title}`}
+                title="Edit practice"
+              >
+                <span className="entry-edit-icon" aria-hidden="true">✎</span>
+              </button>
+            )}
+          </div>
         </div>
 
         <div className="entry-meta-row">
@@ -137,6 +166,69 @@ export const QuestRow: React.FC<QuestRowProps> = ({
             {cadenceLabel}
           </span>
         </div>
+
+        {/* Inline Note Editor */}
+        {isEditingNote && !isCompleted && (
+          <div className="entry-note-inline-editor" onClick={(e) => e.stopPropagation()}>
+            <textarea
+              value={noteDraft}
+              onChange={(e) => setNoteDraft(e.target.value.slice(0, 1000))}
+              placeholder="Record field notes or context (max 1000 chars)..."
+              className="entry-note-textarea"
+              rows={2}
+              maxLength={1000}
+              aria-label={`Note for ${title}`}
+            />
+            <div className="entry-note-editor-footer">
+              <span className="entry-note-char-count">{1000 - noteDraft.length} chars left</span>
+              <div className="entry-note-editor-btns">
+                <button
+                  type="button"
+                  className="entry-note-cancel-btn"
+                  onClick={() => {
+                    setNoteDraft(quest.notes || '');
+                    setIsEditingNote(false);
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  className="entry-note-save-btn"
+                  disabled={isSavingNote}
+                  onClick={async () => {
+                    setIsSavingNote(true);
+                    try {
+                      await onUpdateNotes?.(id, noteDraft.trim() || null);
+                      setIsEditingNote(false);
+                    } finally {
+                      setIsSavingNote(false);
+                    }
+                  }}
+                >
+                  {isSavingNote ? 'Saving...' : 'Save Note'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Marginalia Note Display */}
+        {!isEditingNote && quest.notes && (
+          <div
+            className="entry-note-display"
+            onClick={(e) => {
+              if (!isCompleted && onUpdateNotes) {
+                e.stopPropagation();
+                setIsEditingNote(true);
+              }
+            }}
+            title={!isCompleted && onUpdateNotes ? 'Click to edit note' : undefined}
+          >
+            <span className="entry-note-quill" aria-hidden="true">❧</span>
+            <span className="entry-note-text">{quest.notes}</span>
+          </div>
+        )}
 
         {/* Error notification and retry action */}
         {errorMessage && (

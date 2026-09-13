@@ -14,6 +14,7 @@ export interface QuestEditDialogProps {
       attribute: AttributeId;
       effort: Effort;
       cadence: Cadence;
+      notes?: string | null;
     }
   ) => Promise<void> | void;
 }
@@ -43,6 +44,7 @@ export const QuestEditDialog: React.FC<QuestEditDialogProps> = ({
   const [attribute, setAttribute] = useState<AttributeId>('mind');
   const [effort, setEffort] = useState<Effort>('standard');
   const [cadence, setCadence] = useState<Cadence>('daily');
+  const [notes, setNotes] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
@@ -56,6 +58,7 @@ export const QuestEditDialog: React.FC<QuestEditDialogProps> = ({
       setAttribute(quest.attribute);
       setEffort(quest.effort);
       setCadence(quest.cadence);
+      setNotes(quest.notes || '');
       setError(null);
       setIsSubmitting(false);
     }
@@ -132,6 +135,7 @@ export const QuestEditDialog: React.FC<QuestEditDialogProps> = ({
         attribute,
         effort,
         cadence,
+        notes: notes.trim() || null,
       });
 
       setError(null);
@@ -263,6 +267,26 @@ export const QuestEditDialog: React.FC<QuestEditDialogProps> = ({
               <option value="daily">Daily Habit (Returns each day)</option>
               <option value="once">Single Milestone (One-time accomplishment)</option>
             </select>
+          </div>
+
+          {/* Field Notes / Marginalia */}
+          <div className="form-field">
+            <div className="flex justify-between items-center mb-1">
+              <label htmlFor="edit-quest-notes-textarea" className="form-label mb-0">
+                Field Notes (Optional Context)
+              </label>
+              <span className="text-xs text-[#7B8272]">{1000 - notes.length} left</span>
+            </div>
+            <textarea
+              id="edit-quest-notes-textarea"
+              className="form-input font-['DM_Sans'] text-sm w-full"
+              rows={3}
+              maxLength={1000}
+              value={notes}
+              onChange={(e) => setNotes(e.target.value.slice(0, 1000))}
+              placeholder="Record observations, guidance, or details for this practice..."
+              disabled={isSubmitting}
+            />
           </div>
 
           {/* Dialog Action Buttons */}

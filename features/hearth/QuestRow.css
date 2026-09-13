@@ -374,3 +374,157 @@
     opacity: 0.85;
   }
 }
+
+/* --------------------------------------------------------------------------
+   Quest Marginalia Notes & Inline Editor
+   -------------------------------------------------------------------------- */
+.entry-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.entry-note-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  min-height: 28px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: rgba(30, 36, 30, 0.4);
+  border: 1px solid rgba(196, 169, 106, 0.25);
+  color: #B9BEAC;
+  font-family: var(--font-body);
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: all 120ms ease;
+}
+
+.entry-note-btn:hover {
+  background: rgba(196, 169, 106, 0.1);
+  border-color: #C4A96A;
+  color: #F0E7D3;
+}
+
+.entry-note-btn.has-note {
+  background: rgba(196, 169, 106, 0.12);
+  border-color: rgba(196, 169, 106, 0.4);
+  color: #C4A96A;
+}
+
+.entry-note-display {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin-top: 6px;
+  padding: 6px 10px;
+  background: rgba(22, 27, 22, 0.5);
+  border-left: 2px solid rgba(196, 169, 106, 0.5);
+  border-radius: 0 4px 4px 0;
+  font-family: var(--font-display, 'Fraunces', serif);
+  font-style: italic;
+  font-size: 0.84rem;
+  color: #C9CEBD;
+  line-height: 1.4;
+  cursor: pointer;
+  transition: background 120ms ease;
+}
+
+.entry-note-display:hover {
+  background: rgba(22, 27, 22, 0.8);
+}
+
+.entry-note-quill {
+  color: #C4A96A;
+  font-size: 0.85rem;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.entry-note-text {
+  word-break: break-word;
+}
+
+.entry-note-inline-editor {
+  margin-top: 8px;
+  padding: 8px 10px;
+  background: rgba(18, 22, 18, 0.85);
+  border: 1px solid rgba(196, 169, 106, 0.4);
+  border-radius: 6px;
+}
+
+.entry-note-textarea {
+  width: 100%;
+  background: transparent;
+  border: none;
+  outline: none;
+  resize: vertical;
+  color: #F0E7D3;
+  font-family: var(--font-body, 'DM Sans', sans-serif);
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.entry-note-textarea::placeholder {
+  color: #6C7265;
+  font-style: italic;
+}
+
+.entry-note-editor-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.entry-note-char-count {
+  font-size: 0.7rem;
+  color: #7B8272;
+}
+
+.entry-note-editor-btns {
+  display: flex;
+  gap: 6px;
+}
+
+.entry-note-cancel-btn {
+  padding: 3px 8px;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  color: #B9BEAC;
+  font-size: 0.72rem;
+  cursor: pointer;
+}
+
+.entry-note-cancel-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: #F0E7D3;
+}
+
+.entry-note-save-btn {
+  padding: 3px 10px;
+  background: #C4A96A;
+  border: 1px solid #C4A96A;
+  border-radius: 4px;
+  color: #141713;
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 120ms ease;
+}
+
+.entry-note-save-btn:hover:not(:disabled) {
+  background: #D8BF80;
+}
+
+.entry-note-save-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
