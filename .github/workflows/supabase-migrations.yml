@@ -1,0 +1,54 @@
+name: Supabase Migrations
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'supabase/migrations/**'
+      - 'supabase/config.toml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: supabase-production-migrations
+  cancel-in-progress: false
+
+jobs:
+  push-migrations:
+    name: Apply production database migrations
+    runs-on: ubuntu-latest
+    env:
+      SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Validate database connection secret
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -z "${SUPABASE_DB_URL:-}" ]]; then
+            echo "SUPABASE_DB_URL GitHub Actions secret is not configured."
+            echo "Add the production Supabase Postgres connection string before running this workflow."
+            exit 1
+          fi
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Apply pending production migrations
+        shell: bash
+        run: |
+          set -euo pipefail
+          supabase db push --db-url "$SUPABASE_DB_URL"
+
+      - name: Verify migration state
+        shell: bash
+        run: |
+          set -euo pipefail
+          supabase migration list --db-url "$SUPABASE_DB_URL"
