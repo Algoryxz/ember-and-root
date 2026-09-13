@@ -261,4 +261,54 @@ test.describe('Root Schematic & Progression Rail Geometric Collision Tests', () 
 
     await page.close();
   });
+
+  test('Living Root specimen plate and Dormant Seed / Origin Sprout panel have strict vertical separation and internal scrolling', async () => {
+    const page = await authContext.newPage();
+    await page.setViewportSize({ width: 1280, height: 800 });
+
+    await page.goto('/hearth');
+    await page.waitForLoadState('domcontentloaded');
+
+    const specimenVisual = page.locator('.root-specimen-visual').first();
+    const anatomyRail = page.locator('.specimen-anatomy-rail').first();
+    const specimenAnnotation = page.locator('.root-specimen-annotation').first();
+
+    if (await specimenVisual.isVisible({ timeout: 5000 }).catch(() => false)) {
+      await expect(anatomyRail).toBeVisible();
+      await expect(specimenAnnotation).toBeVisible();
+
+      const visualBox = await specimenVisual.boundingBox();
+      const railBox = await anatomyRail.boundingBox();
+      const annotBox = await specimenAnnotation.boundingBox();
+
+      if (visualBox && railBox && annotBox) {
+        // Strict vertical flow: Visual is above Rail, Rail is above Annotation
+        expect(visualBox.y + visualBox.height <= railBox.y + 1, 'Living Root visual must be positioned above anatomy rail').toBe(true);
+        expect(railBox.y + railBox.height <= annotBox.y + 1, 'Anatomy rail must be positioned above annotation').toBe(true);
+        expect(rectsIntersect(visualBox, railBox), 'Visual must not collide with anatomy rail').toBe(false);
+        expect(rectsIntersect(railBox, annotBox), 'Anatomy rail must not collide with annotation').toBe(false);
+      }
+
+      // Verify anatomy rail is vertically scrollable with bounded max-height
+      const railScrollMetrics = await anatomyRail.evaluate((el) => {
+        const style = window.getComputedStyle(el);
+        return {
+          overflowY: style.overflowY,
+          scrollHeight: el.scrollHeight,
+          clientHeight: el.clientHeight,
+          isVerticallyScrollable: el.scrollHeight > el.clientHeight,
+        };
+      });
+
+      expect(['auto', 'scroll']).toContain(railScrollMetrics.overflowY);
+      expect(railScrollMetrics.isVerticallyScrollable).toBe(true);
+
+      // Verify Dormant Seed and Origin Sprout are rendered inside the rail
+      await expect(anatomyRail.locator('.anatomy-marker-item:has-text("Dormant Seed")')).toBeVisible();
+      await expect(anatomyRail.locator('.anatomy-marker-item:has-text("Origin Sprout")')).toBeVisible();
+    }
+
+    await page.close();
+  });
 });
+
