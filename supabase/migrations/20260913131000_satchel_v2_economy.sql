@@ -54,12 +54,13 @@ CREATE OR REPLACE FUNCTION public.level_from_xp(p_total_xp integer)
 RETURNS integer
 LANGUAGE sql
 IMMUTABLE
+PARALLEL SAFE
 AS $$
   SELECT public.level_from_total_xp(p_total_xp);
 $$;
 
 REVOKE ALL ON FUNCTION public.level_from_xp(integer) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION public.level_from_xp(integer) TO authenticated, anon;
+GRANT EXECUTE ON FUNCTION public.level_from_xp(integer) TO authenticated, anon, service_role;
 
 -- ---------------------------------------------------------------------
 -- 3. Authoritative get_game_snapshot()

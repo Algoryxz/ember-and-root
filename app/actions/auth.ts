@@ -126,7 +126,14 @@ export async function signupAction(
   }
 
   if (error) {
-    if (isRateLimit) {
+    const msg = error.message || '';
+    const lower = msg.toLowerCase();
+    if (
+      isRateLimit ||
+      lower.includes('rate limit') ||
+      lower.includes('over_email_send_rate_limit') ||
+      ('status' in error && (error as any).status === 429)
+    ) {
       return {
         error: 'Too many signup emails were requested. Please try again shortly or sign in if you already created an account.',
       };

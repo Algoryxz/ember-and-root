@@ -8,6 +8,9 @@ export interface RootNodeButtonProps {
 
 export const RootNodeButton: React.FC<RootNodeButtonProps> = ({ node, onSelect }: RootNodeButtonProps) => {
   const isInteractive = node.state === 'available' && !!onSelect;
+  const isLeft = node.coordinates.percentX < 40;
+  const isRight = node.coordinates.percentX > 60;
+  const posClass = isLeft ? 'node-pos-left' : isRight ? 'node-pos-right' : 'node-pos-center';
 
   const getAriaLabel = (): string => {
     let statusText = '';
@@ -32,7 +35,7 @@ export const RootNodeButton: React.FC<RootNodeButtonProps> = ({ node, onSelect }
   return (
     <button
       type="button"
-      className={`root-node-button state-${node.state}`}
+      className={`root-node-button state-${node.state} ${posClass}`}
       style={{
         left: `${node.coordinates.percentX}%`,
         top: `${node.coordinates.percentY}%`,
