@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { AttributeId, GameSnapshot, Specialization } from '../../game/contracts';
 import { RootSvg } from './RootSvg';
 import { TOKENS } from './tokens';
@@ -187,6 +187,45 @@ export const RootInteractiveView: React.FC<RootInteractiveViewProps> = ({
 
   return (
     <div className="root-interactive-shell">
+            {/* Dedicated Root Data & Progression Overview Panel (Above Schematic) */}
+      <section className="root-data-overview-panel" aria-label="Root State and Progression Overview">
+        <div className="root-data-overview-header">
+          <span className="root-data-overview-eyebrow">Canopy Progression Ledger</span>
+          <span className="root-data-overview-streak">
+            <span aria-hidden="true">🔥</span>
+            <span>{snapshot.currentStreak} Day Ritual Streak</span>
+          </span>
+        </div>
+
+        <div className="root-data-stat-grid">
+          <div className="root-data-stat-card">
+            <span className="root-data-stat-label">Total Vitality</span>
+            <span className="root-data-stat-value">{snapshot.totalXp} XP</span>
+            <span className="root-data-stat-meta">Level {snapshot.level} Seeker</span>
+          </div>
+
+          <div className="root-data-stat-card">
+            <span className="root-data-stat-label">Ember State</span>
+            <span className="root-data-stat-value" style={{ textTransform: 'capitalize' }}>
+              {snapshot.emberState}
+            </span>
+            <span className="root-data-stat-meta">+{snapshot.todayXpAwarded} XP Today</span>
+          </div>
+
+          <div className="root-data-stat-card">
+            <span className="root-data-stat-label">Sparks Balance</span>
+            <span className="root-data-stat-value">✦ {snapshot.sparksBalance}</span>
+            <span className="root-data-stat-meta">Sacred Currency</span>
+          </div>
+
+          <div className="root-data-stat-card">
+            <span className="root-data-stat-label">Longest Flame</span>
+            <span className="root-data-stat-value">{snapshot.longestStreak} Days</span>
+            <span className="root-data-stat-meta">Unbroken Practice</span>
+          </div>
+        </div>
+      </section>
+
       <header className="root-hero-section">
         <h1 className="root-hero-title">
           THE ROOT
@@ -210,7 +249,7 @@ export const RootInteractiveView: React.FC<RootInteractiveViewProps> = ({
             textAlign: 'center',
           }}
         >
-          ✨ {lastEvent}
+          âœ¨ {lastEvent}
         </div>
       )}
 
@@ -339,3 +378,4 @@ export const RootInteractiveView: React.FC<RootInteractiveViewProps> = ({
     </div>
   );
 };
+

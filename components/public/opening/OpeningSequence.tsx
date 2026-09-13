@@ -27,6 +27,7 @@ type PlateProps = {
   onForestAwakened?: () => void;
   reduced: boolean;
   paused: boolean;
+  chamberStage?: 'idle' | 'zooming' | 'focused' | 'claiming';
 };
 
 function ScenePlate({
@@ -41,6 +42,7 @@ function ScenePlate({
   onForestAwakened,
   reduced,
   paused,
+  chamberStage = 'idle',
 }: PlateProps) {
   const root = kind === 'root-chamber';
   const style = {
@@ -53,6 +55,7 @@ function ScenePlate({
     <div
       className={`prologue-layer ${root ? 'prologue-roots' : 'prologue-forest'}`}
       aria-hidden={!active}
+      data-chamber-stage={root ? chamberStage : undefined}
     >
       <div className="prologue-camera">
         <div className="prologue-plane" style={style}>
@@ -97,7 +100,7 @@ function ScenePlate({
             <button
               ref={hotspot}
               type="button"
-              className="prologue-hotspot"
+              className={`prologue-hotspot ${chamberStage === 'focused' ? 'is-focused' : ''}`}
               aria-label={LABELS[scene]}
               onClick={() => onAdvance()}
               onFocus={() => onNear(true)}
@@ -115,6 +118,7 @@ function ScenePlate({
 export function OpeningSequence() {
   const [scene, setScene] = useState<Scene>('forest');
   const [phase, setPhase] = useState<'enter' | 'idle'>('idle');
+  const [chamberStage, setChamberStage] = useState<'idle' | 'zooming' | 'focused' | 'claiming'>('idle');
   const [skipShore, setSkipShore] = useState(false);
   const [near, setNear] = useState(false);
   const [still, setStill] = useState(false);
@@ -131,7 +135,7 @@ export function OpeningSequence() {
   const root = scene === 'chamber';
   const ready = assets.forest;
 
-  // Audio lifecycle initialization: start playback on prologue mount
+  // Audio lifecycle initialization
   useEffect(() => {
     play();
   }, [play]);
@@ -178,26 +182,35 @@ export function OpeningSequence() {
     return () => document.removeEventListener('visibilitychange', change);
   }, []);
 
-  // Callback triggered when the forest dormant orb reaches 100% hold energy
+  // Coordinated Forest -> Root Chamber Awakening Transition
   const handleForestAwakened = useCallback(() => {
     setPhase('enter');
     const duration = reduced ? 150 : 850;
     window.setTimeout(() => {
       setScene('chamber');
       setPhase('idle');
-      hotspot.current?.focus();
+      // Begin cinematic camera pan + zoom toward the Ember
+      setChamberStage('zooming');
+      const focusDuration = reduced ? 200 : 1200;
+      window.setTimeout(() => {
+        setChamberStage('focused');
+        hotspot.current?.focus();
+      }, focusDuration);
     }, duration);
   }, [reduced]);
 
-  // Advance from chamber to black / shore sequence
+  // Fluid transition after reaching / claiming the Ember
   const advance = useCallback(() => {
     if (scene !== 'chamber') return;
     setNear(false);
+    setChamberStage('claiming');
     setPhase('enter');
-    const delay = reduced ? 80 : 550;
+    // Coordinated expansion of light before storm shore emerges
+    const delay = reduced ? 120 : 850;
     window.setTimeout(() => {
       setScene('black');
       setPhase('idle');
+      setChamberStage('idle');
     }, delay);
   }, [reduced, scene]);
 
@@ -213,6 +226,7 @@ export function OpeningSequence() {
     setSkipShore(false);
     setScene('forest');
     setPhase('idle');
+    setChamberStage('idle');
     setNear(false);
     restart();
   }
@@ -225,6 +239,7 @@ export function OpeningSequence() {
       data-near={near}
       data-reduced={reduced}
       data-paused={paused}
+      data-chamber-stage={root ? chamberStage : undefined}
       aria-label="Ember and Root — playable prologue"
       onPointerMove={(event) => {
         if (event.pointerType !== 'mouse' || scene === 'black') return;
@@ -267,6 +282,7 @@ export function OpeningSequence() {
           onNear={setNear}
           reduced={reduced}
           paused={paused}
+          chamberStage={chamberStage}
         />
       )}
       <div className="prologue-vignette" aria-hidden="true" />
