@@ -8,6 +8,7 @@ export interface CraftBranchSvgProps {
   builderCrestState: NodeState;
   artisanCrestState: NodeState;
   selectedSpecialization: Specialization | null;
+  interactive?: boolean;
 }
 
 export const CraftBranchSvg: React.FC<CraftBranchSvgProps> = ({
@@ -17,6 +18,7 @@ export const CraftBranchSvg: React.FC<CraftBranchSvgProps> = ({
   builderCrestState,
   artisanCrestState,
   selectedSpecialization,
+  interactive = false,
 }: CraftBranchSvgProps) => {
   const getPathColor = (fromState: NodeState, toState: NodeState, isSelectedPath?: boolean): string => {
     if (isSelectedPath || (toState === 'selected' || toState === 'unlocked')) {
@@ -232,37 +234,47 @@ export const CraftBranchSvg: React.FC<CraftBranchSvgProps> = ({
         <polyline points="180,80 230,55 330,55" fill="none" stroke="rgba(217, 227, 178, 0.4)" strokeWidth="1" strokeDasharray="2 3" />
         <circle cx="180" cy="80" r="2.5" fill="#D9E3B2" />
         <circle cx="330" cy="55" r="1.5" fill="#D9E3B2" />
+        {!interactive && (
         <text x="328" y="48" fill="#D9E3B2" fontSize="7.5" fontFamily="Fraunces" fontStyle="italic" textAnchor="end">
           FIG 4.1 · FIRST SPARK
         </text>
+      )}
 
         {/* Callout 2: Builder Spec (100, 220) -> Left Margin */}
         <polyline points="100,220 60,200 25,200" fill="none" stroke="rgba(217, 227, 178, 0.35)" strokeWidth="1" strokeDasharray="2 3" />
         <circle cx="100" cy="220" r="2.5" fill={builderState !== 'locked' ? '#D9E3B2' : '#3B463B'} />
+        {!interactive && (
         <text x="25" y="193" fill="#B9BEAC" fontSize="7.5" fontFamily="DM Sans" letterSpacing="0.05em">
           SPEC. A · BUILDER
         </text>
+      )}
 
         {/* Callout 3: Artisan Spec (260, 220) -> Right Margin */}
         <polyline points="260,220 300,200 335,200" fill="none" stroke="rgba(233, 138, 75, 0.35)" strokeWidth="1" strokeDasharray="2 3" />
         <circle cx="260" cy="220" r="2.5" fill={artisanState !== 'locked' ? '#E98A4B' : '#3B463B'} />
+        {!interactive && (
         <text x="335" y="193" fill="#B9BEAC" fontSize="7.5" fontFamily="DM Sans" textAnchor="end" letterSpacing="0.05em">
           SPEC. B · ARTISAN
         </text>
+      )}
 
         {/* Callout 4: Builder Keystone Crest (100, 370) -> Left Bottom Margin */}
         <polyline points="100,370 50,390 25,390" fill="none" stroke="rgba(217, 227, 178, 0.35)" strokeWidth="1" strokeDasharray="2 3" />
         <circle cx="100" cy="370" r="2.5" fill={builderCrestState !== 'locked' ? '#D9E3B2' : '#3B463B'} />
+        {!interactive && (
         <text x="25" y="383" fill="#D9E3B2" fontSize="7.5" fontFamily="Fraunces" fontStyle="italic">
           CREST · BUILDER'S KEYSTONE
         </text>
+      )}
 
         {/* Callout 5: Artisan Anvil Crest (260, 370) -> Right Bottom Margin */}
         <polyline points="260,370 310,390 335,390" fill="none" stroke="rgba(233, 138, 75, 0.35)" strokeWidth="1" strokeDasharray="2 3" />
         <circle cx="260" cy="370" r="2.5" fill={artisanCrestState !== 'locked' ? '#E98A4B' : '#3B463B'} />
+        {!interactive && (
         <text x="335" y="383" fill="#D9E3B2" fontSize="7.5" fontFamily="Fraunces" fontStyle="italic" textAnchor="end">
           CREST · ARTISAN'S ANVIL
         </text>
+      )}
       </g>
     </svg>
   );

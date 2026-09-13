@@ -190,25 +190,24 @@
   pointer-events: none;
 }
 
-/* Node Button Primitive */
+/* Node Button Primitive ? Coherent Proportional Geometry */
 .root-node-button {
   position: absolute;
-  transform: translate(-50%, -50%);
   pointer-events: auto;
   min-width: 44px;
   min-height: 44px;
-  max-width: 170px;
-  padding: 8px 12px;
-  border-radius: 22px;
+  max-width: 36%;
+  padding: 6px 10px;
+  border-radius: 20px;
   background-color: var(--color-surface);
   border: 2px solid var(--color-border-locked);
   color: var(--color-text-secondary);
   font-family: inherit;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 500;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   cursor: pointer;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
   transition: transform 0.2s ease, border-color 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease;
@@ -218,21 +217,23 @@
 .root-node-button:focus-visible {
   outline: 2px solid var(--color-focus);
   outline-offset: 3px;
-  border-radius: 22px;
+  border-radius: 20px;
 }
-/* Branch-specific positioning variants to prevent center stem collision & elevation scale overlap */
+
 .root-node-button.node-pos-left {
-  transform: translate(-45%, -50%);
+  transform: translate(-50%, -50%);
+  max-width: 36%;
 }
 
 .root-node-button.node-pos-right {
-  transform: translate(-55%, -50%);
+  transform: translate(-50%, -50%);
+  max-width: 36%;
 }
 
 .root-node-button.node-pos-center {
   transform: translate(-50%, -50%);
+  max-width: 46%;
 }
-
 
 /* Node State Variants */
 
@@ -303,8 +304,8 @@
 
 /* Node Icon Indicator */
 .node-indicator {
-  width: 12px;
-  height: 12px;
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
   display: inline-block;
   flex-shrink: 0;
@@ -329,24 +330,34 @@
   box-shadow: 0 0 10px var(--color-root-mature);
 }
 
-/* Node Text Labels */
+/* Node Text Labels ? Proportional auto-containment */
 .node-label-container {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   line-height: 1.2;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .node-title {
   font-weight: 600;
-  font-size: 13px;
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
 }
 
 .node-subtitle {
-  font-size: 10px;
+  font-size: 9.5px;
   opacity: 0.85;
   font-family: var(--font-display);
   font-style: italic;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
 }
 
 /* Mobile Responsive Adjustments & Collision Prevention */
@@ -358,24 +369,15 @@
     max-width: 360px;
   }
   .root-node-button {
-    max-width: 135px;
-    padding: 6px 10px;
-    gap: 6px;
-    font-size: 12px;
+    max-width: 36%;
+    padding: 5px 8px;
+    gap: 5px;
   }
   .node-title {
-    font-size: 12px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 90px;
+    font-size: 11px;
   }
   .node-subtitle {
-    font-size: 9.5px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 90px;
+    font-size: 9px;
   }
 }
 
@@ -390,37 +392,23 @@
     max-width: 320px;
   }
   .root-node-button {
-    max-width: 112px;
+    max-width: 36%;
     padding: 4px 6px;
     gap: 4px;
-    font-size: 11px;
     min-height: 44px;
   }
-  .root-node-button.node-pos-left {
-    transform: translate(-42%, -50%);
-  }
-  .root-node-button.node-pos-right {
-    transform: translate(-58%, -50%);
+  .root-node-button.node-pos-center {
+    max-width: 46%;
   }
   .node-indicator {
-    width: 10px;
-    height: 10px;
-    flex-shrink: 0;
+    width: 8px;
+    height: 8px;
   }
   .node-title {
-    font-size: 10.5px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 78px;
+    font-size: 10px;
   }
   .node-subtitle {
     font-size: 8.5px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 78px;
-    opacity: 0.8;
   }
   .root-data-stat-grid {
     grid-template-columns: repeat(2, 1fr);
@@ -448,151 +436,20 @@
     padding: 8px 4px;
   }
   .root-svg-wrapper {
-    max-width: 280px;
-  }
-  .root-branch-header-title {
-    font-size: 1.05rem;
-  }
-  .root-view-toggle-btn {
-    padding: 4px 6px;
-    font-size: 10px;
+    max-width: 290px;
   }
   .root-node-button {
-    max-width: 96px;
+    max-width: 36%;
     padding: 3px 5px;
     gap: 3px;
   }
+  .root-node-button.node-pos-center {
+    max-width: 46%;
+  }
   .node-title {
-    font-size: 9.5px;
-    max-width: 68px;
+    font-size: 9px;
   }
   .node-subtitle {
-    display: none;
-  }
-}
-
-/* Crest Reveal Banner Animation */
-.crest-reveal-banner {
-  animation: crestPulse 2.5s ease-in-out infinite alternate;
-}
-
-@keyframes crestPulse {
-  0% {
-    box-shadow: 0 0 8px rgba(159, 186, 135, 0.25);
-    border-color: #9fba87;
-  }
-  100% {
-    box-shadow: 0 0 22px rgba(217, 227, 178, 0.65);
-    border-color: #d9e3b2;
-  }
-}
-
-/* Reduced Motion Override */
-@media (prefers-reduced-motion: reduce) {
-  .root-path,
-  .root-node-button,
-  .crest-reveal-banner {
-    transition: none !important;
-    animation: none !important;
-  }
-  
-  .root-path-pulse,
-  .root-node-button.state-available,
-  .crest-reveal-banner {
-    animation: none !important;
-    box-shadow: 0 0 10px rgba(159, 186, 135, 0.3) !important;
-  }
-}
-/* ==========================================================================
-   ROOT DATA & PROGRESSION PANEL (Separated Above Schematic - No Overlap)
-   ========================================================================== */
-
-.root-data-overview-panel {
-  width: 100%;
-  background: linear-gradient(180deg, rgba(29, 35, 29, 0.85) 0%, rgba(20, 24, 20, 0.95) 100%);
-  border: 1px solid rgba(159, 186, 135, 0.28);
-  border-radius: var(--radius-panel, 12px);
-  padding: 16px 20px;
-  margin-bottom: 20px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(240, 231, 211, 0.06);
-  position: relative;
-  z-index: 5;
-  box-sizing: border-box;
-}
-
-.root-data-overview-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 14px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid rgba(159, 186, 135, 0.15);
-}
-
-.root-data-overview-eyebrow {
-  font-family: var(--font-body, system-ui, sans-serif);
-  font-size: 11px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--color-root, #9fba87);
-  font-weight: 600;
-}
-
-.root-data-overview-streak {
-  font-family: var(--font-body, system-ui, sans-serif);
-  font-size: 12px;
-  color: var(--color-ember-core, #ffd38a);
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.root-data-stat-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
-}
-
-.root-data-stat-card {
-  background: rgba(20, 23, 19, 0.65);
-  border: 1px solid rgba(59, 70, 59, 0.5);
-  border-radius: var(--radius-sm, 6px);
-  padding: 10px 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  box-sizing: border-box;
-}
-
-.root-data-stat-label {
-  font-family: var(--font-body, system-ui, sans-serif);
-  font-size: 10px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--color-text-secondary, #b9beac);
-}
-
-.root-data-stat-value {
-  font-family: var(--font-display, Georgia, serif);
-  font-size: 1.15rem;
-  font-weight: 500;
-  color: var(--color-text-primary, #f0e7d3);
-  line-height: 1.2;
-}
-
-.root-data-stat-meta {
-  font-family: var(--font-body, system-ui, sans-serif);
-  font-size: 10px;
-  color: var(--color-root-mature, #d9e3b2);
-}
-
-@media (max-width: 640px) {
-  .root-data-stat-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 8px;
-  }
-  .root-data-overview-panel {
-    padding: 12px 14px;
-    margin-bottom: 16px;
+    font-size: 7.5px;
   }
 }

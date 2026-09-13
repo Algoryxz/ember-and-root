@@ -1,9 +1,11 @@
 /* ==========================================================================
-   Ember & Root — Quest Revision (Edit) Dialog Styles
+   Ember & Root ? Quest Revision (Edit) Dialog Styles
    Owned by: Deeptiman (Experience / Frontend Lead)
    Visual Direction: Illuminated Field Journal
    Specification: docs/UI_UX_BRIEF.md
    ========================================================================== */
+
+@import './QuestCreateDialog.css';
 
 .quest-edit-form {
   display: flex;

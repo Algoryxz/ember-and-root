@@ -151,9 +151,16 @@ export const HearthView: React.FC<HearthViewProps> = ({
       }
     } catch (err: any) {
       // Handle network or validation failure: render inline retry affordance
+      console.error('Failed to seal quest:', err);
+      const rawMsg = err?.message || '';
+      const userFriendlyMsg =
+        rawMsg.startsWith('complete_quest failed:')
+          ? "We couldn't seal this quest right now. Please check your connection and retry."
+          : rawMsg || 'Could not seal practice. Check connection and retry.';
+
       setErrorQuestMap((prev) => ({
         ...prev,
-        [questId]: err?.message || 'Could not seal practice. Check connection and retry.',
+        [questId]: userFriendlyMsg,
       }));
     } finally {
       setPendingQuestId(null);
