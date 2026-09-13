@@ -60,24 +60,40 @@ export const MilestoneTrialPanel: React.FC<MilestoneTrialPanelProps> = ({
       aria-label={`${config.title} Panel`}
     >
       {/* Header */}
-      <header style={{ marginBottom: '12px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
-          <h3
-            style={{
-              margin: 0,
-              fontFamily: TOKENS.font.display,
-              fontSize: '18px',
-              color: TOKENS.color.emberCore,
-            }}
-          >
-            {config.title}
-          </h3>
+      <header style={{ marginBottom: '16px', borderBottom: '1px solid rgba(255, 211, 138, 0.15)', paddingBottom: '12px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', flexWrap: 'wrap' }}>
+          <div>
+            <div
+              style={{
+                fontSize: '10px',
+                textTransform: 'uppercase',
+                letterSpacing: '0.08em',
+                color: TOKENS.color.textSecondary,
+                fontFamily: TOKENS.font.display,
+                fontStyle: 'italic',
+                marginBottom: '2px',
+              }}
+            >
+              FOLIO NO. M-{specialization.toUpperCase()} · DECLARED MILESTONE EVIDENCE
+            </div>
+            <h3
+              style={{
+                margin: 0,
+                fontFamily: TOKENS.font.display,
+                fontSize: '18px',
+                color: TOKENS.color.emberCore,
+              }}
+            >
+              {config.title}
+            </h3>
+          </div>
           <span
             style={{
               fontSize: '11px',
-              padding: '2px 8px',
+              padding: '4px 10px',
               borderRadius: TOKENS.radius.sm,
               fontWeight: 600,
+              letterSpacing: '0.05em',
               textTransform: 'uppercase',
               backgroundColor: isCrestClaimed
                 ? TOKENS.color.root
@@ -102,9 +118,23 @@ export const MilestoneTrialPanel: React.FC<MilestoneTrialPanelProps> = ({
               : 'Not Started'}
           </span>
         </div>
-        <p style={{ margin: '4px 0 0 0', fontSize: '13px', color: TOKENS.color.textSecondary }}>
+        <p style={{ margin: '6px 0 0 0', fontSize: '13px', color: TOKENS.color.textSecondary, lineHeight: '1.4' }}>
           {config.description}
         </p>
+        {trial?.startedAt && (
+          <div
+            style={{
+              fontSize: '11px',
+              color: TOKENS.color.emberCore,
+              fontFamily: TOKENS.font.display,
+              fontStyle: 'italic',
+              marginTop: '6px',
+            }}
+          >
+            Initiated: {trial.startedAt.split('T')[0]}
+            {trial.completedAt && ` · Sealed: ${trial.completedAt.split('T')[0]}`}
+          </div>
+        )}
       </header>
 
       {/* Inline Error State */}
@@ -203,15 +233,20 @@ export const MilestoneTrialPanel: React.FC<MilestoneTrialPanelProps> = ({
           ) : (
             <div
               style={{
-                padding: '12px',
-                backgroundColor: TOKENS.color.bg,
-                border: `1px solid ${TOKENS.color.borderLocked}`,
+                padding: '14px',
+                backgroundColor: '#1F2A1E',
+                border: `1px solid ${TOKENS.color.root}`,
                 borderRadius: TOKENS.radius.md,
                 marginBottom: '12px',
               }}
             >
-              <div style={{ fontSize: '11px', color: TOKENS.color.textSecondary, marginBottom: '4px' }}>
-                Declared Milestone:
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
+                <span style={{ fontSize: '11px', color: TOKENS.color.rootMature, fontWeight: 600, letterSpacing: '0.05em' }}>
+                  RECORDED MILESTONE EVIDENCE:
+                </span>
+                <span style={{ fontSize: '12px' }} aria-hidden="true">
+                  ✍️
+                </span>
               </div>
               <blockquote
                 style={{
@@ -220,6 +255,7 @@ export const MilestoneTrialPanel: React.FC<MilestoneTrialPanelProps> = ({
                   fontStyle: 'italic',
                   color: TOKENS.color.textPrimary,
                   fontFamily: TOKENS.font.display,
+                  lineHeight: '1.4',
                 }}
               >
                 "{trial?.milestoneText || inputText}"

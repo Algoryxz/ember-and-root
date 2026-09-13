@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import { OpeningSequence } from '@/components/public/opening/OpeningSequence';
 
 export const metadata = {
