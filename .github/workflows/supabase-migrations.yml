@@ -4,9 +4,6 @@ on:
   push:
     branches:
       - main
-    paths:
-      - 'supabase/migrations/**'
-      - 'supabase/config.toml'
   workflow_dispatch:
 
 permissions:
